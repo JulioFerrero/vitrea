@@ -5,6 +5,7 @@ import { useEditorStore } from "../../stores";
 import type { Viewport } from "../../types";
 import { useEditorContext } from "../../lib/context";
 import { useDynamicCSS } from "../../lib/dynamic-css";
+import { getIcon } from "../../icons";
 
 interface Transform {
   x: number;
@@ -367,7 +368,7 @@ function ElementToolbar({ pageId, containerSet }: { pageId: string | null; conta
   return (
     <>
       {schema.elementTypes.map((et) => {
-        const Icon = et.icon;
+        const Icon = getIcon(et.icon);
         return (
           <button
             key={et.type}

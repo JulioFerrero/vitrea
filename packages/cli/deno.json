@@ -1,0 +1,17 @@
+{
+  "name": "@hi/cli",
+  "version": "0.1.0",
+  "exports": "./src/index.ts",
+  "tasks": {
+    "dev": "deno run -A --env=.env src/index.ts dev",
+    "build": "deno run -A --env=.env src/index.ts build",
+    "start": "deno run -A --env=.env src/index.ts start",
+    "db:init": "deno run -A --env=.env src/index.ts db:init",
+    "db:seed": "deno run -A --env=.env src/index.ts db:seed"
+  },
+  "imports": {
+    "@hi/editor": "../../packages/editor/deno.json",
+    "@hi/database": "../../packages/database/deno.json",
+    "@hi/website": "../../packages/website/deno.json"
+  }
+}

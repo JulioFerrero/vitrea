@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useEditorStore } from "../../stores";
 import { useEditorContext } from "../../lib/context";
-import { buildTree } from "../../lib/tree";
+import { buildTree } from "@hi/render";
 import type { RenderElement, PageItem } from "../../types";
 import { cn } from "@hi/utils";
 import { Tree, type NodeRendererProps, type NodeApi } from "react-arborist";
@@ -14,23 +14,11 @@ import {
   Pencil,
   ChevronRight,
   Copy,
-  LayoutGrid,
-  Rows3,
-  Columns3,
-  Grid3x3,
-  Heading,
-  Type,
-  Image,
-  SquareMousePointer,
-  Link,
-  Minus,
-  MoveVertical,
-  Play,
-  Code,
-  Layers,
   ArrowUp,
   ArrowDown,
+  Layers,
 } from "lucide-react";
+import { getIcon } from "../../icons";
 import {
   Dialog,
   DialogContent,
@@ -52,7 +40,7 @@ interface ElementTreeData {
   id: string;
   type: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: string;
   content: string;
   isContainer: boolean;
   children?: ElementTreeData[];
@@ -74,22 +62,6 @@ function derivePath(slug: string, parentId: string | undefined, pages: PageItem[
   if (!parent) return "/" + slug;
   return parent.data.path.replace(/\/$/, "") + "/" + slug;
 }
-
-const ELEMENT_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  section: LayoutGrid,
-  row: Rows3,
-  column: Columns3,
-  grid: Grid3x3,
-  heading: Heading,
-  text: Type,
-  image: Image,
-  button: SquareMousePointer,
-  link: Link,
-  divider: Minus,
-  spacer: MoveVertical,
-  video: Play,
-  html: Code,
-};
 
 function CollapsibleSection({
   title,
@@ -239,7 +211,7 @@ export function LeftPanel() {
         const typeConfig = schema.elementTypes.find((t) => t.type === el.type);
         return {
           id: el.id, type: el.type, label: typeConfig?.label ?? el.type,
-          icon: ELEMENT_ICONS[el.type] ?? File,
+          icon: typeConfig?.icon ?? "file",
           content: el.data.content ? String(el.data.content).slice(0, 30) : "",
           isContainer: typeConfig?.isContainer ?? false,
           children: el.children?.length ? convert(el.children) : undefined,
@@ -385,7 +357,7 @@ export function LeftPanel() {
           <DialogHeader><DialogTitle>Add Element</DialogTitle><DialogDescription>Choose a type to add.</DialogDescription></DialogHeader>
           <div className="grid grid-cols-3 gap-2 py-2">
             {schema.elementTypes.map((et) => {
-              const Icon = et.icon;
+              const Icon = getIcon(et.icon);
               return (
                 <button key={et.type} onClick={() => handleAddElementToParent(et.type)}
                   className="flex flex-col items-center gap-1 rounded-lg border border-border/50 px-3 py-3 text-[10px] text-muted-foreground hover:border-editor-ring/30 hover:bg-editor-selected hover:text-editor-ring transition-colors">
@@ -445,7 +417,7 @@ function ElementNode({ node, style, dragHandle, onContextMenu, onHover }: NodeRe
   onContextMenu: (e: React.MouseEvent, s: CtxMenuState) => void;
   onHover: (id: string | null) => void;
 }) {
-  const Icon = node.data.icon;
+  const Icon = getIcon(node.data.icon) ?? File;
   const selected = node.state.isSelected;
   return (
     <div

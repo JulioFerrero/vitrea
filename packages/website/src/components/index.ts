@@ -1,6 +1,5 @@
-import React from "react";
 import type { ComponentType } from "react";
-import type { ElementProps } from "../lib/types";
+import type { ElementProps } from "@hi/render";
 import { Section } from "./section";
 import { Row } from "./row";
 import { Column } from "./column";

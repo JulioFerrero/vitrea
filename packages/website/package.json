@@ -13,15 +13,10 @@
   },
   "dependencies": {
     "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "@hi/database": "workspace:*",
     "@hi/editor": "workspace:*",
-    "@hi/types": "workspace:*",
-    "@hi/utils": "workspace:*",
-    "lucide-react": "^0.509.0"
+    "@hi/render": "workspace:*"
   },
   "devDependencies": {
-    "@types/react": "^19.1.0",
-    "@types/react-dom": "^19.1.0"
+    "@types/react": "^19.1.0"
   }
 }

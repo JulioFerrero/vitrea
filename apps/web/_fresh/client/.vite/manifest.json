@@ -48,12 +48,12 @@
     "src": "../../node_modules/.pnpm/@fontsource+recursive@5.2.8/node_modules/@fontsource/recursive/files/recursive-vietnamese-400-normal.woff2"
   },
   "fresh:client-entry": {
-    "file": "assets/client-entry-DYIZI253.js",
+    "file": "assets/client-entry-DSjzT-fd.js",
     "name": "client-entry",
     "src": "fresh:client-entry",
     "isEntry": true,
     "css": [
-      "assets/client-entry-kE2C1Cdi.css"
+      "assets/client-entry-BbACYtZI.css"
     ],
     "assets": [
       "assets/fraunces-vietnamese-400-normal-CvGt0Ybw.woff2",

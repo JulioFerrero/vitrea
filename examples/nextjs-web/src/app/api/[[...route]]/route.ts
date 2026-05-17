@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { handle } from "hono/vercel";
-import { app } from "@hi/api";
+import { app } from "@hi/editor/api";
 
 export const runtime = "nodejs";
 

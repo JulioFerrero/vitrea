@@ -1,10 +1,9 @@
 import { defineElement, textField, urlField } from "@hi/editor";
-import { PanelTop } from "lucide-react";
 
 export const navBar = defineElement({
   type: "nav-bar",
   label: "Navigation Bar",
-  icon: PanelTop,
+  icon: "panel-top",
   category: "section",
   isContainer: false,
   defaultStyles: {},

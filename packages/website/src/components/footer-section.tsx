@@ -1,5 +1,5 @@
 import React from "react";
-import type { ElementProps } from "../lib/types";
+import type { ElementProps } from "@hi/render";
 
 export function FooterSection({ element, className, style, attrs }: ElementProps) {
   const brandName = (element.data.brandName as string) ?? "Hi Editor";

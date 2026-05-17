@@ -1,10 +1,9 @@
 import { defineElement, textField, textareaField, urlField } from "@hi/editor";
-import { Sparkles } from "lucide-react";
 
 export const heroSection = defineElement({
   type: "hero-section",
   label: "Hero Section",
-  icon: Sparkles,
+  icon: "sparkles",
   category: "section",
   isContainer: false,
   defaultStyles: {},

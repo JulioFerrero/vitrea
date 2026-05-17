@@ -1,10 +1,9 @@
 import { defineElement, textField, textareaField, urlField } from "@hi/editor";
-import { MousePointerClick } from "lucide-react";
 
 export const ctaSection = defineElement({
   type: "cta-section",
   label: "CTA Section",
-  icon: MousePointerClick,
+  icon: "mouse-pointer-click",
   category: "section",
   isContainer: false,
   defaultStyles: {},

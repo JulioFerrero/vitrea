@@ -1,10 +1,9 @@
 import { defineElement, textField, textareaField, urlField } from "@hi/editor";
-import { PanelBottom } from "lucide-react";
 
 export const footerSection = defineElement({
   type: "footer-section",
   label: "Footer Section",
-  icon: PanelBottom,
+  icon: "panel-bottom",
   category: "section",
   isContainer: false,
   defaultStyles: {},

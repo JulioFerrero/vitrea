@@ -23,8 +23,9 @@
     "vite": "npm:vite@^7.1.3",
     "hono": "npm:hono@^4.7.0",
     "@hi/editor": "../../packages/editor/deno.json",
+    "@hi/editor/api": "../../packages/editor/src/api/index.ts",
+    "@hi/render": "../../packages/render/deno.json",
     "@hi/ui": "../../packages/ui/deno.json",
-    "@hi/api": "../../packages/api/deno.json",
     "@hi/database": "../../packages/database/deno.json",
     "@hi/utils": "../../packages/utils/deno.json",
     "@hi/website": "../../packages/website/deno.json"

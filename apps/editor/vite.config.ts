@@ -13,11 +13,11 @@ function apiPlugin(): Plugin {
     name: "hi-api-middleware",
     enforce: "pre",
     async configureServer(server) {
-      const [{ app }, { tailwindCssResponse }] = await Promise.all([
-        import(resolve(root, "packages/api/src/index.ts")),
+      const [{ app: importedApp }, { tailwindCssResponse }] = await Promise.all([
+        import(resolve(root, "packages/editor/src/api/index.ts")),
         import(resolve(root, "packages/website/src/lib/tailwind.ts")),
       ]);
-      apiApp = app;
+      apiApp = importedApp;
       tailwindFn = tailwindCssResponse;
 
       server.middlewares.use(async (req, res, next) => {
@@ -88,14 +88,15 @@ export default defineConfig({
       { find: "react/jsx-runtime", replacement: "preact/jsx-runtime" },
       { find: "react-dom", replacement: "preact/compat" },
       { find: "react", replacement: "preact/compat" },
-      { find: "lucide-react", replacement: resolve(import.meta.dirname, "lucide-icons.ts") },
+      { find: "lucide-react", replacement: resolve(root, "node_modules/lucide-preact/dist/esm/lucide-preact.js") },
       { find: "@fontsource/fraunces", replacement: resolve(root, "node_modules/@fontsource/fraunces") },
       { find: "@fontsource/recursive", replacement: resolve(root, "node_modules/@fontsource/recursive") },
       { find: "@hi/editor/styles.css", replacement: resolve(root, "packages/editor/src/styles.css") },
+      { find: "@hi/editor/api", replacement: resolve(root, "packages/editor/src/api/index.ts") },
       { find: "@hi/website/styles.css", replacement: resolve(root, "packages/website/src/styles.css") },
-      { find: "@hi/api", replacement: resolve(root, "packages/api/src/index.ts") },
       { find: "@hi/database", replacement: resolve(root, "packages/database/src/index.ts") },
       { find: "@hi/editor", replacement: resolve(root, "packages/editor/src/index.ts") },
+      { find: "@hi/render", replacement: resolve(root, "packages/render/src/index.ts") },
       { find: "@hi/utils", replacement: resolve(root, "packages/utils/src/index.ts") },
       { find: "@hi/website", replacement: resolve(root, "packages/website/src/index.ts") },
     ],

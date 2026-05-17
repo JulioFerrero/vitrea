@@ -1,12 +1,9 @@
-import type { ComponentType } from "react";
 import type { ElementTypeConfig, FieldConfig } from "../types";
-
-type LucideIcon = ComponentType<{ className?: string }>;
 
 type BaseConfig = {
   type: string;
   label: string;
-  icon: LucideIcon;
+  icon: string;
   defaultStyles?: Record<string, string>;
   defaultData?: Record<string, unknown>;
   fields?: FieldConfig[];

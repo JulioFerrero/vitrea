@@ -10,9 +10,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@hi/api": "workspace:*",
+    "@hi/editor": "workspace:*",
     "@hi/database": "workspace:*",
-    "@hi/types": "workspace:*",
     "@hi/utils": "workspace:*",
     "@hi/website": "workspace:*",
     "drizzle-orm": "^0.43.0",

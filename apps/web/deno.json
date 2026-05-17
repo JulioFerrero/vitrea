@@ -20,10 +20,9 @@
     "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.1.0",
     "tailwindcss": "npm:tailwindcss@^4.1.0",
     "lucide-preact": "npm:lucide-preact@^0.509.0",
+    "@hi/render": "../../packages/render/deno.json",
     "@hi/website": "../../packages/website/deno.json",
-    "@hi/api": "../../packages/api/deno.json",
     "@hi/database": "../../packages/database/deno.json",
-    "@hi/types": "../../packages/types/deno.json",
     "@hi/utils": "../../packages/utils/deno.json"
   },
   "compilerOptions": {

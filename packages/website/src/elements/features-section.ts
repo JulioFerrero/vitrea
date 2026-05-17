@@ -1,10 +1,9 @@
 import { defineElement, textField, textareaField } from "@hi/editor";
-import { LayoutGrid } from "lucide-react";
 
 export const featuresSection = defineElement({
   type: "features-section",
   label: "Features Section",
-  icon: LayoutGrid,
+  icon: "layout-grid",
   category: "section",
   isContainer: false,
   defaultStyles: {},

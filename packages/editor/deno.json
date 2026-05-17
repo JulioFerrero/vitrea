@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "exports": {
     ".": "./src/index.ts",
+    "./api": "./src/api/index.ts",
+    "./server": "./src/server.ts",
     "./styles.css": "./src/styles.css"
   }
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import type { ElementProps } from "../lib/types";
+import type { ElementProps } from "@hi/render";
 
 export function CTASection({ element, className, style, attrs }: ElementProps) {
   const headline = (element.data.headline as string) ?? "Ready to build?";

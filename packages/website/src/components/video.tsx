@@ -1,5 +1,5 @@
 import React from "react";
-import type { ElementProps } from "../lib/types";
+import type { ElementProps } from "@hi/render";
 export function Video({ element, className, style, attrs }: ElementProps) {
   return (
     <video

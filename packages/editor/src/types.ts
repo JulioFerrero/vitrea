@@ -1,5 +1,4 @@
-import type { LucideIcon } from "lucide-react";
-import type { ComponentType, ReactNode } from "react";
+import type { ComponentType } from "react";
 
 export interface FieldConfig {
   name: string;
@@ -25,7 +24,7 @@ export interface StyleGroupConfig {
 export interface ElementTypeConfig {
   type: string;
   label: string;
-  icon: LucideIcon | ComponentType<{ className?: string }>;
+  icon: string;
   category: string;
   isContainer: boolean;
   defaultStyles: Record<string, string>;
@@ -70,4 +69,10 @@ export interface EditorProps {
   schema: EditorSchema;
   api: EditorApi;
   renderer: RendererAdapter;
+}
+
+export interface EditorConfig {
+  database: { url: string };
+  schema: EditorSchema;
+  renderer?: Record<string, ComponentType<any>>;
 }

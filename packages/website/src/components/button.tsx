@@ -1,5 +1,5 @@
 import React from "react";
-import type { ElementProps } from "../lib/types";
+import type { ElementProps } from "@hi/render";
 export function Button({ element, className, style, attrs }: ElementProps) {
   return (
     <a

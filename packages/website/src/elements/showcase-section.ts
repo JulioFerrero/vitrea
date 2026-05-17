@@ -1,10 +1,9 @@
 import { defineElement, textField, textareaField, urlField, selectField } from "@hi/editor";
-import { Monitor } from "lucide-react";
 
 export const showcaseSection = defineElement({
   type: "showcase-section",
   label: "Showcase Section",
-  icon: Monitor,
+  icon: "monitor",
   category: "section",
   isContainer: false,
   defaultStyles: {},

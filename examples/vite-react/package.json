@@ -9,12 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@hi/types": "workspace:*",
     "@hi/utils": "workspace:*",
     "@hi/ui": "workspace:*",
     "@hi/website": "workspace:*",
     "@hi/editor": "workspace:*",
-    "@hi/cms": "workspace:*",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },

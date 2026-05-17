@@ -10,7 +10,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@hi/api": "workspace:*",
     "@hi/editor": "workspace:*",
     "@hi/ui": "workspace:*",
     "@hi/utils": "workspace:*",
