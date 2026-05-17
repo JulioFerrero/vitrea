@@ -14,6 +14,12 @@ import { Spacer } from "./spacer";
 import { Divider } from "./divider";
 import { Video } from "./video";
 import { Html } from "./html";
+import { NavBar } from "./nav-bar";
+import { HeroSection } from "./hero-section";
+import { FeaturesSection } from "./features-section";
+import { ShowcaseSection } from "./showcase-section";
+import { CTASection } from "./cta-section";
+import { FooterSection } from "./footer-section";
 
 export const COMPONENT_REGISTRY: Record<string, ComponentType<ElementProps>> = {
   section: Section,
@@ -29,6 +35,12 @@ export const COMPONENT_REGISTRY: Record<string, ComponentType<ElementProps>> = {
   divider: Divider,
   video: Video,
   html: Html,
+  "nav-bar": NavBar,
+  "hero-section": HeroSection,
+  "features-section": FeaturesSection,
+  "showcase-section": ShowcaseSection,
+  "cta-section": CTASection,
+  "footer-section": FooterSection,
 };
 
 export function hasComponent(type: string): boolean {

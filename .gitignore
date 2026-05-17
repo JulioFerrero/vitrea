@@ -7,3 +7,4 @@ dist
 .env.local
 .env*.local
 _tw_gen.css
+**/_fresh/

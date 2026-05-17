@@ -8,6 +8,12 @@ importers:
 
   .:
     dependencies:
+      '@fontsource/fraunces':
+        specifier: ^5.2.9
+        version: 5.2.9
+      '@fontsource/recursive':
+        specifier: ^5.2.8
+        version: 5.2.8
       lucide-preact:
         specifier: ^0.509.0
         version: 0.509.0(preact@10.29.2)
@@ -836,6 +842,12 @@ packages:
 
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
+
+  '@fontsource/fraunces@5.2.9':
+    resolution: {integrity: sha512-XDzuddBtoC7BZgZdBn6b7hsFZY2+V1hgN7yca5fBTKuHjb/lOd45a0Ji8dTUgFhPoL7RdGupo+bC2BFSt6UH8Q==}
+
+  '@fontsource/recursive@5.2.8':
+    resolution: {integrity: sha512-O5HlyeTIoMZaxKj2phYzB6wXfpWMnaqmk3Qg4n3K4QhzZeEqYr/QPa/8VBKheX36XKjgFNGefJ4qBYBflZoZHg==}
 
   '@formatjs/intl-localematcher@0.5.10':
     resolution: {integrity: sha512-af3qATX+m4Rnd9+wHcjJ4w2ijq+rAVP3CCinJQvFv1kgSu1W6jypUmvleJxcewdxmutM8dmIRZFxO/IQBZmP2Q==}
@@ -3306,6 +3318,10 @@ snapshots:
       react-dom: 19.2.6(react@19.2.6)
 
   '@floating-ui/utils@0.2.11': {}
+
+  '@fontsource/fraunces@5.2.9': {}
+
+  '@fontsource/recursive@5.2.8': {}
 
   '@formatjs/intl-localematcher@0.5.10':
     dependencies:

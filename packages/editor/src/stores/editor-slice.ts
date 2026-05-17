@@ -17,6 +17,7 @@ export interface EditorState {
   viewport: Viewport;
   pages: PageItem[];
   dirtyPageIds: Set<string>;
+  dirtyElementIds: Set<string>;
   elements: RenderElement[];
   isDirty: boolean;
   isLoading: boolean;
@@ -61,6 +62,7 @@ export const createEditorSlice: StateCreator<EditorStore> = (set, get) => ({
   viewport: "desktop",
   pages: [],
   dirtyPageIds: new Set<string>(),
+  dirtyElementIds: new Set<string>(),
   elements: [],
   isDirty: false,
   isLoading: false,
@@ -86,24 +88,30 @@ export const createEditorSlice: StateCreator<EditorStore> = (set, get) => ({
       dirtyPageIds: new Set([...s.dirtyPageIds, id]),
       isDirty: true,
     })),
-  setElements: (elements) => set({ elements, isDirty: false }),
+  setElements: (elements) => set({ elements, dirtyElementIds: new Set(), isDirty: false }),
   selectElement: (id) => set({ selectedElementId: id }),
   setHoveredElement: (id) => set({ hoveredElementId: id }),
   updateElement: (id, updates) =>
     set((s) => ({
       elements: s.elements.map((e) => (e.id === id ? { ...e, ...updates } : e)),
+      dirtyElementIds: new Set([...s.dirtyElementIds, id]),
       isDirty: true,
     })),
   addElement: (element) =>
-    set((s) => ({ elements: [...s.elements, element], isDirty: true })),
+    set((s) => ({ elements: [...s.elements, element], dirtyElementIds: new Set([...s.dirtyElementIds, element.id]), isDirty: true })),
   removeElement: (id) =>
     set((s) => ({
       elements: s.elements.filter((e) => e.id !== id && e.parentId !== id),
       selectedElementId: s.selectedElementId === id ? null : s.selectedElementId,
+      dirtyElementIds: new Set([...s.dirtyElementIds].filter((d) => d !== id)),
       isDirty: true,
     })),
   insertElements: (newElements) =>
-    set((s) => ({ elements: [...s.elements, ...newElements], isDirty: true })),
+    set((s) => ({
+      elements: [...s.elements, ...newElements],
+      dirtyElementIds: new Set([...s.dirtyElementIds, ...newElements.map((e) => e.id)]),
+      isDirty: true,
+    })),
   reorderElement: (id, direction) =>
     set((s) => {
       const el = s.elements.find((e) => e.id === id);

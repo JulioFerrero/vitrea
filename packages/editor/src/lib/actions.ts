@@ -90,8 +90,12 @@ export function createEditorActions(api: EditorApi, schema: EditorSchema) {
         }),
       })) as RenderElement;
 
-      store.getState().addElement(element);
-      store.getState().selectElement(element.id);
+      store.setState((s) => ({
+        elements: [...s.elements, element],
+        dirtyElementIds: new Set([...s.dirtyElementIds, element.id]),
+        isDirty: true,
+        selectedElementId: element.id,
+      }));
       return element;
     },
 
@@ -142,8 +146,12 @@ export function createEditorActions(api: EditorApi, schema: EditorSchema) {
       }
 
       await cloneTree(id, el.parentId ?? null, true);
-      store.getState().insertElements(allClones);
-      if (allClones.length > 0) store.getState().selectElement(allClones[0]!.id);
+      store.setState((s) => ({
+        elements: [...s.elements, ...allClones],
+        dirtyElementIds: new Set([...s.dirtyElementIds, ...allClones.map((e) => e.id)]),
+        isDirty: true,
+        selectedElementId: allClones[0]?.id ?? s.selectedElementId,
+      }));
       return allClones;
     },
 
@@ -151,11 +159,14 @@ export function createEditorActions(api: EditorApi, schema: EditorSchema) {
       const state = store.getState();
       store.getState().setSaveStatus("saving");
       try {
-        for (const el of state.elements) {
-          await api.fetch(`/elements/${el.id}`, {
-            method: "PATCH",
-            body: JSON.stringify({ data: el.data, styles: el.styles, order: el.order }),
-          });
+        for (const id of state.dirtyElementIds) {
+          const el = state.elements.find((e) => e.id === id);
+          if (el) {
+            await api.fetch(`/elements/${el.id}`, {
+              method: "PATCH",
+              body: JSON.stringify({ data: el.data, styles: el.styles, order: el.order }),
+            });
+          }
         }
         for (const pageId of state.dirtyPageIds) {
           const page = state.pages.find((p) => p.id === pageId);
@@ -167,7 +178,7 @@ export function createEditorActions(api: EditorApi, schema: EditorSchema) {
           }
         }
         store.getState().setDirty(false);
-        store.setState({ dirtyPageIds: new Set() });
+        store.setState({ dirtyPageIds: new Set(), dirtyElementIds: new Set() });
         store.getState().setSaveStatus("saved");
       } catch {
         store.getState().setSaveStatus("idle");

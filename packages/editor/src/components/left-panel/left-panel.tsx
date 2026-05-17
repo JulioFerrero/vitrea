@@ -219,9 +219,6 @@ export function LeftPanel() {
   const [addElementParentId, setAddElementParentId] = useState<string | null>(null);
   const [ctxMenu, setCtxMenu] = useState<CtxMenuState | null>(null);
 
-  useEffect(() => { if (activeSiteId) actions.loadPages(activeSiteId); }, [activeSiteId]);
-  useEffect(() => { if (activePageId) actions.loadElements(activePageId); }, [activePageId]);
-
   const rootPage = pages.find((p) => p.data.path === "/");
 
   const pageTreeData = useMemo<PageTreeData[]>(() => {

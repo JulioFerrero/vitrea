@@ -15,6 +15,13 @@ import { spacer } from "./spacer";
 import { video } from "./video";
 import { html } from "./html";
 
+import { navBar } from "./nav-bar";
+import { heroSection } from "./hero-section";
+import { featuresSection } from "./features-section";
+import { showcaseSection } from "./showcase-section";
+import { ctaSection } from "./cta-section";
+import { footerSection } from "./footer-section";
+
 import { spacing } from "./styles/spacing";
 import { sizing } from "./styles/sizing";
 import { typography } from "./styles/typography";
@@ -37,6 +44,12 @@ export const elements = [
   spacer,
   video,
   html,
+  navBar,
+  heroSection,
+  featuresSection,
+  showcaseSection,
+  ctaSection,
+  footerSection,
 ];
 
 export const schema: EditorSchema = {

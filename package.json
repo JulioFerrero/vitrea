@@ -24,6 +24,8 @@
     "setup": "docker compose up -d && sleep 3 && pnpm db:migrate && pnpm db:seed"
   },
   "dependencies": {
+    "@fontsource/fraunces": "^5.2.9",
+    "@fontsource/recursive": "^5.2.8",
     "lucide-preact": "^0.509.0"
   },
   "devDependencies": {

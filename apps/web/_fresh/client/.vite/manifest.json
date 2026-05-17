@@ -1,11 +1,73 @@
 {
+  "../../node_modules/.pnpm/@fontsource+fraunces@5.2.9/node_modules/@fontsource/fraunces/files/fraunces-latin-400-normal.woff": {
+    "file": "assets/fraunces-latin-400-normal-NUPT2cO8.woff",
+    "src": "../../node_modules/.pnpm/@fontsource+fraunces@5.2.9/node_modules/@fontsource/fraunces/files/fraunces-latin-400-normal.woff"
+  },
+  "../../node_modules/.pnpm/@fontsource+fraunces@5.2.9/node_modules/@fontsource/fraunces/files/fraunces-latin-400-normal.woff2": {
+    "file": "assets/fraunces-latin-400-normal-6IfK1voy.woff2",
+    "src": "../../node_modules/.pnpm/@fontsource+fraunces@5.2.9/node_modules/@fontsource/fraunces/files/fraunces-latin-400-normal.woff2"
+  },
+  "../../node_modules/.pnpm/@fontsource+fraunces@5.2.9/node_modules/@fontsource/fraunces/files/fraunces-latin-ext-400-normal.woff": {
+    "file": "assets/fraunces-latin-ext-400-normal-UihxqfOe.woff",
+    "src": "../../node_modules/.pnpm/@fontsource+fraunces@5.2.9/node_modules/@fontsource/fraunces/files/fraunces-latin-ext-400-normal.woff"
+  },
+  "../../node_modules/.pnpm/@fontsource+fraunces@5.2.9/node_modules/@fontsource/fraunces/files/fraunces-latin-ext-400-normal.woff2": {
+    "file": "assets/fraunces-latin-ext-400-normal-D8gbi3Gu.woff2",
+    "src": "../../node_modules/.pnpm/@fontsource+fraunces@5.2.9/node_modules/@fontsource/fraunces/files/fraunces-latin-ext-400-normal.woff2"
+  },
+  "../../node_modules/.pnpm/@fontsource+fraunces@5.2.9/node_modules/@fontsource/fraunces/files/fraunces-vietnamese-400-normal.woff": {
+    "file": "assets/fraunces-vietnamese-400-normal-B65MOf9T.woff",
+    "src": "../../node_modules/.pnpm/@fontsource+fraunces@5.2.9/node_modules/@fontsource/fraunces/files/fraunces-vietnamese-400-normal.woff"
+  },
+  "../../node_modules/.pnpm/@fontsource+fraunces@5.2.9/node_modules/@fontsource/fraunces/files/fraunces-vietnamese-400-normal.woff2": {
+    "file": "assets/fraunces-vietnamese-400-normal-CvGt0Ybw.woff2",
+    "src": "../../node_modules/.pnpm/@fontsource+fraunces@5.2.9/node_modules/@fontsource/fraunces/files/fraunces-vietnamese-400-normal.woff2"
+  },
+  "../../node_modules/.pnpm/@fontsource+recursive@5.2.8/node_modules/@fontsource/recursive/files/recursive-latin-400-normal.woff": {
+    "file": "assets/recursive-latin-400-normal-BDSLYsZT.woff",
+    "src": "../../node_modules/.pnpm/@fontsource+recursive@5.2.8/node_modules/@fontsource/recursive/files/recursive-latin-400-normal.woff"
+  },
+  "../../node_modules/.pnpm/@fontsource+recursive@5.2.8/node_modules/@fontsource/recursive/files/recursive-latin-400-normal.woff2": {
+    "file": "assets/recursive-latin-400-normal-mQQmALBW.woff2",
+    "src": "../../node_modules/.pnpm/@fontsource+recursive@5.2.8/node_modules/@fontsource/recursive/files/recursive-latin-400-normal.woff2"
+  },
+  "../../node_modules/.pnpm/@fontsource+recursive@5.2.8/node_modules/@fontsource/recursive/files/recursive-latin-ext-400-normal.woff": {
+    "file": "assets/recursive-latin-ext-400-normal-Buk17viZ.woff",
+    "src": "../../node_modules/.pnpm/@fontsource+recursive@5.2.8/node_modules/@fontsource/recursive/files/recursive-latin-ext-400-normal.woff"
+  },
+  "../../node_modules/.pnpm/@fontsource+recursive@5.2.8/node_modules/@fontsource/recursive/files/recursive-latin-ext-400-normal.woff2": {
+    "file": "assets/recursive-latin-ext-400-normal-BANRm9Vy.woff2",
+    "src": "../../node_modules/.pnpm/@fontsource+recursive@5.2.8/node_modules/@fontsource/recursive/files/recursive-latin-ext-400-normal.woff2"
+  },
+  "../../node_modules/.pnpm/@fontsource+recursive@5.2.8/node_modules/@fontsource/recursive/files/recursive-vietnamese-400-normal.woff": {
+    "file": "assets/recursive-vietnamese-400-normal-Cpd2iHHU.woff",
+    "src": "../../node_modules/.pnpm/@fontsource+recursive@5.2.8/node_modules/@fontsource/recursive/files/recursive-vietnamese-400-normal.woff"
+  },
+  "../../node_modules/.pnpm/@fontsource+recursive@5.2.8/node_modules/@fontsource/recursive/files/recursive-vietnamese-400-normal.woff2": {
+    "file": "assets/recursive-vietnamese-400-normal-D7FuKHmj.woff2",
+    "src": "../../node_modules/.pnpm/@fontsource+recursive@5.2.8/node_modules/@fontsource/recursive/files/recursive-vietnamese-400-normal.woff2"
+  },
   "fresh:client-entry": {
-    "file": "assets/client-entry-D_nXgg_c.js",
+    "file": "assets/client-entry-DYIZI253.js",
     "name": "client-entry",
     "src": "fresh:client-entry",
     "isEntry": true,
     "css": [
-      "assets/client-entry-CmKf8E0B.css"
+      "assets/client-entry-kE2C1Cdi.css"
+    ],
+    "assets": [
+      "assets/fraunces-vietnamese-400-normal-CvGt0Ybw.woff2",
+      "assets/fraunces-vietnamese-400-normal-B65MOf9T.woff",
+      "assets/fraunces-latin-ext-400-normal-D8gbi3Gu.woff2",
+      "assets/fraunces-latin-ext-400-normal-UihxqfOe.woff",
+      "assets/fraunces-latin-400-normal-6IfK1voy.woff2",
+      "assets/fraunces-latin-400-normal-NUPT2cO8.woff",
+      "assets/recursive-vietnamese-400-normal-D7FuKHmj.woff2",
+      "assets/recursive-vietnamese-400-normal-Cpd2iHHU.woff",
+      "assets/recursive-latin-ext-400-normal-BANRm9Vy.woff2",
+      "assets/recursive-latin-ext-400-normal-Buk17viZ.woff",
+      "assets/recursive-latin-400-normal-mQQmALBW.woff2",
+      "assets/recursive-latin-400-normal-BDSLYsZT.woff"
     ]
   }
 }

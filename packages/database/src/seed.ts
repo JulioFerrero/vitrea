@@ -10,133 +10,178 @@ async function main() {
     Deno.exit(0);
   }
 
-  console.log("Seeding...");
+  console.log("Seeding Hi Editor landing page...");
 
   const siteId = nanoid();
   await db.insert(sites).values({
     id: siteId,
-    slug: "my-site",
-    data: { name: "My Site", domain: "localhost:3000" },
+    slug: "hi-editor",
+    data: {
+      name: "Hi Editor",
+      domain: "localhost:3000",
+      settings: {
+        primaryColor: "#e11d48",
+        fontFamily: "Recursive",
+        description: "The self-hosted visual website builder",
+      },
+    },
   });
 
   const homeId = nanoid();
   const aboutId = nanoid();
-  const contactId = nanoid();
 
   await db.insert(pages).values([
-    { id: homeId, siteId, slug: "", data: { title: "Home", path: "/", status: "published", order: 0 } },
-    { id: aboutId, siteId, slug: "about", data: { title: "About", path: "/about", status: "published", parentId: homeId, order: 0 } },
-    { id: contactId, siteId, slug: "contact", data: { title: "Contact", path: "/contact", status: "published", parentId: homeId, order: 1 } },
+    { id: homeId, siteId, slug: "", data: { title: "Hi Editor — Visual Website Builder", path: "/", status: "published" } },
+  ]);
+  await db.insert(pages).values([
+    { id: aboutId, siteId, slug: "about", data: { title: "About", path: "/about", status: "published", parentId: homeId } },
   ]);
 
-  // ── HOME PAGE ──
-  const heroSection = nanoid();
-  const heroCol = nanoid();
-  const featureSection = nanoid();
-  const featGrid = nanoid();
-  const ctaSection = nanoid();
-  const ctaCol = nanoid();
-  const footerSection = nanoid();
-  const footerRow = nanoid();
-  const footerLinks = nanoid();
-
+  // ── HOME PAGE: Hi Editor Landing ──
   await db.insert(elements).values([
+
+    // Nav Bar
+    {
+      id: nanoid(), pageId: homeId, parentId: null, type: "nav-bar", order: 0,
+      data: {
+        brandName: "Hi Editor",
+        link1Text: "Features",
+        link1Href: "#features",
+        link2Text: "Docs",
+        link2Href: "/docs",
+        ctaText: "Open Editor",
+        ctaHref: "/editor",
+      },
+      styles: {},
+    },
+
     // Hero Section
-    { id: heroSection, pageId: homeId, parentId: null, type: "section", order: 0, data: {}, styles: { width: "full", padding: "32", paddingX: "6", backgroundColor: "#0a0a0a", textAlign: "center" } },
-    { id: heroCol, pageId: homeId, parentId: heroSection, type: "column", order: 0, data: {}, styles: { display: "flex", flexDirection: "col", maxWidth: "3xl", margin: "auto", alignItems: "center", gap: "4" } },
-    { id: nanoid(), pageId: homeId, parentId: heroCol, type: "heading", order: 0, data: { content: "Welcome to My Site", tagName: "h1" }, styles: { fontSize: "7xl", fontWeight: "extrabold", color: "#ffffff", lineHeight: "tight", letterSpacing: "tight" } },
-    { id: nanoid(), pageId: homeId, parentId: heroCol, type: "text", order: 1, data: { content: "Built with Web Builder — a visual editor powered by PostgreSQL." }, styles: { fontSize: "lg", color: "#9ca3af", lineHeight: "relaxed" } },
-    { id: nanoid(), pageId: homeId, parentId: heroCol, type: "button", order: 2, data: { content: "Learn More", href: "/about" }, styles: { padding: "3", paddingX: "9", fontSize: "base", fontWeight: "semibold", backgroundColor: "#ffffff", color: "#0a0a0a", borderRadius: "lg" } },
+    {
+      id: nanoid(), pageId: homeId, parentId: null, type: "hero-section", order: 1,
+      data: {
+        badge: "Self-hosted visual builder",
+        headline: "Your pages.\nYour server.",
+        subheadline: "Build landing pages with atomic elements. Store everything in PostgreSQL. Render anywhere. No vendor lock-in.",
+        ctaText: "Start Building",
+        ctaHref: "#",
+        secondaryCtaText: "Read the Docs",
+        secondaryCtaHref: "/docs",
+      },
+      styles: {},
+    },
 
     // Features Section
-    { id: featureSection, pageId: homeId, parentId: null, type: "section", order: 1, data: {}, styles: { width: "full", padding: "24", paddingX: "6" } },
-    { id: nanoid(), pageId: homeId, parentId: featureSection, type: "heading", order: 0, data: { content: "Why Web Builder?", tagName: "h2" }, styles: { fontSize: "5xl", fontWeight: "bold", textAlign: "center", color: "#0a0a0a", marginY: "12" } },
-    { id: featGrid, pageId: homeId, parentId: featureSection, type: "grid", order: 1, data: {}, styles: { display: "grid", gridTemplateColumns: "3", gap: "6", maxWidth: "6xl", margin: "auto" } },
-    ...[
-      { title: "Visual Editor", desc: "Build pages with atomic elements — headings, text, images, buttons." },
-      { title: "Self-hosted", desc: "PostgreSQL + JSONB. No vendor lock-in, no third-party CMS." },
-      { title: "Extensible", desc: "Add your own element types. Every property is editable." },
-    ].flatMap((f, i) => {
-      const cardId = nanoid();
-      return [
-        { id: cardId, pageId: homeId, parentId: featGrid, type: "column", order: i, data: {}, styles: { display: "flex", flexDirection: "col", padding: "8", gap: "3", borderRadius: "xl", borderWidth: "1", borderColor: "#e5e7eb", borderStyle: "solid" } },
-        { id: nanoid(), pageId: homeId, parentId: cardId, type: "heading", order: 0, data: { content: f.title, tagName: "h3" }, styles: { fontSize: "xl", fontWeight: "semibold", color: "#0a0a0a" } },
-        { id: nanoid(), pageId: homeId, parentId: cardId, type: "text", order: 1, data: { content: f.desc }, styles: { fontSize: "sm", color: "#6b7280", lineHeight: "relaxed" } },
-      ];
-    }),
+    {
+      id: nanoid(), pageId: homeId, parentId: null, type: "features-section", order: 2,
+      data: {
+        headline: "Built for teams\nthat ship",
+        subtitle: "Four pillars. Zero compromises.",
+        features: [
+          { title: "Visual Editor", description: "Drag, drop, configure. Atomic elements — headings, text, images, buttons, sections — composed into full pages." },
+          { title: "Self-hosted", description: "PostgreSQL and JSONB. Your database, your server. No third-party CMS, no vendor lock-in, no surprises." },
+          { title: "Developer SDK", description: "Type-safe element definitions. Custom field types. Style groups. Build your own components with zero config." },
+          { title: "Open Source", description: "MIT licensed. Fork it, extend it, ship it. The full stack is yours to modify." },
+        ],
+      },
+      styles: {},
+    },
+
+    // Showcase Section
+    {
+      id: nanoid(), pageId: homeId, parentId: null, type: "showcase-section", order: 3,
+      data: {
+        headline: "Every element,\nunder control",
+        description: "From typography to layout, every detail lives in structured JSON. Edit visually, render server-side, deploy anywhere.",
+        ctaText: "See how it works",
+        ctaHref: "/editor",
+        imageSrc: "https://placehold.co/800x500/F5F0EB/9B8E82?text=Hi+Editor+Screenshot",
+        imageAlt: "Hi Editor Interface",
+        variant: "image-right",
+      },
+      styles: {},
+    },
 
     // CTA Section
-    { id: ctaSection, pageId: homeId, parentId: null, type: "section", order: 2, data: {}, styles: { width: "full", padding: "20", paddingX: "6", backgroundColor: "#f9fafb" } },
-    { id: ctaCol, pageId: homeId, parentId: ctaSection, type: "column", order: 0, data: {}, styles: { display: "flex", flexDirection: "col", maxWidth: "2xl", margin: "auto", textAlign: "center", alignItems: "center", gap: "4" } },
-    { id: nanoid(), pageId: homeId, parentId: ctaCol, type: "heading", order: 0, data: { content: "Ready to get started?", tagName: "h2" }, styles: { fontSize: "5xl", fontWeight: "bold", color: "#0a0a0a" } },
-    { id: nanoid(), pageId: homeId, parentId: ctaCol, type: "text", order: 1, data: { content: "Start building your website today with our open-source visual editor." }, styles: { fontSize: "base", color: "#6b7280" } },
-    { id: nanoid(), pageId: homeId, parentId: ctaCol, type: "button", order: 2, data: { content: "Get Started", href: "/contact" }, styles: { padding: "3", paddingX: "9", fontSize: "base", fontWeight: "semibold", backgroundColor: "#0a0a0a", color: "#ffffff", borderRadius: "lg" } },
+    {
+      id: nanoid(), pageId: homeId, parentId: null, type: "cta-section", order: 4,
+      data: {
+        headline: "Ship it.",
+        description: "Start building pages with Hi Editor today. Free, open source, fully self-hosted.",
+        ctaText: "Get Started",
+        ctaHref: "#",
+      },
+      styles: {},
+    },
 
-    // Footer
-    { id: footerSection, pageId: homeId, parentId: null, type: "section", order: 3, data: {}, styles: { width: "full", padding: "8", paddingX: "6", borderWidth: "1", borderColor: "#e5e7eb", borderStyle: "solid" } },
-    { id: footerRow, pageId: homeId, parentId: footerSection, type: "row", order: 0, data: {}, styles: { display: "flex", flexWrap: "wrap", justifyContent: "between", alignItems: "center", maxWidth: "6xl", margin: "auto" } },
-    { id: nanoid(), pageId: homeId, parentId: footerRow, type: "text", order: 0, data: { content: "© 2026 Web Builder. All rights reserved." }, styles: { fontSize: "sm", color: "#9ca3af" } },
-    { id: footerLinks, pageId: homeId, parentId: footerRow, type: "row", order: 1, data: {}, styles: { display: "flex", flexWrap: "wrap", gap: "6" } },
-    { id: nanoid(), pageId: homeId, parentId: footerLinks, type: "link", order: 0, data: { content: "Home", href: "/" }, styles: { fontSize: "sm", color: "#9ca3af" } },
-    { id: nanoid(), pageId: homeId, parentId: footerLinks, type: "link", order: 1, data: { content: "About", href: "/about" }, styles: { fontSize: "sm", color: "#9ca3af" } },
-    { id: nanoid(), pageId: homeId, parentId: footerLinks, type: "link", order: 2, data: { content: "Contact", href: "/contact" }, styles: { fontSize: "sm", color: "#9ca3af" } },
-  ].flat());
+    // Footer Section
+    {
+      id: nanoid(), pageId: homeId, parentId: null, type: "footer-section", order: 5,
+      data: {
+        brandName: "Hi Editor",
+        description: "The self-hosted visual website builder.",
+        copyrightText: "© 2026 Hi Editor. Open source under MIT.",
+        link1Text: "GitHub",
+        link1Href: "https://github.com",
+        link2Text: "Docs",
+        link2Href: "/docs",
+        link3Text: "Twitter",
+        link3Href: "https://twitter.com",
+      },
+      styles: {},
+    },
 
-  // ── ABOUT PAGE ──
+  ]);
+
+  // ── ABOUT PAGE (atomic elements) ──
   const aboutHero = nanoid();
   const aboutCol = nanoid();
-  const aboutSection2 = nanoid();
-  const aboutGrid = nanoid();
-  const aboutFooter = nanoid();
+  const aboutValuesSection = nanoid();
+  const aboutValuesGrid = nanoid();
 
   await db.insert(elements).values([
-    { id: aboutHero, pageId: aboutId, parentId: null, type: "section", order: 0, data: {}, styles: { width: "full", padding: "24", paddingX: "6" } },
+    { id: aboutHero, pageId: aboutId, parentId: null, type: "section", order: 0, data: {}, styles: { width: "full", padding: "32", paddingX: "6" } },
     { id: aboutCol, pageId: aboutId, parentId: aboutHero, type: "column", order: 0, data: {}, styles: { display: "flex", flexDirection: "col", maxWidth: "3xl", margin: "auto", gap: "4" } },
-    { id: nanoid(), pageId: aboutId, parentId: aboutCol, type: "heading", order: 0, data: { content: "About Us", tagName: "h1" }, styles: { fontSize: "6xl", fontWeight: "bold", color: "#0a0a0a" } },
-    { id: nanoid(), pageId: aboutId, parentId: aboutCol, type: "text", order: 1, data: { content: "We are a team of passionate builders creating open-source tools for the modern web." }, styles: { fontSize: "lg", color: "#6b7280", lineHeight: "relaxed" } },
+    { id: nanoid(), pageId: aboutId, parentId: aboutCol, type: "heading", order: 0, data: { content: "About Hi Editor", tagName: "h1" }, styles: { fontSize: "6xl", fontWeight: "bold", color: "#1c1917" } },
+    { id: nanoid(), pageId: aboutId, parentId: aboutCol, type: "text", order: 1, data: { content: "We are building the future of self-hosted web publishing. Hi Editor gives you full control over your content, your design, and your data." }, styles: { fontSize: "lg", color: "#78716c", lineHeight: "relaxed" } },
 
-    { id: aboutSection2, pageId: aboutId, parentId: null, type: "section", order: 1, data: {}, styles: { width: "full", padding: "20", paddingX: "6", backgroundColor: "#f9fafb" } },
-    { id: nanoid(), pageId: aboutId, parentId: aboutSection2, type: "heading", order: 0, data: { content: "Our Values", tagName: "h2" }, styles: { fontSize: "5xl", fontWeight: "bold", textAlign: "center", marginY: "12", color: "#0a0a0a" } },
-    { id: aboutGrid, pageId: aboutId, parentId: aboutSection2, type: "grid", order: 1, data: {}, styles: { display: "grid", gridTemplateColumns: "2", gap: "6", maxWidth: "5xl", margin: "auto" } },
+    { id: aboutValuesSection, pageId: aboutId, parentId: null, type: "section", order: 1, data: {}, styles: { width: "full", padding: "20", paddingX: "6", backgroundColor: "#FFF5EB" } },
+    { id: nanoid(), pageId: aboutId, parentId: aboutValuesSection, type: "heading", order: 0, data: { content: "Our Values", tagName: "h2" }, styles: { fontSize: "5xl", fontWeight: "bold", textAlign: "center", marginY: "12", color: "#1c1917" } },
+    { id: aboutValuesGrid, pageId: aboutId, parentId: aboutValuesSection, type: "grid", order: 1, data: {}, styles: { display: "grid", gridTemplateColumns: "2", gap: "6", maxWidth: "5xl", margin: "auto" } },
     ...[
-      { title: "Open Source", desc: "Everything we build is free and open source." },
-      { title: "Developer First", desc: "Type-safe APIs, instant feedback, great DX." },
-      { title: "Performance", desc: "Next.js 16 with Turbopack for fast builds." },
-      { title: "Extensible", desc: "Create custom element types with zero config." },
+      { title: "Open Source", desc: "Everything we build is free and open source. No hidden costs, no lock-in." },
+      { title: "Developer First", desc: "Type-safe APIs, instant feedback, great DX. Built by developers, for developers." },
+      { title: "Performance", desc: "Fast rendering, minimal bundle, optimized for real-world usage." },
+      { title: "Extensible", desc: "Create custom element types with zero config. Make it yours." },
     ].flatMap((v, i) => {
       const cardId = nanoid();
       return [
-        { id: cardId, pageId: aboutId, parentId: aboutGrid, type: "column", order: i, data: {}, styles: { display: "flex", flexDirection: "col", padding: "6", gap: "2", backgroundColor: "#ffffff", borderRadius: "lg" } },
-        { id: nanoid(), pageId: aboutId, parentId: cardId, type: "heading", order: 0, data: { content: v.title, tagName: "h3" }, styles: { fontSize: "lg", fontWeight: "semibold", color: "#0a0a0a" } },
-        { id: nanoid(), pageId: aboutId, parentId: cardId, type: "text", order: 1, data: { content: v.desc }, styles: { fontSize: "sm", color: "#6b7280" } },
+        { id: cardId, pageId: aboutId, parentId: aboutValuesGrid, type: "column", order: i, data: {}, styles: { display: "flex", flexDirection: "col", padding: "6", gap: "2", backgroundColor: "#ffffff", borderRadius: "lg" } },
+        { id: nanoid(), pageId: aboutId, parentId: cardId, type: "heading", order: 0, data: { content: v.title, tagName: "h3" }, styles: { fontSize: "lg", fontWeight: "semibold", color: "#1c1917" } },
+        { id: nanoid(), pageId: aboutId, parentId: cardId, type: "text", order: 1, data: { content: v.desc }, styles: { fontSize: "sm", color: "#78716c" } },
       ];
     }),
 
-    // Footer
-    { id: aboutFooter, pageId: aboutId, parentId: null, type: "section", order: 2, data: {}, styles: { width: "full", padding: "8", paddingX: "6", borderWidth: "1", borderColor: "#e5e7eb", borderStyle: "solid" } },
-    { id: nanoid(), pageId: aboutId, parentId: aboutFooter, type: "text", order: 0, data: { content: "© 2026 Web Builder" }, styles: { fontSize: "sm", color: "#9ca3af", textAlign: "center" } },
-  ].flat());
-
-  // ── CONTACT PAGE ──
-  const contactHero = nanoid();
-  const contactCol = nanoid();
-  const contactFooter = nanoid();
-
-  await db.insert(elements).values([
-    { id: contactHero, pageId: contactId, parentId: null, type: "section", order: 0, data: {}, styles: { width: "full", padding: "24", paddingX: "6", textAlign: "center" } },
-    { id: contactCol, pageId: contactId, parentId: contactHero, type: "column", order: 0, data: {}, styles: { display: "flex", flexDirection: "col", maxWidth: "2xl", margin: "auto", gap: "4", alignItems: "center" } },
-    { id: nanoid(), pageId: contactId, parentId: contactCol, type: "heading", order: 0, data: { content: "Get in Touch", tagName: "h1" }, styles: { fontSize: "6xl", fontWeight: "bold", color: "#0a0a0a" } },
-    { id: nanoid(), pageId: contactId, parentId: contactCol, type: "text", order: 1, data: { content: "Have questions? We'd love to hear from you. Email us at hello@webbuilder.dev" }, styles: { fontSize: "lg", color: "#6b7280" } },
-    { id: nanoid(), pageId: contactId, parentId: contactCol, type: "button", order: 2, data: { content: "Send Email", href: "mailto:hello@webbuilder.dev" }, styles: { padding: "3", paddingX: "9", fontSize: "base", fontWeight: "semibold", backgroundColor: "#0a0a0a", color: "#ffffff", borderRadius: "lg" } },
-
-    { id: contactFooter, pageId: contactId, parentId: null, type: "section", order: 1, data: {}, styles: { width: "full", padding: "8", paddingX: "6", borderWidth: "1", borderColor: "#e5e7eb", borderStyle: "solid" } },
-    { id: nanoid(), pageId: contactId, parentId: contactFooter, type: "text", order: 0, data: { content: "© 2026 Web Builder" }, styles: { fontSize: "sm", color: "#9ca3af", textAlign: "center" } },
+    // About Footer
+    {
+      id: nanoid(), pageId: aboutId, parentId: null, type: "footer-section", order: 2,
+      data: {
+        brandName: "Hi Editor",
+        description: "The self-hosted visual website builder.",
+        copyrightText: "© 2026 Hi Editor. Open source under MIT.",
+        link1Text: "GitHub",
+        link1Href: "https://github.com",
+        link2Text: "Docs",
+        link2Href: "/docs",
+      },
+      styles: {},
+    },
   ].flat());
 
   console.log("\nDone!");
   console.log(`  SITE_ID=${siteId}`);
-  console.log("  Pages: Home (/), About (/about), Contact (/contact)");
-  console.log("  Elements: ~50 atomic elements (sections, headings, text, buttons, grids, links)");
+  console.log("  Pages: Home (/), About (/about)");
+  console.log("  Home uses section components: nav-bar, hero-section, features-section, showcase-section, cta-section, footer-section");
+  console.log("  About uses atomic elements: section, heading, text, grid, column, footer-section");
   console.log("\nAdd SITE_ID to your .env files.");
   Deno.exit(0);
 }

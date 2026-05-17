@@ -38,7 +38,6 @@
     "npm:@preact/signals@^2.9.0": "2.9.0_preact@10.29.1",
     "npm:@prefresh/vite@^2.4.8": "2.4.12_preact@10.29.1_vite@7.3.2",
     "npm:@remix-run/node-fetch-server@0.12": "0.12.0",
-    "npm:@tailwindcss/cli@^4.1.0": "4.3.0",
     "npm:@tailwindcss/vite@^4.1.0": "4.2.4_vite@7.3.2",
     "npm:@types/babel__core@^7.20.5": "7.20.5",
     "npm:@types/react-dom@^19.1.0": "19.2.3_@types+react@19.2.14",
@@ -2368,6 +2367,8 @@
   "workspace": {
     "packageJson": {
       "dependencies": [
+        "npm:@fontsource/fraunces@^5.2.9",
+        "npm:@fontsource/recursive@^5.2.8",
         "npm:lucide-preact@0.509",
         "npm:turbo@^2.5.0",
         "npm:typescript@^5.8.0"
@@ -2389,10 +2390,6 @@
       },
       "apps/editor": {
         "dependencies": [
-          "jsr:@fresh/core@^2.3.3",
-          "jsr:@fresh/plugin-vite@^1.1.2",
-          "npm:@preact/signals@^2.9.0",
-          "npm:@tailwindcss/cli@^4.1.0",
           "npm:@tailwindcss/vite@^4.1.0",
           "npm:hono@^4.7.0",
           "npm:lucide-preact@0.509",

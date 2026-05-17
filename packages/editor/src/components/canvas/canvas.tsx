@@ -4,6 +4,7 @@ import React, { useRef, useCallback, useEffect, useState } from "react";
 import { useEditorStore } from "../../stores";
 import type { Viewport } from "../../types";
 import { useEditorContext } from "../../lib/context";
+import { useDynamicCSS } from "../../lib/dynamic-css";
 
 interface Transform {
   x: number;
@@ -14,6 +15,7 @@ interface Transform {
 export function Canvas() {
   const containerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  useDynamicCSS(contentRef);
   const transformRef = useRef<Transform>({ x: 0, y: 0, scale: 1 });
   const isDragging = useRef(false);
   const lastMouse = useRef({ x: 0, y: 0 });

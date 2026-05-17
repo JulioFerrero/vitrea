@@ -25,16 +25,3 @@
   --color-surface: #FFFBF5;
   --color-surface-alt: #FFF5EB;
 }
-
-@import "@fontsource/fraunces/index.css";
-@import "@fontsource/recursive/index.css";
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  background-color: var(--color-surface);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}

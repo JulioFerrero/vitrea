@@ -1,84 +1,61 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useEditorStore } from "../stores";
 import { EditorProvider, useEditorContext } from "../lib/context";
 import { EditorShell } from "./editor-shell";
 import type { EditorProps } from "../types";
 
-function useParams() {
-  const setActivePage = useEditorStore((s) => s.setActivePage);
-  const selectElement = useEditorStore((s) => s.selectElement);
-  const activePageId = useEditorStore((s) => s.activePageId);
-  const selectedElementId = useEditorStore((s) => s.selectedElementId);
-  const pages = useEditorStore((s) => s.pages);
-  const { actions } = useEditorContext();
+const initialized = new Map<string, Promise<void>>();
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const pageId = params.get("page");
-    const elementId = params.get("element");
-    if (pageId) setActivePage(pageId);
-    if (elementId) selectElement(elementId);
-  }, [setActivePage, selectElement]);
+function ensureInit(siteId: string, actions: ReturnType<typeof import("../lib/actions").createEditorActions>) {
+  if (initialized.has(siteId)) return initialized.get(siteId)!;
 
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
-        e.preventDefault();
-        const state = useEditorStore.getState();
-        if (state.isDirty && state.saveStatus !== "saving") {
-          actions.saveAll();
-        }
-      }
-    }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [actions]);
+  const p = (async () => {
+    const store = useEditorStore.getState();
+    store.setActiveSite(siteId);
 
-  useEffect(() => {
-    if (pages.length === 0) return;
-    const params = new URLSearchParams(window.location.search);
-    const pageId = params.get("page");
-    if (pageId && !pages.find((p) => p.id === pageId)) {
-      setActivePage(pages[0]!.id);
-    }
-  }, [pages]);
+    const pages = await actions.loadPages(siteId);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const current = new URLSearchParams(window.location.search);
-    if (activePageId) {
-      params.set("page", activePageId);
-    } else {
-      params.delete("page");
+    const pageId = pages[0]?.id;
+
+    if (pageId) {
+      store.setActivePage(pageId);
+      await actions.loadElements(pageId);
     }
-    if (selectedElementId) {
-      params.set("element", selectedElementId);
-    } else {
-      params.delete("element");
-    }
-    const qs = params.toString();
-    const newUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
-    if (window.location.pathname + window.location.search !== newUrl) {
-      window.history.replaceState(null, "", newUrl);
-    }
-  }, [activePageId, selectedElementId]);
+  })();
+
+  initialized.set(siteId, p);
+  return p;
 }
 
 function EditorInner({ siteId }: { siteId: string }) {
-  const setActiveSite = useEditorStore((s) => s.setActiveSite);
   const { actions } = useEditorContext();
+  const activePageId = useEditorStore((s) => s.activePageId);
+  const prevPageRef = useRef<string | null>(activePageId);
 
   useEffect(() => {
-    setActiveSite(siteId);
-  }, [siteId, setActiveSite]);
-
-  useEffect(() => {
-    actions.loadPages(siteId);
+    ensureInit(siteId, actions);
   }, [siteId, actions]);
 
-  useParams();
+  useEffect(() => {
+    if (!activePageId) return;
+    if (activePageId === prevPageRef.current) return;
+    prevPageRef.current = activePageId;
+    actions.loadElements(activePageId);
+  }, [activePageId, actions]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+        e.preventDefault();
+        const s = useEditorStore.getState();
+        if (s.isDirty && s.saveStatus !== "saving") actions.saveAll();
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [actions]);
 
   return <EditorShell />;
 }
