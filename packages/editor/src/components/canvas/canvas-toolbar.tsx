@@ -89,7 +89,7 @@ function ElementToolbar({
   const effectivePerRow = Math.max(perRow, 1);
   const rows = effectivePerRow >= allButtons.length
     ? [allButtons]
-    : [allButtons.slice(0, effectivePerRow - 1), ...chunk(allButtons.slice(effectivePerRow - 1), effectivePerRow)];
+    : [allButtons.slice(0, effectivePerRow), ...chunk(allButtons.slice(effectivePerRow), effectivePerRow)];
   const hasOverflow = rows.length > 1;
 
   return (
@@ -97,8 +97,8 @@ function ElementToolbar({
       ref={containerRef}
       className="flex items-end gap-1 min-w-0 flex-1 relative"
     >
-      <div className="flex flex-col-reverse gap-1 flex-1 min-w-0">
-        <div className="flex items-center gap-0.5">
+      <div className="flex flex-col-reverse flex-1 min-w-0">
+        <div className="flex items-center flex-1 min-w-0">
           {rows[0]!.map((b) => (
             <ToolbarButton
               key={b.type}
@@ -107,6 +107,9 @@ function ElementToolbar({
               onClick={() => handleClick(b.type)}
             />
           ))}
+          {hasOverflow && (
+            <div className="flex-1" />
+          )}
           {hasOverflow && (
             <button
               type="button"
@@ -123,7 +126,7 @@ function ElementToolbar({
           rows.slice(1).map((row, i) => (
             <div
               key={i}
-              className="flex items-center gap-0.5 transition-all duration-200 ease-in-out"
+              className="flex items-center gap-0.5 overflow-hidden transition-all duration-200 ease-in-out"
               style={{
                 maxHeight: expanded ? 40 : 0,
                 opacity: expanded ? 1 : 0,
