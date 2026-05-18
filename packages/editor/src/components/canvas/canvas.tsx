@@ -18,7 +18,7 @@ function applyOutline(el: HTMLElement | null, type: "hover" | "selected" | "none
   else { el.style.outline = "2px solid #818cf8"; el.style.outlineOffset = "-1px"; }
 }
 
-export function Canvas() {
+export function Canvas({ leftPanelOpen, rightPanelOpen }: { leftPanelOpen: boolean; rightPanelOpen: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const blockerRef = useRef<HTMLDivElement>(null);
@@ -249,7 +249,7 @@ export function Canvas() {
           </div>
         </div>
         <CanvasCursor containerRef={containerRef} mode={cursorMode} name="Julio" color="#7B61FF" visible={cursorVisible} />
-        <div ref={toolbarRef} className="absolute bottom-0 left-[240px] right-[240px] z-20 pointer-events-auto" style={{ cursor: "default" }} onMouseEnter={() => setCursorVisible(false)} onMouseLeave={() => setCursorVisible(true)}>
+        <div ref={toolbarRef} className="absolute bottom-0 z-20 pointer-events-auto transition-all duration-200 ease-in-out" style={{ cursor: "default", left: leftPanelOpen ? 240 : 0, right: rightPanelOpen ? 240 : 0 }} onMouseEnter={() => setCursorVisible(false)} onMouseLeave={() => setCursorVisible(true)}>
           <CanvasToolbar
             pageId={activePageId}
             containerSet={containerSet}

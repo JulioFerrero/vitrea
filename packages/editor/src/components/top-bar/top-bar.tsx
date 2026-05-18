@@ -30,10 +30,10 @@ function SaveButton() {
   };
 
   const icon = saveStatus === "saving"
-    ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+    ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
     : saveStatus === "saved" && !isDirty
-      ? <Check className="mr-1.5 h-3.5 w-3.5 text-emerald-500" />
-      : <Save className="mr-1.5 h-3.5 w-3.5" />;
+      ? <Check className="mr-1.5 h-4 w-4 text-emerald-500" />
+      : <Save className="mr-1.5 h-4 w-4" />;
 
   return (
     <Button
@@ -60,34 +60,34 @@ export function TopBar() {
   const canRedo = useEditorStore((s) => s.canRedo);
 
   return (
-    <div className="flex h-12 items-center px-4 bg-sidebar/80 backdrop-blur-sm border-b border-sidebar-border/50">
+    <div className="flex h-14 items-center px-4 bg-black/80 backdrop-blur-xl">
       <div className="flex items-center gap-2.5">
-        <span className="text-sm font-semibold text-foreground tracking-tight">
+        <span className="text-base font-semibold text-white/90 tracking-tight">
           Web Builder
         </span>
-        <Separator orientation="vertical" className="mx-1 h-5 bg-border/60" />
-        <span className="text-xs text-muted-foreground">{activeSiteId ?? "No site selected"}</span>
+        <Separator orientation="vertical" className="mx-1 h-6 bg-white/10" />
+        <span className="text-sm text-white/40">{activeSiteId ?? "No site selected"}</span>
       </div>
       <div className="flex items-center gap-1 ml-auto">
         <button
           type="button"
-          className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground transition-all duration-200 hover:bg-accent/50 hover:text-foreground disabled:opacity-30 disabled:pointer-events-none"
+          className="flex h-9 w-9 items-center justify-center rounded-xl text-white/50 transition-all duration-200 hover:bg-white/10 hover:text-white/80 disabled:opacity-30 disabled:pointer-events-none"
           disabled={!canUndo()}
           onClick={undo}
           title="Undo"
         >
-          <Undo2 className="h-4 w-4" />
+          <Undo2 className="h-4.5 w-4.5" />
         </button>
         <button
           type="button"
-          className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground transition-all duration-200 hover:bg-accent/50 hover:text-foreground disabled:opacity-30 disabled:pointer-events-none"
+          className="flex h-9 w-9 items-center justify-center rounded-xl text-white/50 transition-all duration-200 hover:bg-white/10 hover:text-white/80 disabled:opacity-30 disabled:pointer-events-none"
           disabled={!canRedo()}
           onClick={redo}
           title="Redo"
         >
-          <Redo2 className="h-4 w-4" />
+          <Redo2 className="h-4.5 w-4.5" />
         </button>
-        <Separator orientation="vertical" className="mx-1.5 h-5 bg-border/60" />
+        <Separator orientation="vertical" className="mx-1.5 h-6 bg-white/10" />
         <SaveButton />
       </div>
     </div>

@@ -142,7 +142,7 @@ export function RightPanel() {
 
   if (!selected) {
     return (
-      <div className="w-[240px] h-full flex flex-col bg-black/80 backdrop-blur-xl border-l border-white/[0.06]">
+      <div className="w-[240px] h-full flex flex-col bg-black/80 backdrop-blur-xl relative">
         {activePage ? (
           <>
             <SectionHeader title="Page" />
@@ -176,7 +176,7 @@ export function RightPanel() {
   const updateStyle = (key: string, value: string) => actions.updateElementStyles(selected.id, { ...selected.styles, [key]: value || undefined });
 
   return (
-    <div className="w-[240px] h-full flex flex-col bg-black/80 backdrop-blur-xl border-l border-white/[0.06]">
+    <div className="w-[240px] h-full flex flex-col bg-black/80 backdrop-blur-xl relative">
       <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.06]">
         <span className="text-[11px] font-semibold capitalize text-white/80">{typeConfig?.label ?? selected.type}</span>
         <div className="flex items-center gap-0.5">

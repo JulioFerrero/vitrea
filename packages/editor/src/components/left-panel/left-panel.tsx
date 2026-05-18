@@ -295,7 +295,8 @@ export function LeftPanel() {
   }, [ctxMenu, actions, handlePageRename, reorderElement]);
 
   return (
-    <div className="w-[240px] h-full flex flex-col bg-black/80 backdrop-blur-xl border-r border-white/[0.06] relative select-none overflow-x-hidden">
+    <div className="w-[240px] h-full flex flex-col bg-black/80 backdrop-blur-xl relative select-none">
+      <div className="flex flex-col flex-1 overflow-x-hidden">
       <CollapsibleSection title="Pages" icon={File}>
         <div className="px-1 pb-0.5 overflow-x-hidden">
           <Tree<PageTreeData>
@@ -373,6 +374,7 @@ export function LeftPanel() {
           </div>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }
