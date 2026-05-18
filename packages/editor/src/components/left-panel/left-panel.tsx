@@ -85,12 +85,12 @@ function CollapsibleSection({
       >
         <ChevronRight
           className={cn(
-            "h-3 w-3 text-muted-foreground/50 transition-transform duration-150 flex-shrink-0",
+            "h-3 w-3 text-white/30 transition-transform duration-150 flex-shrink-0",
             open && "rotate-90"
           )}
         />
-        <Icon className="h-3 w-3 text-muted-foreground/50 flex-shrink-0" />
-        <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/50">{title}</span>
+        <Icon className="h-3 w-3 text-white/40 flex-shrink-0" />
+        <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/50">{title}</span>
       </button>
       <div
         className={cn(
@@ -147,7 +147,7 @@ function CtxMenu({
   return (
     <div
       ref={ref}
-      className="fixed z-50 min-w-[140px] rounded-lg border border-border bg-popover p-1 shadow-xl"
+      className="fixed z-50 min-w-[140px] rounded-lg border border-white/10 bg-black/80 backdrop-blur-xl p-1 shadow-xl"
       style={{ left: menu.x, top: menu.y, animation: "animate-in 80ms ease-out both" }}
     >
       {items.map((item) => {
@@ -159,10 +159,10 @@ function CtxMenu({
             onClick={(e) => { e.stopPropagation(); onAction(item.action); onClose(); }}
             className={cn(
               "flex w-full items-center gap-2 rounded px-2 py-1 text-[11px] transition-colors",
-              item.destructive ? "text-destructive hover:bg-destructive/10" : "text-popover-foreground hover:bg-muted"
+              item.destructive ? "text-destructive hover:bg-destructive/10" : "text-white/80 hover:bg-white/10"
             )}
           >
-            <Icon className="h-3 w-3 opacity-50" />
+            <Icon className="h-3 w-3 opacity-60" />
             <span>{item.label}</span>
           </button>
         );
@@ -295,9 +295,9 @@ export function LeftPanel() {
   }, [ctxMenu, actions, handlePageRename, reorderElement]);
 
   return (
-    <div className="w-[240px] flex-shrink-0 flex flex-col bg-sidebar border-r border-sidebar-border relative select-none">
+    <div className="w-[240px] h-full flex flex-col bg-black/80 backdrop-blur-xl border-r border-white/[0.06] relative select-none overflow-x-hidden">
       <CollapsibleSection title="Pages" icon={File}>
-        <div className="px-1 pb-0.5">
+        <div className="px-1 pb-0.5 overflow-x-hidden">
           <Tree<PageTreeData>
             data={pageTreeData}
             width={TREE_W}
@@ -323,19 +323,19 @@ export function LeftPanel() {
               const title = prompt("Page title:"); if (!title) return;
               await actions.createPage(activeSiteId, title, title.toLowerCase().replace(/\s+/g, "-"), rootPage?.id);
             }}
-            className="mx-2 mb-1 flex items-center gap-1.5 rounded px-2 py-1 text-[10px] text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground transition-colors"
+            className="mx-2 mb-1 flex items-center gap-1.5 rounded px-2 py-1 text-[10px] text-white/40 hover:bg-white/10 hover:text-white/70 transition-colors"
           >
             <Plus className="h-3 w-3" /><span>Add page</span>
           </button>
         )}
       </CollapsibleSection>
 
-      <div className="mx-3 border-t border-border/40" />
+      <div className="mx-3 border-t border-white/[0.06]" />
 
       <CollapsibleSection title="Elements" icon={Layers}>
-        <div className="flex-1 overflow-y-auto px-1 pb-1 editor-scroll">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden px-1 pb-1 editor-scroll">
           {elementTreeData.length === 0 ? (
-            <p className="px-3 py-4 text-[10px] text-muted-foreground/30 text-center">{activePageId ? "No elements" : "Select a page"}</p>
+            <p className="px-3 py-4 text-[10px] text-white/20 text-center">{activePageId ? "No elements" : "Select a page"}</p>
           ) : (
             <Tree<ElementTreeData>
               data={elementTreeData}
@@ -365,7 +365,7 @@ export function LeftPanel() {
               if (!Icon) return null;
               return (
                 <button type="button" key={et.type} onClick={() => handleAddElementToParent(et.type)}
-                  className="flex flex-col items-center gap-1 rounded-lg border border-border/50 px-3 py-3 text-[10px] text-muted-foreground hover:border-editor-ring/30 hover:bg-editor-selected hover:text-editor-ring transition-colors">
+                  className="flex flex-col items-center gap-1 rounded-lg border border-white/10 px-3 py-3 text-[10px] text-white/60 hover:border-editor-ring/30 hover:bg-editor-selected hover:text-editor-ring transition-colors">
                   <Icon className="h-4 w-4" /><span className="font-medium">{et.label}</span>
                 </button>
               );
@@ -387,7 +387,7 @@ function PageNode({ node, style, dragHandle, onContextMenu }: NodeRendererProps<
       style={style}
       className={cn(
         "flex items-center h-[26px] cursor-pointer group",
-        selected ? "bg-editor-selected text-editor-ring" : "hover:bg-white/[0.04] text-foreground/70"
+        selected ? "bg-editor-selected text-editor-ring" : "hover:bg-white/[0.04] text-white/70"
       )}
       onClick={(e) => node.handleClick(e as React.MouseEvent)}
       onContextMenu={(e) => onContextMenu(e, { x: e.clientX, y: e.clientY, kind: "page", id: node.id, isRoot: node.data.isRoot, name: node.data.name })}
@@ -399,15 +399,15 @@ function PageNode({ node, style, dragHandle, onContextMenu }: NodeRendererProps<
           onClick={(e) => { e.stopPropagation(); node.toggle(); }}
           className="flex items-center justify-center w-4 h-4 flex-shrink-0 rounded hover:bg-white/[0.06] transition-colors"
         >
-          <ChevronRight className={cn("h-2.5 w-2.5 text-muted-foreground/40 transition-transform duration-150", node.isOpen && "rotate-90")} />
+          <ChevronRight className={cn("h-2.5 w-2.5 text-white/30 transition-transform duration-150", node.isOpen && "rotate-90")} />
         </button>
       ) : (
         <span className="w-4 flex-shrink-0" />
       )}
-      <File className="h-3 w-3 flex-shrink-0 text-muted-foreground/30 mr-1" />
+      <File className="h-3 w-3 flex-shrink-0 text-white/20 mr-1" />
       <div className="min-w-0 flex-1">
         {node.state.isEditing ? (
-          <input className="min-w-0 w-full rounded border border-editor-ring/40 px-1 py-0 text-[11px] outline-none bg-popover text-foreground" defaultValue={node.data.name} autoFocus
+          <input className="min-w-0 w-full rounded border border-white/10 px-1 py-0 text-[11px] outline-none bg-white/[0.06] text-white/90" defaultValue={node.data.name} autoFocus
             onBlur={(e) => node.submit(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") node.submit((e.target as HTMLInputElement).value); if (e.key === "Escape") node.reset(); }}
           />
@@ -431,7 +431,7 @@ function ElementNode({ node, style, dragHandle, onContextMenu, onHover }: NodeRe
       style={style}
       className={cn(
         "flex items-center h-[26px] cursor-pointer",
-        selected ? "bg-editor-selected text-editor-ring" : "hover:bg-white/[0.04] text-foreground/60"
+        selected ? "bg-editor-selected text-editor-ring" : "hover:bg-white/[0.04] text-white/50"
       )}
       onClick={(e) => node.handleClick(e as React.MouseEvent)}
       onMouseEnter={() => onHover(node.id)}
@@ -445,12 +445,12 @@ function ElementNode({ node, style, dragHandle, onContextMenu, onHover }: NodeRe
           onClick={(e) => { e.stopPropagation(); node.toggle(); }}
           className="flex items-center justify-center w-4 h-4 flex-shrink-0 rounded hover:bg-white/[0.06] transition-colors"
         >
-          <ChevronRight className={cn("h-2.5 w-2.5 text-muted-foreground/40 transition-transform duration-150", node.isOpen && "rotate-90")} />
+          <ChevronRight className={cn("h-2.5 w-2.5 text-white/30 transition-transform duration-150", node.isOpen && "rotate-90")} />
         </button>
       ) : (
         <span className="w-4 flex-shrink-0" />
       )}
-      <Icon className="h-3 w-3 flex-shrink-0 text-muted-foreground/30 mr-1" />
+      <Icon className="h-3 w-3 flex-shrink-0 text-white/20 mr-1" />
       <div className="min-w-0 flex-1">
         <span className="truncate text-[11px] leading-none">{node.data.label}</span>
       </div>

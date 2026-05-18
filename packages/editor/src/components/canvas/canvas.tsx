@@ -22,6 +22,7 @@ export function Canvas() {
   const containerRef = useRef<HTMLDivElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const blockerRef = useRef<HTMLDivElement>(null);
+  const toolbarRef = useRef<HTMLDivElement>(null);
   const transformRef = useRef({ x: 0, y: 0, scale: 1 });
   const isDragging = useRef(false);
   const lastMouse = useRef({ x: 0, y: 0 });
@@ -31,6 +32,7 @@ export function Canvas() {
 
   const [zoom, setZoom] = useState(100);
   const [cursorMode, setCursorMode] = useState<CursorMode>("default");
+  const [cursorVisible, setCursorVisible] = useState(true);
 
   const elements = useEditorStore((s) => s.elements);
   const selectedElementId = useEditorStore((s) => s.selectedElementId);
@@ -161,6 +163,7 @@ export function Canvas() {
     };
 
     const onMouseMove = (e: MouseEvent) => {
+      if (toolbarRef.current && toolbarRef.current.contains(e.target as Node)) return;
       if (isDragging.current) {
         transformRef.current.x += e.clientX - lastMouse.current.x;
         transformRef.current.y += e.clientY - lastMouse.current.y;
@@ -229,7 +232,7 @@ export function Canvas() {
   }, [selectedElementId, elements]);
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
+    <div className="absolute inset-0 flex flex-col">
       <div ref={containerRef} className="relative flex-1 overflow-hidden bg-editor-canvas" style={{ cursor: "none" }}>
         <div ref={wrapperRef} className="absolute" style={{ willChange: "transform" }}>
           <div className="relative">
@@ -245,16 +248,18 @@ export function Canvas() {
             />
           </div>
         </div>
+        <CanvasCursor containerRef={containerRef} mode={cursorMode} name="Julio" color="#7B61FF" visible={cursorVisible} />
+        <div ref={toolbarRef} className="absolute bottom-0 left-[240px] right-[240px] z-20 pointer-events-auto" style={{ cursor: "default" }} onMouseEnter={() => setCursorVisible(false)} onMouseLeave={() => setCursorVisible(true)}>
+          <CanvasToolbar
+            pageId={activePageId}
+            containerSet={containerSet}
+            zoom={zoom}
+            onZoomIn={() => { transformRef.current.scale = Math.min(transformRef.current.scale + 0.1, 5); applyTransform(); }}
+            onZoomOut={() => { transformRef.current.scale = Math.max(transformRef.current.scale - 0.1, 0.1); applyTransform(); }}
+            onFitScreen={handleFitScreen}
+          />
+        </div>
       </div>
-      <CanvasCursor containerRef={containerRef} mode={cursorMode} name="Julio" color="#7B61FF" />
-      <CanvasToolbar
-        pageId={activePageId}
-        containerSet={containerSet}
-        zoom={zoom}
-        onZoomIn={() => { transformRef.current.scale = Math.min(transformRef.current.scale + 0.1, 5); applyTransform(); }}
-        onZoomOut={() => { transformRef.current.scale = Math.max(transformRef.current.scale - 0.1, 0.1); applyTransform(); }}
-        onFitScreen={handleFitScreen}
-      />
     </div>
   );
 }

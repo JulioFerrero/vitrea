@@ -8,14 +8,16 @@ export function CanvasCursor({
   mode,
   color = "#7B61FF",
   name,
+  visible = true,
 }: {
   containerRef: React.RefObject<HTMLDivElement | null>;
   mode: CursorMode;
   color?: string;
   name?: string;
+  visible?: boolean;
 }) {
   const [pos, setPos] = useState({ x: -100, y: -100 });
-  const [visible, setVisible] = useState(false);
+  const [inContainer, setInContainer] = useState(false);
   const frameRef = useRef(0);
 
   useEffect(() => {
@@ -26,8 +28,8 @@ export function CanvasCursor({
       cancelAnimationFrame(frameRef.current);
       frameRef.current = requestAnimationFrame(() => setPos({ x: e.clientX, y: e.clientY }));
     };
-    const onEnter = () => setVisible(true);
-    const onLeave = () => setVisible(false);
+    const onEnter = () => setInContainer(true);
+    const onLeave = () => setInContainer(false);
 
     container.addEventListener("mousemove", onMove);
     container.addEventListener("mouseenter", onEnter);
@@ -40,7 +42,7 @@ export function CanvasCursor({
     };
   }, [containerRef]);
 
-  if (!visible) return null;
+  if (!visible || !inContainer) return null;
 
   const showLabel = name || mode === "hover" || mode === "grab";
   const labelText = name || (mode === "hover" ? "Select" : mode === "grab" ? "Pan" : null);

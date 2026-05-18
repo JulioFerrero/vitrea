@@ -142,7 +142,7 @@ export function RightPanel() {
 
   if (!selected) {
     return (
-      <div className="w-[240px] flex-shrink-0 flex flex-col bg-sidebar border-l border-sidebar-border">
+      <div className="w-[240px] h-full flex flex-col bg-black/80 backdrop-blur-xl border-l border-white/[0.06]">
         {activePage ? (
           <>
             <SectionHeader title="Page" />
@@ -165,7 +165,7 @@ export function RightPanel() {
             </div>
           </>
         ) : (
-          <div className="px-3 py-8 text-[10px] text-muted-foreground/30 text-center">Select a page</div>
+          <div className="px-3 py-8 text-[10px] text-white/20 text-center">Select a page</div>
         )}
       </div>
     );
@@ -176,9 +176,9 @@ export function RightPanel() {
   const updateStyle = (key: string, value: string) => actions.updateElementStyles(selected.id, { ...selected.styles, [key]: value || undefined });
 
   return (
-    <div className="w-[240px] flex-shrink-0 flex flex-col bg-sidebar border-l border-sidebar-border">
-      <div className="flex items-center justify-between px-3 py-2 border-b border-border/30">
-        <span className="text-[11px] font-semibold capitalize text-foreground/80">{typeConfig?.label ?? selected.type}</span>
+    <div className="w-[240px] h-full flex flex-col bg-black/80 backdrop-blur-xl border-l border-white/[0.06]">
+      <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.06]">
+        <span className="text-[11px] font-semibold capitalize text-white/80">{typeConfig?.label ?? selected.type}</span>
         <div className="flex items-center gap-0.5">
           <IconBtn onClick={() => actions.duplicateElement(selected.id)} title="Duplicate" hoverColor="editor-ring">
             <Copy className="h-3 w-3" />
@@ -191,7 +191,7 @@ export function RightPanel() {
 
       <div className="flex-1 overflow-y-auto editor-scroll">
         {typeConfig && typeConfig.fields.length > 0 && (
-          <div className="border-b border-border/30">
+          <div className="border-b border-white/[0.06]">
             <SectionHeader title="Content" />
             <div className="px-3 pb-3 space-y-2">
               {typeConfig.fields.map((f) => (
@@ -221,14 +221,14 @@ function SectionHeader({ title, defaultOpen = true, open: controlledOpen, onTogg
   return (
     <button type="button" onClick={toggle}
       className="flex items-center gap-2 w-full px-3 py-1.5 text-left hover:bg-white/[0.04] transition-colors">
-      <ChevronRight className={cn("h-3 w-3 text-muted-foreground/40 transition-transform duration-150", open && "rotate-90")} />
-      <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/50">{title}</span>
+      <ChevronRight className={cn("h-3 w-3 text-white/30 transition-transform duration-150", open && "rotate-90")} />
+      <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/50">{title}</span>
     </button>
   );
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <label className="block text-[10px] font-medium text-muted-foreground/60 mb-0.5">{children}</label>;
+  return <label className="block text-[10px] font-medium text-white/50 mb-0.5">{children}</label>;
 }
 
 function IconBtn({ children, onClick, title, hoverColor }: {
@@ -236,7 +236,7 @@ function IconBtn({ children, onClick, title, hoverColor }: {
 }) {
   return (
     <button type="button" onClick={onClick} title={title}
-      className={cn("p-1 rounded text-muted-foreground/40 transition-colors",
+      className={cn("p-1 rounded text-white/40 transition-colors",
         hoverColor === "destructive"
           ? "hover:text-destructive hover:bg-destructive/10"
           : "hover:text-editor-ring hover:bg-editor-selected"
@@ -246,7 +246,7 @@ function IconBtn({ children, onClick, title, hoverColor }: {
   );
 }
 
-const inputBase = "w-full rounded-md border border-border/60 bg-input px-2 py-1 text-[11px] text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:ring-1 focus:ring-editor-ring/30 focus:border-editor-ring/40 transition-colors";
+const inputBase = "w-full rounded-md border border-white/10 bg-white/[0.06] px-2 py-1 text-[11px] text-white/90 placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-editor-ring/30 focus:border-editor-ring/40 transition-colors";
 
 function CompactInput({ label, value, onChange, placeholder, type = "text" }: {
   label: string; value: string; onChange: (v: string) => void; placeholder?: string; type?: string;
@@ -270,7 +270,7 @@ function Btn({ children, active, onClick, className }: {
     <button type="button" onClick={onClick}
       className={cn(
         "flex-1 py-1 text-[10px] font-medium rounded-md transition-colors text-center",
-        active ? "bg-foreground text-background" : "text-muted-foreground/60 hover:bg-muted hover:text-muted-foreground",
+        active ? "bg-white text-black" : "text-white/50 hover:bg-white/10 hover:text-white/70",
         className
       )}>
       {children}
@@ -290,8 +290,8 @@ function IconBtnGroup({ icons, value, onChange, label }: {
             className={cn(
               "flex-1 h-7 flex items-center justify-center rounded-md transition-colors",
               value === item.value
-                ? "bg-foreground text-background"
-                : "text-muted-foreground/50 hover:bg-muted hover:text-muted-foreground"
+                ? "bg-white text-black"
+                : "text-white/50 hover:bg-white/10 hover:text-white/70"
             )}>
             <item.icon className="h-4 w-4" />
           </button>
@@ -347,7 +347,7 @@ function StyleGroup({ group, styles, updateStyle }: {
   const key = group.label.toLowerCase();
 
   return (
-    <div className={cn(open && "border-b border-border/30")}>
+    <div className={cn(open && "border-b border-white/[0.06]")}>
       <SectionHeader title={group.label} open={open} onToggle={() => setOpen(!open)} />
       <div className={cn(
         "grid transition-[grid-template-rows] duration-150 ease-out",
@@ -503,7 +503,7 @@ function TypographyFields({ fields, styles, updateStyle }: {
                     className={cn(
                       "px-2 py-1 text-[10px] font-medium rounded-md transition-colors",
                       opt === "bold" || opt === "extrabold" || opt === "black" ? "font-bold" : opt === "semibold" || opt === "medium" ? "font-medium" : "font-normal",
-                      val === opt ? "bg-foreground text-background" : "text-muted-foreground/60 hover:bg-muted hover:text-muted-foreground"
+                       val === opt ? "bg-white text-black" : "text-white/50 hover:bg-white/10 hover:text-white/70"
                     )}>
                     {WEIGHT_LABELS[opt] ?? opt}
                   </button>

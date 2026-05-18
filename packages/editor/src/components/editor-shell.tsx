@@ -9,10 +9,14 @@ export function EditorShell({ children: _children }: { children?: React.ReactNod
   return (
     <div className="flex h-screen flex-col bg-background">
       <TopBar />
-      <div className="flex flex-1 overflow-hidden">
-        <LeftPanel />
+      <div className="relative flex-1 overflow-hidden">
         <Canvas />
-        <RightPanel />
+        <div className="absolute left-0 top-0 bottom-0 z-30">
+          <LeftPanel />
+        </div>
+        <div className="absolute right-0 top-0 bottom-0 z-30">
+          <RightPanel />
+        </div>
       </div>
     </div>
   );
