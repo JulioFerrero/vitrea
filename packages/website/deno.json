@@ -2,8 +2,14 @@
   "name": "@hi/website",
   "version": "0.1.0",
   "exports": {
-    ".": "./src/index.ts",
-    "./styles.css": "./src/styles.css",
-    "./elements": "./src/elements/index.ts"
+    ".": "./src/index.ts"
+  },
+  "imports": {
+    "react": "npm:react@^19.1.0",
+    "react-dom": "npm:react-dom@^19.1.0"
+  },
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react"
   }
 }

@@ -5,5 +5,9 @@
     ".": "./src/index.ts",
     "./client": "./src/client.ts",
     "./schema": "./src/schema.ts"
+  },
+  "imports": {
+    "drizzle-orm": "npm:drizzle-orm@^0.43.0",
+    "postgres": "npm:postgres@^3.4.5"
   }
 }

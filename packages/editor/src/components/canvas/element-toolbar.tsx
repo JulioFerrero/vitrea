@@ -24,7 +24,7 @@ export function ElementToolbar({
 }: {
   pageId: string | null;
   containerSet: Set<string>;
-  onDragStart?: (type: string, e: React.MouseEvent) => void;
+  onDragStart?: (type: string, e: React.MouseEvent<HTMLElement>) => void;
 }) {
   const { schema, actions } = useEditorContext();
   const selectedElementId = useEditorStore((s) => s.selectedElementId);

@@ -39,7 +39,7 @@ export function Canvas({ leftPanelOpen, rightPanelOpen }: { leftPanelOpen: boole
 
   useKeyboardShortcuts(actions, editingRef);
 
-  const handleElementDragStart = (type: string, e: React.MouseEvent) => {
+  const handleElementDragStart = (type: string, e: React.MouseEvent<HTMLElement>) => {
     if (e.button !== 0) return;
     const config = schema.elementTypes.find((t) => t.type === type);
     handleDragStart(type, config?.label ?? type);

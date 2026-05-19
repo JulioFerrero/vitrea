@@ -14,7 +14,7 @@ interface PageTreeData {
 }
 
 export function PageNode({ node, style, dragHandle, onContextMenu }: NodeRendererProps<PageTreeData> & {
-  onContextMenu: (e: React.MouseEvent, s: CtxMenuState) => void;
+  onContextMenu: (e: React.MouseEvent<HTMLElement>, s: CtxMenuState) => void;
 }) {
   const selected = node.state.isSelected;
   return (
@@ -25,7 +25,7 @@ export function PageNode({ node, style, dragHandle, onContextMenu }: NodeRendere
         "flex items-center h-[26px] cursor-pointer group",
         selected ? "bg-editor-selected text-editor-ring" : "hover:bg-white/[0.04] text-white/70"
       )}
-      onClick={(e) => node.handleClick(e as React.MouseEvent)}
+      onClick={(e) => node.handleClick(e as React.MouseEvent<HTMLElement>)}
       onContextMenu={(e) => onContextMenu(e, { x: e.clientX, y: e.clientY, kind: "page", id: node.id, isRoot: node.data.isRoot, name: node.data.name })}
     >
       {node.data.children?.length ? (

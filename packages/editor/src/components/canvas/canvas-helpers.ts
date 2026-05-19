@@ -17,11 +17,12 @@ export function queryElementAtPoint(
   const wrapper = wrapperRef.current;
   if (!wrapper) return null;
   const iframes = Array.from(wrapper.querySelectorAll("iframe"));
-  const t = transformRef.current;
+  const transform = transformRef.current;
+  if (!transform) return null;
   for (const iframe of iframes) {
     const rect = iframe.getBoundingClientRect();
-    const px = (screenX - rect.left) / t.scale;
-    const py = (screenY - rect.top) / t.scale;
+    const px = (screenX - rect.left) / transform.scale;
+    const py = (screenY - rect.top) / transform.scale;
     const doc = iframe.contentDocument;
     if (!doc) continue;
     const hit = doc.elementFromPoint(px, py)?.closest("[data-el-id]") as HTMLElement | null;
@@ -37,7 +38,7 @@ export function querySelectedOutline(
   const wrapper = wrapperRef.current;
   if (!wrapper || !selectedElementId) return null;
   const docs = Array.from(wrapper.querySelectorAll("iframe"))
-    .map((f) => f.contentDocument)
+    .map((iframe) => iframe.contentDocument)
     .filter(Boolean) as Document[];
   for (const doc of docs) {
     const el = doc.querySelector(`[data-el-id="${selectedElementId}"]`) as HTMLElement | null;

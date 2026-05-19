@@ -3,5 +3,15 @@
   "version": "0.1.0",
   "exports": {
     ".": "./src/index.ts"
+  },
+  "imports": {
+    "react": "npm:react@^19.1.0",
+    "react/jsx-runtime": "npm:react@^19.1.0/jsx-runtime",
+    "hono": "jsr:@hono/hono@^4.12.21",
+    "react/jsx-runtime": "npm:react@^19.1.0/jsx-runtime"
+  },
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react"
   }
 }

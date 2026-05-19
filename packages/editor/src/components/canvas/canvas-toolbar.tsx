@@ -16,7 +16,7 @@ export function CanvasToolbar({
   onZoomIn: () => void;
   onZoomOut: () => void;
   onFitScreen: () => void;
-  onElementDragStart?: (type: string, e: React.MouseEvent) => void;
+  onElementDragStart?: (type: string, e: React.MouseEvent<HTMLElement>) => void;
 }) {
   return (
     <div className="flex items-end justify-between px-4 py-2 overflow-visible relative" style={{ cursor: "default" }}>

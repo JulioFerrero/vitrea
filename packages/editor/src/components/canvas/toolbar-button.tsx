@@ -11,7 +11,7 @@ export function ToolbarButton({
   label: string;
   onClick: () => void;
   elementType?: string;
-  onDragStart?: (type: string, e: React.MouseEvent) => void;
+  onDragStart?: (type: string, e: React.MouseEvent<HTMLElement>) => void;
 }) {
   return (
     <button

@@ -16,7 +16,7 @@ interface ElementTreeData {
 }
 
 export function ElementNode({ node, style, dragHandle, onContextMenu, onHover }: NodeRendererProps<ElementTreeData> & {
-  onContextMenu: (e: React.MouseEvent, s: CtxMenuState) => void;
+  onContextMenu: (e: React.MouseEvent<HTMLElement>, s: CtxMenuState) => void;
   onHover: (id: string | null) => void;
 }) {
   const Icon = getIcon(node.data.icon) ?? File;
@@ -29,7 +29,7 @@ export function ElementNode({ node, style, dragHandle, onContextMenu, onHover }:
         "flex items-center h-[26px] cursor-pointer",
         selected ? "bg-editor-selected text-editor-ring" : "hover:bg-white/[0.04] text-white/50"
       )}
-      onClick={(e) => node.handleClick(e as React.MouseEvent)}
+      onClick={(e) => node.handleClick(e as React.MouseEvent<HTMLElement>)}
       onMouseEnter={() => onHover(node.id)}
       onMouseLeave={() => onHover(null)}
       onContextMenu={(e) => onContextMenu(e, { x: e.clientX, y: e.clientY, kind: "element", id: node.id, isContainer: node.data.isContainer, name: node.data.label })}

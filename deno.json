@@ -1,5 +1,6 @@
 {
   "workspace": ["apps/*", "packages/*"],
+  "nodeModulesDir": "auto",
   "lint": {
     "rules": {
       "exclude": ["no-sloppy-imports", "no-import-prefix", "no-unversioned-import", "no-slow-types", "no-explicit-any"]
@@ -18,20 +19,20 @@
     "build:web": "cd apps/web && deno task build",
     "build:editor": "cd apps/editor && deno task build",
     "build": "deno task build:web && deno task build:editor",
-    "check": "deno check packages/*/src/index.ts",
+    "check": "deno check packages/*/src/index.ts apps/web/main.ts apps/editor/src/main.tsx",
+    "lint": "deno lint packages/ apps/",
+    "fmt": "deno fmt packages/ apps/",
+    "fmt:check": "deno fmt --check packages/ apps/",
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "db:seed": "deno run -A --env=.env packages/database/src/seed.ts",
     "db:push": "deno run -A --env=.env npm:drizzle-kit push",
     "db:generate": "deno run -A --env=.env npm:drizzle-kit generate",
     "example:fresh": "deno task -c examples/fresh/deno.json dev",
-    "example:nextjs-web": "cd examples/nextjs-web && npx next dev --port 3000",
-    "example:nextjs-editor": "cd examples/nextjs-editor && npx next dev --port 3001",
-    "example:vite": "cd examples/vite-react && npx vite"
+    "example:vite": "cd examples/vite-react && deno run -A npm:vite"
   },
   "compilerOptions": {
     "lib": ["ES2022", "DOM", "DOM.Iterable", "deno.ns"],
-    "strict": true,
     "noUncheckedIndexedAccess": true,
     "jsx": "react-jsx",
     "jsxImportSource": "react"

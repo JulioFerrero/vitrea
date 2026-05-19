@@ -23,5 +23,16 @@
     "./card": "./src/components/card.tsx",
     "./skeleton": "./src/components/skeleton.tsx",
     "./styles.css": "./src/styles/source.css"
+  },
+  "imports": {
+    "@base-ui/react": "npm:@base-ui/react@^1.0.0-beta.1",
+    "class-variance-authority": "npm:class-variance-authority@^0.7.1",
+    "lucide-react": "npm:lucide-react@^0.509.0",
+    "react": "npm:react@^19.1.0",
+    "react/jsx-runtime": "npm:react@^19.1.0/jsx-runtime"
+  },
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react"
   }
 }

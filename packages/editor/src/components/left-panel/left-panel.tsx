@@ -127,7 +127,7 @@ export function LeftPanel() {
     setAddElementParentId(null);
   }, [activePageId, addElementParentId, actions]);
 
-  const handleContextMenu = useCallback((e: React.MouseEvent, state: CtxMenuState) => {
+  const handleContextMenu = useCallback((e: React.MouseEvent<HTMLElement>, state: CtxMenuState) => {
     e.preventDefault(); e.stopPropagation();
     setCtxMenu({ ...state, y: Math.min(state.y, globalThis.innerHeight - 280) });
   }, []);
