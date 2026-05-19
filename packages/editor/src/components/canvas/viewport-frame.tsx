@@ -7,7 +7,16 @@ const VIEWPORT_WIDTHS: Record<Viewport, number> = { desktop: 1440, tablet: 768, 
 const VIEWPORT_HEIGHTS: Record<Viewport, number> = { desktop: 900, tablet: 1024, mobile: 812 };
 const VIEWPORT_LABELS: Record<Viewport, string> = { desktop: "Desktop", tablet: "Tablet", mobile: "Mobile" };
 
-const IFRAME_HTML = `<!DOCTYPE html><html><head><meta charset="utf-8"><style id="tw-dynamic"></style><style id="viewport-override"></style></head><body style="margin:0;padding:0;min-height:100%"><div id="canvas-root"></div></body></html>`;
+const baseCSSCache = { current: "", fetched: false, pendingEls: [] as HTMLElement[] };
+
+function injectBaseCSS() {
+  if (baseCSSCache.current) {
+    for (const el of baseCSSCache.pendingEls) el.textContent = baseCSSCache.current;
+    baseCSSCache.pendingEls = [];
+  }
+}
+
+const IFRAME_HTML = `<!DOCTYPE html><html><head><meta charset="utf-8"><style id="tw-dynamic"></style><style id="tw-base"></style><style id="viewport-override"></style></head><body style="margin:0;padding:0;min-height:100%;background-color:#0a0a0a;color:#e5e5e5;-webkit-font-smoothing:antialiased"><div id="canvas-root"></div></body></html>`;
 
 function viewportOverrideCSS(h: number) {
   return `.min-h-\\[100dvh\\]{min-height:${h}px!important}.min-h-\\[100vh\\]{min-height:${h}px!important}.h-\\[100dvh\\]{height:${h}px!important}.h-\\[100vh\\]{height:${h}px!important}`;
@@ -45,6 +54,25 @@ export function ViewportFrame({
       doc.write(IFRAME_HTML);
       doc.close();
       mountedRef.current = true;
+
+      const baseEl = doc.getElementById("tw-base");
+      if (baseEl) {
+        if (baseCSSCache.current) {
+          baseEl.textContent = baseCSSCache.current;
+        } else {
+          baseCSSCache.pendingEls.push(baseEl);
+          if (!baseCSSCache.fetched) {
+            baseCSSCache.fetched = true;
+            fetch("/api/iframe-base")
+              .then((r) => r.text())
+              .then((css) => {
+                baseCSSCache.current = css;
+                injectBaseCSS();
+              })
+              .catch(() => {});
+          }
+        }
+      }
     }
 
     const overrideEl = doc.getElementById("viewport-override");
@@ -116,7 +144,7 @@ export function ViewportFrame({
         <iframe
           ref={iframeRef}
           title={label}
-          className="bg-white rounded-xl shadow-[0_2px_20px_rgba(0,0,0,0.3)] border-none block"
+          className="bg-dark-950 rounded-xl shadow-[0_2px_20px_rgba(0,0,0,0.3)] border border-white/[0.06] block"
           style={{ width: `${pageWidth}px`, height: `${iframeH}px`, pointerEvents: "none" }}
         />
       </div>

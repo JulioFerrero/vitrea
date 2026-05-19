@@ -9,24 +9,69 @@ const root = resolve(import.meta.dirname, "../..");
 function apiPlugin(): Plugin {
   let apiApp: ReturnType<typeof Object>;
   let tailwindFn: ReturnType<typeof Object>;
+  let iframeBaseCSSFn: ReturnType<typeof Object>;
+  let fontCSSResult: Promise<{ css: string; fontDirs: Map<string, string> }>;
+  let resolvedFontDirs: Map<string, string> = new Map();
+  let resolvedFontCSS = "";
 
   return {
     name: "hi-api-middleware",
     enforce: "pre",
     async configureServer(server) {
-      const [{ app: importedApp }, { tailwindCssResponse }] = await Promise.all([
+      const [{ app: importedApp }, { tailwindCssResponse, iframeBaseCSS, fontCSSWithAbsoluteURLs }] = await Promise.all([
         import(resolve(root, "packages/editor/src/api/index.ts")),
         import(resolve(root, "packages/website/src/lib/tailwind.ts")),
       ]);
       apiApp = importedApp;
       tailwindFn = tailwindCssResponse;
+      iframeBaseCSSFn = iframeBaseCSS;
+
+      fontCSSResult = fontCSSWithAbsoluteURLs();
+      fontCSSResult.then((r) => {
+        resolvedFontCSS = r.css;
+        resolvedFontDirs = r.fontDirs;
+      });
 
       server.middlewares.use(async (req, res, next) => {
-        if (!req.url?.startsWith("/api/")) return next();
+        if (!req.url?.startsWith("/api/") && !req.url?.startsWith("/fonts/")) return next();
 
         try {
           const url = new URL(req.url, `http://${req.headers.host}`);
           const method = req.method || "GET";
+
+          if (url.pathname === "/api/iframe-base") {
+            const base = await iframeBaseCSSFn();
+            const css = [base, resolvedFontCSS].filter(Boolean).join("\n");
+            res.writeHead(200, { "content-type": "text/css", "cache-control": "public, max-age=60" });
+            res.end(css);
+            return;
+          }
+
+          if (url.pathname.startsWith("/fonts/")) {
+            const match = url.pathname.match(/^\/fonts\/([^/]+)\/files\/(.+)$/);
+            if (match) {
+              const [, pkgBaseName, fileName] = match;
+              const dir = resolvedFontDirs.get(pkgBaseName!);
+              if (dir) {
+                const { readFile, stat } = await import("node:fs/promises");
+                const { join } = await import("node:path");
+                const filePath = join(dir, fileName!);
+                try {
+                  await stat(filePath);
+                  const FONT_MIME: Record<string, string> = { ".woff2": "font/woff2", ".woff": "font/woff", ".ttf": "font/ttf" };
+                  const ext = fileName!.lastIndexOf(".") >= 0 ? fileName!.slice(fileName!.lastIndexOf(".")) : "";
+                  const contentType = FONT_MIME[ext] ?? "application/octet-stream";
+                  const content = await readFile(filePath);
+                  res.writeHead(200, { "content-type": contentType, "cache-control": "public, max-age=31536000, immutable" });
+                  res.end(content);
+                  return;
+                } catch {}
+              }
+            }
+            res.writeHead(404);
+            res.end("Not Found");
+            return;
+          }
 
           let body: string | undefined;
           if (method !== "GET" && method !== "HEAD") {

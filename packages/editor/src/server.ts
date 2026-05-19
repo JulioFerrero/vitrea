@@ -7,6 +7,8 @@ interface CreateServerOptions {
   hostname?: string;
   distDir: string;
   tailwindCSS?: (classes: string[]) => Promise<string>;
+  iframeBaseCSS?: () => Promise<string>;
+  fontFileHandler?: (urlPathname: string) => Promise<Response | null>;
 }
 
 const mimeTypes: Record<string, string> = {
@@ -30,7 +32,7 @@ function getMimeType(path: string): string {
 }
 
 export function createServer(options: CreateServerOptions) {
-  const { port = 5173, hostname = "0.0.0.0", distDir, tailwindCSS } = options;
+  const { port = 5173, hostname = "0.0.0.0", distDir, tailwindCSS, iframeBaseCSS, fontFileHandler } = options;
 
   Deno.serve({ port, hostname }, async (req: Request) => {
     const url = new URL(req.url);
@@ -39,6 +41,16 @@ export function createServer(options: CreateServerOptions) {
       const body = await req.json();
       const css = await tailwindCSS(body.classes ?? []);
       return new Response(css, { headers: { "content-type": "text/css" } });
+    }
+
+    if (url.pathname === "/api/iframe-base" && iframeBaseCSS) {
+      const css = await iframeBaseCSS();
+      return new Response(css, { headers: { "content-type": "text/css", "cache-control": "public, max-age=60" } });
+    }
+
+    if (url.pathname.startsWith("/fonts/") && fontFileHandler) {
+      const response = await fontFileHandler(url.pathname);
+      if (response) return response;
     }
 
     if (url.pathname.startsWith("/api/")) {

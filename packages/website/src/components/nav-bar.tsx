@@ -14,28 +14,28 @@ export function NavBar({ element, className, style, attrs }: ElementProps) {
   return (
     <nav
       {...attrs}
-      className={`fixed top-0 left-0 right-0 z-50 bg-warm-50/70 backdrop-blur-2xl border-b border-stone-200/40 ${className ?? ""}`}
+      className={`fixed top-0 left-0 right-0 z-50 bg-dark-950/70 backdrop-blur-2xl border-b border-white/[0.06] ${className ?? ""}`}
       style={style}
     >
       <div className="max-w-[1400px] mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
-        <a href="/" className="font-display text-xl font-bold text-stone-900 tracking-tight flex items-center gap-2.5 group">
-          <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-cherry-600 text-white text-xs font-bold font-sans group-hover:scale-105 transition-transform duration-300">H</span>
+        <a href="/" className="font-display text-xl font-bold text-white tracking-tight flex items-center gap-3 group">
+          <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-cherry-600 text-white text-xs font-bold font-sans group-hover:bg-cherry-500 transition-colors duration-300">H</span>
           {brandName}
         </a>
 
         <div className="hidden md:flex items-center gap-1">
           {link1Text && (
-            <a href={link1Href} className="relative px-4 py-2 text-sm text-stone-500 hover:text-stone-900 transition-colors duration-200 rounded-lg hover:bg-stone-100/60">
+            <a href={link1Href} className="px-4 py-2 text-sm text-dark-400 hover:text-white transition-colors duration-200 rounded-lg hover:bg-white/[0.05]">
               {link1Text}
             </a>
           )}
           {link2Text && (
-            <a href={link2Href} className="relative px-4 py-2 text-sm text-stone-500 hover:text-stone-900 transition-colors duration-200 rounded-lg hover:bg-stone-100/60">
+            <a href={link2Href} className="px-4 py-2 text-sm text-dark-400 hover:text-white transition-colors duration-200 rounded-lg hover:bg-white/[0.05]">
               {link2Text}
             </a>
           )}
           {link3Text && (
-            <a href={link3Href} className="relative px-4 py-2 text-sm text-stone-500 hover:text-stone-900 transition-colors duration-200 rounded-lg hover:bg-stone-100/60">
+            <a href={link3Href} className="px-4 py-2 text-sm text-dark-400 hover:text-white transition-colors duration-200 rounded-lg hover:bg-white/[0.05]">
               {link3Text}
             </a>
           )}
@@ -43,7 +43,7 @@ export function NavBar({ element, className, style, attrs }: ElementProps) {
 
         <a
           href={ctaHref}
-          className="bg-stone-900 hover:bg-stone-800 text-white text-sm font-medium px-5 py-2.5 rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-stone-900/10 active:scale-[0.98]"
+          className="bg-white text-dark-950 text-sm font-medium px-5 py-2.5 rounded-xl transition-all duration-200 hover:bg-dark-100 active:scale-[0.98]"
         >
           {ctaText}
         </a>
