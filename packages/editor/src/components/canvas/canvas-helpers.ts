@@ -25,7 +25,7 @@ export function queryElementAtPoint(
     const py = (screenY - rect.top) / transform.scale;
     const doc = iframe.contentDocument;
     if (!doc) continue;
-    const hit = doc.elementFromPoint(px, py)?.closest("[data-el-id]") as HTMLElement | null;
+      const hit = doc.elementFromPoint(px, py)?.closest("[data-el-id]") as HTMLElement | null;
     if (hit) return { el: hit };
   }
   return null;

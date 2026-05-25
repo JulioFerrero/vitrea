@@ -1,11 +1,14 @@
 import type { ComponentType } from "react";
+import type { CollectionConfig, StructureItem } from "@hi/cms";
 
 export interface FieldConfig {
   name: string;
   label: string;
-  type: "text" | "textarea" | "select" | "url" | "number";
+  type: "text" | "textarea" | "select" | "url" | "number" | "reference";
   options?: string[];
   rows?: number;
+  collection?: string;
+  multiple?: boolean;
 }
 
 export interface StyleFieldConfig {
@@ -36,6 +39,8 @@ export interface ElementTypeConfig {
 export interface EditorSchema {
   elementTypes: ElementTypeConfig[];
   styleGroups: Record<string, StyleGroupConfig>;
+  content?: CollectionConfig[];
+  structure?: StructureItem[];
 }
 
 export interface EditorApi {
@@ -75,4 +80,6 @@ export interface EditorConfig {
   database: { url: string };
   schema: EditorSchema;
   renderer?: Record<string, ComponentType<Record<string, unknown>>>;
+  content?: CollectionConfig[];
 }
+

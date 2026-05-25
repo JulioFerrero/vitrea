@@ -16,6 +16,9 @@ import { featuresSection } from "./features-section";
 import { showcaseSection } from "./showcase-section";
 import { ctaSection } from "./cta-section";
 import { footerSection } from "./footer-section";
+import { productList } from "./product-list";
+import { content } from "./content";
+import { cmsStructure } from "./structure";
 
 export const elements = [
   sectionElement,
@@ -37,6 +40,7 @@ export const elements = [
   showcaseSection,
   ctaSection,
   footerSection,
+  productList,
 ];
 
 export const schema: EditorSchema = {
@@ -50,6 +54,8 @@ export const schema: EditorSchema = {
     border: borderStyles,
     effects: effectsStyles,
   },
+  content,
+  structure: cmsStructure,
 };
 
 export const websiteRenderer: RendererAdapter = {

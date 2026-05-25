@@ -1,19 +1,25 @@
 import { useState, useEffect } from "react";
-import { createApiFetch, Dashboard, Editor } from "@hi/editor";
+import { createApiFetch, Dashboard, Editor, CmsView, CmsProvider } from "@hi/editor";
 import { schema, websiteRenderer } from "@hi/website";
 
 const api = createApiFetch();
 
+type View = "dashboard" | "editor" | "content";
+
+function parsePath(): { view: View; siteId: string | null } {
+  const segments = globalThis.location.pathname.split("/").filter(Boolean);
+  if (segments[0] === "content") {
+    return { view: "content", siteId: segments[1] ?? null };
+  }
+  return { view: segments[0] ? "editor" : "dashboard", siteId: segments[0] || null };
+}
+
 export function App() {
-  const [siteId, setSiteId] = useState(() => {
-    const segments = globalThis.location.pathname.split("/").filter(Boolean);
-    return segments[0] || null;
-  });
+  const [{ view, siteId }, setRoute] = useState(parsePath);
 
   useEffect(() => {
     function onPopState() {
-      const segments = globalThis.location.pathname.split("/").filter(Boolean);
-      setSiteId(segments[0] || null);
+      setRoute(parsePath());
     }
     globalThis.addEventListener("popstate", onPopState);
     return () => globalThis.removeEventListener("popstate", onPopState);
@@ -21,12 +27,27 @@ export function App() {
 
   function navigateToSite(id: string) {
     globalThis.history.pushState({}, "", `/${id}`);
-    setSiteId(id);
+    setRoute({ view: "editor", siteId: id });
   }
 
-  if (!siteId) {
-    return <Dashboard api={api} onSelectSite={navigateToSite} />;
+  function navigateToEditor() {
+    if (siteId) {
+      globalThis.history.pushState({}, "", `/${siteId}`);
+      setRoute({ view: "editor", siteId });
+    }
   }
 
-  return <Editor siteId={siteId} schema={schema} api={api} renderer={websiteRenderer} />;
+  if (view === "content" && siteId) {
+    return (
+      <CmsProvider api={api} siteId={siteId} schema={schema}>
+        <CmsView siteId={siteId} onBack={navigateToEditor} />
+      </CmsProvider>
+    );
+  }
+
+  if (view === "editor" && siteId) {
+    return <Editor siteId={siteId} schema={schema} api={api} renderer={websiteRenderer} />;
+  }
+
+  return <Dashboard api={api} onSelectSite={navigateToSite} />;
 }

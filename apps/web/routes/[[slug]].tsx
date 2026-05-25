@@ -4,6 +4,7 @@ import { PageRenderer, type RenderElement } from "@hi/website";
 import { db } from "@hi/database";
 import { pages, elements } from "@hi/database";
 import { eq, asc } from "drizzle-orm";
+import { resolvePageReferences } from "../../../packages/website/src/lib/references.ts";
 
 type PageData = { error: string | null; elements: RenderElement[] | null };
 
@@ -42,7 +43,9 @@ export const handler = define.handlers({
       order: e.order,
     }));
 
-    return page({ error: null, elements: renderElements });
+    const resolved = await resolvePageReferences(renderElements);
+
+    return page({ error: null, elements: resolved });
   },
 });
 

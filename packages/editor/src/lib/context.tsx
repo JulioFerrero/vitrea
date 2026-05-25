@@ -4,18 +4,53 @@ import type { EditorActions } from "../lib/actions";
 import { createEditorActions } from "../lib/actions";
 
 const EditorContext = createContext<{
+  siteId: string;
   schema: EditorSchema;
   api: EditorApi;
   renderer: RendererAdapter;
   actions: EditorActions;
 } | null>(null);
 
+const CmsContext = createContext<{
+  api: EditorApi;
+  siteId: string;
+  schema: EditorSchema | null;
+} | null>(null);
+
+export function CmsProvider({
+  api,
+  siteId,
+  schema,
+  children,
+}: {
+  api: EditorApi;
+  siteId: string;
+  schema?: EditorSchema;
+  children: React.ReactNode;
+}) {
+  return (
+    <CmsContext.Provider value={{ api, siteId, schema: schema ?? null }}>
+      {children}
+    </CmsContext.Provider>
+  );
+}
+
+export function useCmsContext() {
+  const ctx = useContext(CmsContext);
+  if (ctx) return ctx;
+  const editor = useContext(EditorContext);
+  if (editor) return { api: editor.api, siteId: "", schema: editor.schema };
+  throw new Error("useCmsContext must be used within CmsProvider or EditorProvider");
+}
+
 export function EditorProvider({
+  siteId,
   schema,
   api,
   renderer,
   children,
 }: {
+  siteId: string;
   schema: EditorSchema;
   api: EditorApi;
   renderer: RendererAdapter;
@@ -24,7 +59,7 @@ export function EditorProvider({
   const actions = useMemo(() => createEditorActions(api, schema), [api, schema]);
 
   return (
-    <EditorContext.Provider value={{ schema, api, renderer, actions }}>
+    <EditorContext.Provider value={{ siteId, schema, api, renderer, actions }}>
       {children}
     </EditorContext.Provider>
   );

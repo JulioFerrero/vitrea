@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useEditorStore } from "../stores";
 import { EditorProvider, useEditorContext } from "../lib/context";
 import { EditorShell } from "./editor-shell";
+import { useCmsSync } from "../lib/cms-sync";
 import type { EditorProps } from "../types";
 
 const initialized = new Map<string, Promise<void>>();
@@ -34,6 +35,8 @@ function EditorInner({ siteId }: { siteId: string }) {
   const activePageId = useEditorStore((s) => s.activePageId);
   const prevPageRef = useRef<string | null>(activePageId);
 
+  useCmsSync();
+
   useEffect(() => {
     ensureInit(siteId, actions);
   }, [siteId, actions]);
@@ -62,7 +65,7 @@ function EditorInner({ siteId }: { siteId: string }) {
 
 export function Editor({ siteId, schema, api, renderer }: EditorProps) {
   return (
-    <EditorProvider schema={schema} api={api} renderer={renderer}>
+    <EditorProvider siteId={siteId} schema={schema} api={api} renderer={renderer}>
       <EditorInner siteId={siteId} />
     </EditorProvider>
   );

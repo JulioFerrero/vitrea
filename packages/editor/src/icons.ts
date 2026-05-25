@@ -5,6 +5,7 @@ import {
   LayoutTemplate, SquareMousePointer, RectangleHorizontal, Plus, Globe,
   Trash2, File, Pencil, ChevronRight, ChevronDown, Copy, ArrowUp,
   ArrowDown, Save, Undo2, Redo2, Loader2, Tablet, Smartphone, Check,
+  ShoppingBag, Package, FileText, HelpCircle,
 } from "lucide-react";
 import type { ComponentType } from "react";
 
@@ -49,6 +50,10 @@ const ICON_MAP: Record<string, ComponentType<{ className?: string }>> = {
   "tablet-smartphone": Tablet,
   "smartphone": Smartphone,
   "check": Check,
+  "shopping-bag": ShoppingBag,
+  "package": Package,
+  "file-text": FileText,
+  "help-circle": HelpCircle,
 };
 
 export function getIcon(name: string): ComponentType<{ className?: string }> | null {

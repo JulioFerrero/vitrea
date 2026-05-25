@@ -1,12 +1,22 @@
+import { eq } from "drizzle-orm";
+
 async function main() {
   const { db } = await import("./client");
-  const { sites, pages, elements } = await import("./schema");
+  const { sites, pages, elements, collections, documents } = await import("./schema");
   const { nanoid } = await import("nanoid");
 
   const existing = await db.select().from(sites);
   if (existing.length > 0) {
+    const siteId = existing[0]!.id;
     console.log("Database already seeded. Truncate first if you want to re-seed.");
-    console.log(`SITE_ID=${existing[0]!.id}`);
+    console.log(`SITE_ID=${siteId}`);
+
+    const cmsExisting = await db.select().from(documents);
+    if (cmsExisting.length < 4) {
+      console.log("\nSeeding CMS content...");
+      await seedCmsContent(db, siteId, collections, documents, nanoid, eq);
+    }
+
     Deno.exit(0);
   }
 
@@ -182,6 +192,9 @@ async function main() {
   console.log("  Pages: Home (/), About (/about)");
   console.log("  Home uses section components: nav-bar, hero-section, features-section, showcase-section, cta-section, footer-section");
   console.log("  About uses atomic elements: section, heading, text, grid, column, footer-section");
+  console.log("\nSeeding CMS content...");
+  await seedCmsContent(db, siteId, collections, documents, nanoid, eq);
+
   console.log("\nAdd SITE_ID to your .env files.");
   Deno.exit(0);
 }
@@ -190,3 +203,121 @@ main().catch((err) => {
   console.error("Seed failed:", err);
   Deno.exit(1);
 });
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function seedCmsContent(db: any, siteId: string, collections: any, documents: any, nanoid: () => string, eq: any) {
+  const cols = await db.select().from(collections).where(eq(collections.siteId, siteId));
+
+  if (cols.length === 0) {
+    // Seed collections from config-like data
+    const collectionDefs = [
+      { name: "product", label: "Product", icon: "package", fields: [
+        { name: "name", label: "Product Name", type: "text", required: true },
+        { name: "subtitle", label: "Subtitle", type: "text" },
+        { name: "price", label: "Price", type: "text" },
+        { name: "ctaText", label: "CTA Text", type: "text", default: "Buy Now" },
+        { name: "ctaUrl", label: "CTA URL", type: "url" },
+        { name: "image", label: "Product Image", type: "image" },
+        { name: "category", label: "Category", type: "select", options: ["shoes", "hats", "tshirts", "accessories"] },
+      ]},
+      { name: "post", label: "Blog Post", icon: "file-text", fields: [
+        { name: "title", label: "Title", type: "text", required: true },
+        { name: "slug", label: "Slug", type: "text" },
+        { name: "excerpt", label: "Excerpt", type: "textarea" },
+        { name: "body", label: "Body", type: "textarea" },
+        { name: "coverImage", label: "Cover Image", type: "image" },
+        { name: "author", label: "Author", type: "text" },
+      ]},
+      { name: "faq", label: "FAQ", icon: "help-circle", fields: [
+        { name: "title", label: "Title", type: "text" },
+        { name: "questions", label: "Questions", type: "array", preview: "question", of: [
+          { name: "question", label: "Question", type: "text" },
+          { name: "answer", label: "Answer", type: "textarea" },
+        ]},
+      ]},
+    ];
+
+    for (const def of collectionDefs) {
+      await db.insert(collections).values({
+        id: nanoid(),
+        siteId,
+        name: def.name,
+        label: def.label,
+        icon: def.icon,
+        fields: def.fields,
+      });
+    }
+
+    const updated = await db.select().from(collections).where(eq(collections.siteId, siteId));
+    cols.push(...updated.slice(-collectionDefs.length));
+  }
+
+  const colMap: Record<string, string> = {};
+  for (const c of cols) colMap[c.name] = c.id;
+
+  // Sample products
+  const products = [
+    { name: "Air Max Runner", subtitle: "Lightweight daily trainer", price: "$129.99", ctaText: "Shop Now", ctaUrl: "/products/air-max", image: "", category: "shoes" },
+    { name: "Cloud Strider Pro", subtitle: "Maximum cushion for long runs", price: "$159.99", ctaText: "Shop Now", ctaUrl: "/products/cloud-strider", image: "", category: "shoes" },
+    { name: "Trail Blazer X", subtitle: "All-terrain grip", price: "$139.99", ctaText: "Shop Now", ctaUrl: "/products/trail-blazer", image: "", category: "shoes" },
+    { name: "Classic Snapback", subtitle: "Timeless curved brim", price: "$34.99", ctaText: "Shop Now", ctaUrl: "/products/snapback", image: "", category: "hats" },
+    { name: "Performance Cap", subtitle: "Moisture-wicking, breathable", price: "$29.99", ctaText: "Shop Now", ctaUrl: "/products/perf-cap", image: "", category: "hats" },
+    { name: "Essential Tee", subtitle: "Premium cotton, relaxed fit", price: "$39.99", ctaText: "Shop Now", ctaUrl: "/products/essential-tee", image: "", category: "tshirts" },
+    { name: "Graphic Print Tee", subtitle: "Limited edition design", price: "$44.99", ctaText: "Shop Now", ctaUrl: "/products/graphic-tee", image: "", category: "tshirts" },
+    { name: "Canvas Tote Bag", subtitle: "Durable everyday carry", price: "$49.99", ctaText: "Shop Now", ctaUrl: "/products/tote", image: "", category: "accessories" },
+  ];
+
+  if (colMap["product"]) {
+    for (const p of products) {
+      await db.insert(documents).values({
+        id: nanoid(),
+        collectionId: colMap["product"],
+        siteId,
+        data: p,
+        status: "published",
+      });
+    }
+    console.log(`  Seeded ${products.length} products`);
+  }
+
+  // Sample blog posts
+  const posts = [
+    { title: "Introducing Hi Editor CMS", slug: "introducing-cms", excerpt: "We shipped a fully-featured CMS with collections, array fields, and a structure builder.", body: "Today we're excited to announce the CMS layer for Hi Editor...", coverImage: "", author: "Team Hi Editor" },
+    { title: "Building with Structure Navigation", slug: "structure-navigation", excerpt: "Learn how to define custom CMS hierarchies using the Structure Builder API.", body: "The Structure Builder lets you create multi-column navigation...", coverImage: "", author: "Julio" },
+    { title: "Why Self-Hosted CMS Matters", slug: "self-hosted-cms", excerpt: "Owning your content infrastructure means no vendor lock-in and full control.", body: "In an era of SaaS platforms, self-hosting has become radical again...", coverImage: "", author: "Team Hi Editor" },
+  ];
+
+  if (colMap["post"]) {
+    for (const p of posts) {
+      await db.insert(documents).values({
+        id: nanoid(),
+        collectionId: colMap["post"],
+        siteId,
+        data: p,
+        status: "published",
+      });
+    }
+    console.log(`  Seeded ${posts.length} blog posts`);
+  }
+
+  // Sample FAQs
+  const faqs = [
+    { title: "General", questions: [{ question: "What is Hi Editor?", answer: "Hi Editor is a self-hosted, open-source visual website builder and CMS." }, { question: "Is it free?", answer: "Yes, completely free and open source under the MIT license." }] },
+    { title: "Technical", questions: [{ question: "What database does it use?", answer: "PostgreSQL with JSONB columns for flexible content storage." }, { question: "Can I extend it?", answer: "Yes, you can create custom element types, field types, and style groups." }] },
+  ];
+
+  if (colMap["faq"]) {
+    for (const f of faqs) {
+      await db.insert(documents).values({
+        id: nanoid(),
+        collectionId: colMap["faq"],
+        siteId,
+        data: f,
+        status: "published",
+      });
+    }
+    console.log(`  Seeded ${faqs.length} FAQs`);
+  }
+
+  console.log("CMS content seeded.");
+}

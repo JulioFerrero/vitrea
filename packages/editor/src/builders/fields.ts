@@ -8,12 +8,29 @@ type FieldOptions = {
 export function createField(
   baseType: FieldConfig["type"],
   extra?: (opts: FieldOptions) => Partial<FieldConfig>,
-): (opts: FieldOptions) => FieldConfig {
-  return (opts: FieldOptions) => {
-    const { name, label, ...rest } = opts;
+): ((nameOrOpts: string | FieldOptions, maybeOpts?: Record<string, unknown>) => FieldConfig) {
+  return (nameOrOpts: string | FieldOptions, maybeOpts?: Record<string, unknown>) => {
+    let name: string;
+    let label: string;
+    let rest: Record<string, unknown>;
+
+    if (typeof nameOrOpts === "string") {
+      name = nameOrOpts;
+      const opts = (maybeOpts ?? {}) as Record<string, unknown>;
+      label = (opts.label as string) ?? name;
+      const { label: _l, ...r } = opts;
+      rest = r;
+    } else {
+      const opts = nameOrOpts as FieldOptions;
+      name = opts.name;
+      label = opts.label;
+      const { name: _n, label: _l, ...r } = opts;
+      rest = r as Record<string, unknown>;
+    }
+
     const base: FieldConfig = { name, label, type: baseType };
-    if (extra) {
-      Object.assign(base, extra(opts));
+    if (extra && typeof nameOrOpts !== "string") {
+      Object.assign(base, extra(nameOrOpts as FieldOptions));
     }
     for (const [key, value] of Object.entries(rest)) {
       if (value !== undefined && !(key in base)) {

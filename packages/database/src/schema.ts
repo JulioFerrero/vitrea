@@ -57,9 +57,51 @@ export const files = pgTable("files", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const collections = pgTable(
+  "collections",
+  {
+    id: varchar("id", { length: 21 }).primaryKey(),
+    siteId: varchar("site_id", { length: 21 })
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    name: varchar("name", { length: 255 }).notNull(),
+    label: varchar("label", { length: 255 }).notNull(),
+    icon: varchar("icon", { length: 100 }).default("folder").notNull(),
+    fields: jsonb("fields").$type<CollectionField[]>().notNull().default([]),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    siteNameIdx: index("collections_site_name_idx").on(table.siteId, table.name),
+  })
+);
+
+export const documents = pgTable(
+  "documents",
+  {
+    id: varchar("id", { length: 21 }).primaryKey(),
+    collectionId: varchar("collection_id", { length: 21 })
+      .notNull()
+      .references(() => collections.id, { onDelete: "cascade" }),
+    siteId: varchar("site_id", { length: 21 })
+      .notNull()
+      .references(() => sites.id, { onDelete: "cascade" }),
+    data: jsonb("data").$type<DocumentData>().notNull().default({} as DocumentData),
+    status: varchar("status", { length: 20 }).default("draft").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    collectionIdx: index("documents_collection_id_idx").on(table.collectionId),
+    siteIdx: index("documents_site_id_idx").on(table.siteId),
+  })
+);
+
 export const sitesRelations = relations(sites, ({ many }) => ({
   pages: many(pages),
   files: many(files),
+  collections: many(collections),
+  documents: many(documents),
 }));
 
 export const pagesRelations = relations(pages, ({ one, many }) => ({
@@ -79,6 +121,19 @@ export const elementsRelations = relations(elements, ({ one, many }) => ({
 
 export const filesRelations = relations(files, ({ one }) => ({
   site: one(sites, { fields: [files.siteId], references: [sites.id] }),
+}));
+
+export const collectionsRelations = relations(collections, ({ one, many }) => ({
+  site: one(sites, { fields: [collections.siteId], references: [sites.id] }),
+  documents: many(documents),
+}));
+
+export const documentsRelations = relations(documents, ({ one }) => ({
+  collection: one(collections, {
+    fields: [documents.collectionId],
+    references: [collections.id],
+  }),
+  site: one(sites, { fields: [documents.siteId], references: [sites.id] }),
 }));
 
 export type SiteData = {
@@ -162,4 +217,28 @@ export type FileData = {
   width?: number;
   height?: number;
   alt?: string;
+};
+
+export type CollectionField = {
+  name: string;
+  label: string;
+  type: string;
+  required?: boolean;
+  default?: unknown;
+  options?: string[];
+  collection?: string;
+  multiple?: boolean;
+  of?: CollectionField[];
+  [key: string]: unknown;
+};
+
+export type CollectionData = {
+  name: string;
+  label: string;
+  icon: string;
+  fields: CollectionField[];
+};
+
+export type DocumentData = {
+  [key: string]: unknown;
 };

@@ -1,10 +1,12 @@
 export { Editor } from "./components/editor";
 export { Dashboard } from "./components/dashboard";
+export { CmsView } from "./components/cms/cms-view";
 export { createApiFetch } from "./lib/api";
 export { useEditorStore } from "./stores";
-export { useEditorContext } from "./lib/context";
+export { EditorProvider, useEditorContext, CmsProvider, useCmsContext } from "./lib/context";
 export { buildTree } from "@hi/render";
 export { createField, textField, textareaField, selectField, urlField, numberField } from "./builders/fields";
+export { referenceField } from "@hi/cms";
 export { defineContainer, defineText, defineMedia, defineAction, defineUtility, defineElement } from "./builders/elements";
 export { defineStyleGroup, styleField } from "./builders/styles";
 export { spacingStyles, sizingStyles, typographyStyles, backgroundStyles, layoutStyles, borderStyles, effectsStyles } from "./presets";

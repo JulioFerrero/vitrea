@@ -1,0 +1,10 @@
+{
+  "name": "@hi/cms",
+  "version": "0.1.0",
+  "exports": {
+    ".": "./src/index.ts",
+    "./query": "./src/query/index.ts",
+    "./query/client": "./src/query/client.ts",
+    "./render": "./src/render/index.ts"
+  }
+}

@@ -71,6 +71,18 @@ export function TopBar() {
       <div className="flex items-center gap-1 ml-auto">
         <button
           type="button"
+          className="flex h-9 items-center justify-center gap-1.5 rounded-xl px-3 text-sm text-white/50 transition-all duration-200 hover:bg-white/10 hover:text-white/80"
+          onClick={() => {
+            const siteId = useEditorStore.getState().activeSiteId;
+            if (siteId) window.location.href = `/content/${siteId}`;
+          }}
+          title="Content"
+        >
+          Content
+        </button>
+        <Separator orientation="vertical" className="mx-1 h-6 bg-white/10" />
+        <button
+          type="button"
           className="flex h-9 w-9 items-center justify-center rounded-xl text-white/50 transition-all duration-200 hover:bg-white/10 hover:text-white/80 disabled:opacity-30 disabled:pointer-events-none"
           disabled={!canUndo()}
           onClick={undo}

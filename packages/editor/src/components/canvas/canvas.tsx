@@ -10,6 +10,7 @@ import { useElementDrop } from "./use-element-drop";
 import { CanvasToolbar } from "./canvas-toolbar";
 import { CanvasCursor, type CursorMode } from "./canvas-cursor";
 import { ViewportFrame } from "./viewport-frame";
+import { useResolvedElements } from "../../lib/resolve-references";
 import type { Viewport } from "../../types";
 
 const VIEWPORTS: Viewport[] = ["desktop", "tablet", "mobile"];
@@ -28,7 +29,10 @@ export function Canvas({ leftPanelOpen, rightPanelOpen }: { leftPanelOpen: boole
   const selectedElementId = useEditorStore((s) => s.selectedElementId);
   const selectElement = useEditorStore((s) => s.selectElement);
   const activePageId = useEditorStore((s) => s.activePageId);
-  const { schema, actions, renderer } = useEditorContext();
+  const activeSiteId = useEditorStore((s) => s.activeSiteId);
+  const { schema, actions, renderer, api } = useEditorContext();
+
+  const resolvedElements = useResolvedElements(elements, schema, api, activeSiteId ?? "");
 
   const editableTypes = new Set(schema.elementTypes.filter((t) => t.fields.some((f) => f.name === "content")).map((t) => t.type));
   const containerSet = new Set(schema.elementTypes.filter((t) => t.isContainer).map((t) => t.type));
@@ -52,7 +56,7 @@ export function Canvas({ leftPanelOpen, rightPanelOpen }: { leftPanelOpen: boole
           <div className="relative">
             <div className="flex items-start gap-12 p-8">
               {VIEWPORTS.map((vp) => (
-                <ViewportFrame key={vp} viewport={vp} elements={elements} renderer={renderer} />
+                <ViewportFrame key={vp} viewport={vp} elements={resolvedElements} renderer={renderer} />
               ))}
             </div>
             <div

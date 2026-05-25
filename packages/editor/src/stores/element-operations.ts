@@ -5,6 +5,7 @@ interface ElementOpState {
   elements: RenderElement[];
   pages: PageItem[];
   selectedElementId: string | null;
+  dirtyElementIds: Set<string>;
   _history: HistoryEntry[];
   _historyIndex: number;
 }
@@ -31,6 +32,7 @@ export function computeReorder(
   return {
     elements: updated,
     isDirty: true,
+    dirtyElementIds: new Set([...s.dirtyElementIds, id, swapEl.id]),
     ...pushHistoryEntry(s._history, s._historyIndex, prevEntry),
   };
 }
@@ -48,15 +50,17 @@ export function computeMove(
     (e) => e.parentId === newParentId && e.id !== id
   ).sort((a, b) => a.order - b.order);
   const reordered = siblings.slice(0, index).concat([el, ...siblings.slice(index)]);
+  const dirtyIds = new Set([...s.dirtyElementIds, id]);
   const updated = s.elements.map((e) => {
     if (e.id === id) return { ...e, parentId: newParentId, order: index };
     const sibIdx = reordered.findIndex((r) => r.id === e.id);
-    if (sibIdx >= 0) return { ...e, order: sibIdx };
+    if (sibIdx >= 0) { dirtyIds.add(e.id); return { ...e, order: sibIdx }; }
     return e;
   });
   return {
     elements: updated,
     isDirty: true,
+    dirtyElementIds: dirtyIds,
     ...pushHistoryEntry(s._history, s._historyIndex, prevEntry),
   };
 }

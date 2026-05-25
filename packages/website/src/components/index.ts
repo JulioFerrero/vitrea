@@ -19,6 +19,7 @@ import { FeaturesSection } from "./features-section";
 import { ShowcaseSection } from "./showcase-section";
 import { CTASection } from "./cta-section";
 import { FooterSection } from "./footer-section";
+import { ProductList } from "./product-list";
 
 export const COMPONENT_REGISTRY: Record<string, ComponentType<ElementProps>> = {
   section: Section,
@@ -40,6 +41,7 @@ export const COMPONENT_REGISTRY: Record<string, ComponentType<ElementProps>> = {
   "showcase-section": ShowcaseSection,
   "cta-section": CTASection,
   "footer-section": FooterSection,
+  "product-list": ProductList,
 };
 
 export function hasComponent(type: string): boolean {

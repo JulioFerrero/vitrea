@@ -1,11 +1,38 @@
 import type { FieldConfig } from "../../types";
 import { Label, Btn, BtnGroup, CompactInput, inputBase } from "./primitives";
+import { ReferencePicker } from "../cms/reference-picker";
+import { useCmsStore } from "../../stores/cms-store";
+import { useEditorStore } from "../../stores";
 import { cn } from "@hi/utils";
 
 export function ContentField({ field, data, updateData }: {
   field: FieldConfig; data: Record<string, unknown>; updateData: (key: string, value: unknown) => void;
 }) {
   const val = data[field.name];
+
+  if (field.type === "reference") {
+    const ids: string[] = Array.isArray(val) ? val.map(String) : val ? [String(val)] : [];
+    const siteId = useEditorStore((s) => s.activeSiteId) ?? "";
+
+    return (
+      <div>
+        <Label>{field.label}</Label>
+        <ReferencePicker
+          collection={field.collection ?? ""}
+          selectedIds={ids}
+          multiple={field.multiple ?? false}
+          siteId={siteId}
+          onChange={(newIds) => {
+            if (field.multiple) {
+              updateData(field.name, newIds);
+            } else {
+              updateData(field.name, newIds[0] ?? null);
+            }
+          }}
+        />
+      </div>
+    );
+  }
 
   if (field.type === "select" && field.options) {
     return (

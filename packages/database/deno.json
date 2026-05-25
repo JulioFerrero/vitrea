@@ -8,6 +8,8 @@
   },
   "imports": {
     "drizzle-orm": "npm:drizzle-orm@^0.43.0",
-    "postgres": "npm:postgres@^3.4.5"
+    "drizzle-kit": "npm:drizzle-kit@^0.31.0",
+    "postgres": "npm:postgres@^3.4.5",
+    "nanoid": "jsr:@sitnik/nanoid@^5.1.11"
   }
 }
