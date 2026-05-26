@@ -123,11 +123,19 @@ export function ReviewDialog({
     if (open && activePageId) {
       setLoading(true);
       (async () => {
-        await actions.saveAll();
-        const data = await actions.getDiff(activePageId);
-        await preloadReferences(data, documentCache);
-        setDiff(data as DiffData);
-        setLoading(false);
+        try {
+          await actions.saveAll();
+        } catch { /* ignore save errors */ }
+        try {
+          const data = await actions.getDiff(activePageId);
+          try { await preloadReferences(data, documentCache); } catch { /* non-critical */ }
+          setDiff(data as DiffData);
+        } catch (e) {
+          console.error("Review dialog error:", e);
+          setDiff(null);
+        } finally {
+          setLoading(false);
+        }
       })();
     }
   }, [open, activePageId, actions]);

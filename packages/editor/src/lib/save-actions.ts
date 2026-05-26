@@ -81,6 +81,10 @@ export function createSaveActions(api: EditorApi) {
       store.getState().setHasActiveDraft(false);
     },
 
+    getDiff(pageId: string) {
+      return api.fetch(`/pages/${pageId}/diff`);
+    },
+
     getRevisions(pageId: string) {
       return api.fetch(`/pages/${pageId}/revisions`);
     },

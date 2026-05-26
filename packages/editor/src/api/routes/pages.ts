@@ -102,6 +102,33 @@ export const pagesRoute = new Hono()
 
     return c.json({ ok: true });
   })
+  .get("/:id/diff", async (c) => {
+    const page = await getById(pages, c.req.param("id"));
+    if (!page) return c.json({ error: "Page not found" }, 404);
+
+    const draft = (page.content ?? []) as PageElement[];
+    const published = (page.pubContent ?? []) as PageElement[];
+
+    const draftMap = new Map(draft.map((el) => [el.id, el]));
+    const pubMap = new Map(published.map((el) => [el.id, el]));
+
+    const addedElements = draft.filter((el) => !pubMap.has(el.id));
+    const modifiedElements = draft.filter((el) => {
+      const pub = pubMap.get(el.id);
+      return pub && JSON.stringify(pub) !== JSON.stringify(el);
+    });
+
+    return c.json({
+      draft,
+      published,
+      changes: {
+        added: addedElements.length,
+        modified: modifiedElements.length,
+        addedElements,
+        modifiedElements,
+      },
+    });
+  })
   .get("/:id/revisions", async (c) => {
     const all = await db.select({ id: revisions.id, label: revisions.label, createdAt: revisions.createdAt })
       .from(revisions).where(eq(revisions.pageId, c.req.param("id"))).orderBy(desc(revisions.createdAt));
