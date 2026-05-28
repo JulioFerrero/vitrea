@@ -24,6 +24,7 @@ export function rootDenoJson(answers: PromptAnswers): string {
       "nanoid": "npm:nanoid@^5.1.0",
       "clsx": "npm:clsx@^2.1.0",
       "tailwind-merge": "npm:tailwind-merge@^3.2.0",
+    "lucide-preact": "npm:lucide-preact@^0.509.0",
       "@dnd-kit/core": "npm:@dnd-kit/core@^6.3.0",
       "@dnd-kit/sortable": "npm:@dnd-kit/sortable@^9.0.0",
       "@dnd-kit/utilities": "npm:@dnd-kit/utilities@^3.2.0",

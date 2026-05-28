@@ -67,7 +67,7 @@ export default defineConfig({
       { find: "@fontsource/fraunces", replacement: resolve(root, "node_modules/@fontsource/fraunces") },
       { find: "@fontsource/recursive", replacement: resolve(root, "node_modules/@fontsource/recursive") },
       { find: "@hi/editor/styles.css", replacement: resolve(root, "packages/editor/src/styles.css") },
-      { find: "@hi/website/styles.css", replacement: resolve(root, "packages/website/src/styles.css") },
+      { find: "@hi/website/styles.css", replacement: resolve(root, "packages/website/styles.css") },
     ],
     dedupe: ["react", "react-dom", "react/jsx-runtime", "preact"],
   },
@@ -88,8 +88,15 @@ function loadExports(pkgRoot: string): Record<string, string> {
   if (cache.has(pkgRoot)) return cache.get(pkgRoot)!;
   try {
     const json = JSON.parse(readFileSync(resolve(pkgRoot, "deno.json"), "utf-8"));
+    const rawExports = json.exports;
+    if (!rawExports) return {};
+    if (typeof rawExports === "string") {
+      const result = { ".": resolve(pkgRoot, rawExports) };
+      cache.set(pkgRoot, result);
+      return result;
+    }
     const exports: Record<string, string> = {};
-    for (const [key, val] of Object.entries(json.exports ?? {})) {
+    for (const [key, val] of Object.entries(rawExports)) {
       if (typeof val === "string") {
         exports[key] = resolve(pkgRoot, val);
       } else if (typeof val === "object" && val !== null) {

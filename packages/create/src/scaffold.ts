@@ -99,8 +99,7 @@ export async function scaffold(dir: string, answers: PromptAnswers): Promise<voi
   await clonePackages(dir);
 
   // packages/website — user's custom elements & components
-  await w("packages/website/deno.json", websitePkgDenoJson());
-  await w("packages/website/src/index.ts", websitePkgIndex(answers));
+  // Don't overwrite deno.json or src/index.ts from the clone — add custom files only
   if (answers.includeExamples) {
     await w("packages/website/src/elements/hero-section.ts", websiteElementHero(answers));
     await w("packages/website/src/elements/features-section.ts", websiteElementFeatures());
