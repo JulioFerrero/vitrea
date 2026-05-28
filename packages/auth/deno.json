@@ -12,6 +12,7 @@
     "include": ["src", "deno.json"]
   },
   "imports": {
+    "hono": "jsr:@hono/hono@^4.12.21",
     "better-auth": "npm:better-auth@^1.6.0",
     "@better-auth/drizzle-adapter": "npm:@better-auth/drizzle-adapter@^1.6.0",
     "drizzle-orm": "npm:drizzle-orm@^0.43.0",
