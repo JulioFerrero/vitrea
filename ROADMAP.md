@@ -215,4 +215,4 @@ my-site/
 | 9 | Unified docker-compose.yml | 2.2 | Done |
 | 10 | Coolify template + nixpacks | 2.3-2.4 | Done |
 | 11 | `@hi/create` scaffolder | 3 | Done |
-| 12 | Documentation | 4 | Pending |
+| 12 | Documentation | 4 | Done |

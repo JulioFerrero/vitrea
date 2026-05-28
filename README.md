@@ -1,27 +1,27 @@
-# Web Builder
+# Hi Editor
 
-A self-hosted visual website builder. Design pages with a Framer-style editor, store everything in PostgreSQL with JSONB, and render sites through Next.js.
+A self-hosted, open-source visual website builder. Design pages with a drag-and-drop editor, store content in PostgreSQL, and render sites with Deno.
 
 ## Architecture
 
 ```
-┌─────────────────────┐         ┌─────────────────────┐
-│   Editor (port 3001) │         │   Website (port 3000) │
-│                       │         │                       │
-│  ┌──────┬──────┬────┐ │         │   Page renderer       │
-│  │Left  │Canvas│Right│ │         │   /[...slug]          │
-│  │Panel │      │Panel│ │         │                       │
-│  │pages │ tld  │props│ │         │   Renders components  │
-│  │layers│ raw  │edit │ │         │   from Postgres JSONB │
-│  └──────┴──────┴────┘ │         │                       │
-│           │            │         │           │           │
-└───────────┼────────────┘         └───────────┼───────────┘
-            │                                  │
-            ▼                                  ▼
-        ┌──────────────────────────────────────┐
-        │          Hono REST API                │
-        │   /api/websites, /pages, /components  │
-        └──────────────────┬───────────────────┘
+┌──────────────────────────┐         ┌──────────────────────────┐
+│   Editor (port 5173)      │         │   Website (port 8000)     │
+│                            │         │                            │
+│  ┌──────┬──────┬───────┐  │         │   Page renderer            │
+│  │Left  │Canvas│Right  │  │         │   /[...slug]               │
+│  │Panel │      │Panel  │  │         │                            │
+│  │pages │  tld │props  │  │         │   Renders components       │
+│  │layers│ raw  │edit   │  │         │   from Postgres JSONB      │
+│  └──────┴──────┴───────┘  │         │                            │
+│           │                │         │           │                │
+└───────────┼────────────────┘         └───────────┼────────────────┘
+            │                                      │
+            ▼                                      ▼
+        ┌──────────────────────────────────────────┐
+        │          Hono REST API                    │
+        │   /api/sites, /pages, /elements            │
+        └──────────────────┬───────────────────────┘
                            │
                            ▼
                  ┌──────────────────┐
@@ -35,210 +35,183 @@ A self-hosted visual website builder. Design pages with a Framer-style editor, s
 ```
 web-builder/
 ├── apps/
-│   ├── web/              Next.js 16 — renders published websites
-│   └── editor/           Next.js 16 — visual builder UI
+│   ├── web/              Fresh/Preact — renders published websites
+│   └── editor/           Vite/Preact SPA + Deno Hono server — visual builder
 ├── packages/
-│   ├── types/            Shared TypeScript interfaces
 │   ├── utils/            cn(), slugify(), buildPath()
-│   ├── ui/               Base UI + Tailwind components (17 components)
+│   ├── ui/               Base UI components (17 components, Radix-based)
 │   ├── database/         Drizzle ORM schema, migrations, seed
-│   ├── api/              Hono REST API with Zod validation
-│   ├── website/          Component registry, PageRenderer, built-in sections
-│   └── cms/              Collection schema builder, item validation
-├── docker-compose.yml    Development Postgres
-└── docker-compose.prod.yml  Production stack (Postgres + web + editor)
+│   ├── render/           Element renderer, tree utilities
+│   ├── auth/             Better Auth integration, middleware
+│   ├── cms/              Collection schema builder, field types
+│   ├── editor/           Element definitions, style presets, API routes
+│   ├── website/          Component registry, page renderer, built-in sections
+│   └── create/           Project scaffolder CLI
+├── deploy/               Docker, Coolify, and nixpacks configs
+└── docker/               Legacy Docker configs
 ```
 
 ### Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 16 (Turbopack, App Router, RSC) |
-| Headless UI | Base UI (`@base-ui/react`) |
-| Database | PostgreSQL 17 + Drizzle ORM |
-| API | Hono (mounted as Next.js route handlers) |
-| State Management | Zustand |
+| Runtime | Deno 2 |
+| UI | Preact + React compat |
+| Database | PostgreSQL 16 + Drizzle ORM |
+| API | Hono |
+| Auth | Better Auth |
+| State | Zustand |
 | Validation | Zod |
 | Styling | Tailwind CSS v4 |
-| Canvas | tldraw (planned) |
-| Monorepo | pnpm workspaces + Turborepo |
+| Build | Vite |
+| Publish | JSR |
 
 ### How it works
 
-1. **Component Registry** — Each UI component (Hero, Features, CTA, Footer, etc.) registers itself with a Zod schema defining its props. The registry lives in `packages/website`.
+1. **Element Registry** — Each UI element (Hero, Features, CTA, Footer, etc.) registers itself with a schema defining its props. The registry lives in `@hi/editor`.
 
-2. **Postgres JSONB Storage** — Every component instance on a page is a row in the `components` table. Props, styles, and layout are stored as JSONB columns. This gives you Sanity-like structured content without a third-party CMS.
+2. **Postgres JSONB Storage** — Every element instance on a page is stored with props, styles, and layout as JSONB. This gives structured content without a third-party CMS.
 
-3. **Page Rendering** — The website app (`apps/web`) resolves the URL path, fetches the page and its ordered components from Postgres, validates each component's props against its Zod schema, and renders the React component.
+3. **Page Rendering** — The website app resolves the URL path, fetches the page and its ordered elements from Postgres, and renders the Preact component.
 
-4. **Visual Editor** — The editor app (`apps/editor`) provides a dashboard to manage websites, a page tree, a canvas with live component previews, and a property panel that auto-generates forms from the component's Zod schema.
+4. **Visual Editor** — A drag-and-drop canvas with live previews, a property panel that auto-generates forms from element schemas, real-time collaboration cursors, and CMS collection management.
 
-5. **CMS Collections** — Separate from the page structure. Define collections (e.g., Blog Posts, Products) with typed schemas, then bind components to collection items for dynamic data.
+5. **CMS Collections** — Define collections (Blog Posts, Products, etc.) with typed schemas, then bind components to collection items for dynamic data.
 
-## Getting Started
+## Quick Start
 
 ### Prerequisites
 
-- Node.js 20.9+
-- pnpm 10+
+- [Deno](https://deno.land) 2+
 - Docker (for PostgreSQL)
 
 ### Setup
 
 ```bash
-# Clone and install
 git clone <repo-url> web-builder
 cd web-builder
-pnpm install
 
 # Start PostgreSQL
-pnpm docker:up
+deno task docker:up
 
-# Wait for Postgres to be healthy, then apply migrations
-pnpm db:migrate
+# Wait for Postgres, then apply schema
+deno task db:push
 
-# Seed with sample data (a website with Home page + 4 sections)
-pnpm db:seed
+# Seed with sample data
+deno task db:seed
 ```
 
-The seed script outputs a `WEBSITE_ID`. Copy it to your `.env`:
+The seed script outputs a `WEBSITE_ID`. Add it to your `.env`:
 
-```bash
-# .env (already has DATABASE_URL from .env.example)
+```
 WEBSITE_ID=<paste-id-here>
-```
-
-Copy `.env` to both app directories (Next.js loads `.env` per-app):
-
-```bash
-cp .env apps/web/.env
-cp .env apps/editor/.env
 ```
 
 ### Run
 
 ```bash
-# Both apps simultaneously
-pnpm dev
+# Both apps
+deno task dev
 
 # Or individually
-pnpm dev:web       # → http://localhost:3000
-pnpm dev:editor    # → http://localhost:3001
+deno task dev:editor    # → http://localhost:5173
+deno task dev:web       # → http://localhost:8000
 ```
 
-Open `http://localhost:3000` to see the rendered website. Open `http://localhost:3001/dashboard` to open the editor.
-
-### Available Commands
+### Commands
 
 | Command | Description |
 |---|---|
-| `pnpm dev` | Start both apps in dev mode |
-| `pnpm dev:web` | Website renderer only (port 3000) |
-| `pnpm dev:editor` | Editor only (port 3001) |
-| `pnpm build` | Production build for all packages |
-| `pnpm typecheck` | TypeScript check across all packages |
-| `pnpm docker:up` | Start Postgres container |
-| `pnpm docker:down` | Stop Postgres container |
-| `pnpm db:migrate` | Apply pending migrations |
-| `pnpm db:generate` | Generate migration from schema changes |
-| `pnpm db:seed` | Seed database with sample data |
-| `pnpm db:studio` | Open Drizzle Studio (DB browser) |
+| `deno task dev` | Start both apps in dev mode |
+| `deno task dev:editor` | Editor only |
+| `deno task dev:web` | Website renderer only |
+| `deno task build` | Production build for both apps |
+| `deno task check` | TypeScript check |
+| `deno task lint` | Lint all packages |
+| `deno task docker:up` | Start Postgres container |
+| `deno task docker:down` | Stop Postgres container |
+| `deno task db:push` | Push schema to database |
+| `deno task db:generate` | Generate migration from schema changes |
+| `deno task db:seed` | Seed database with sample data |
 
-## API Endpoints
+## Packages on JSR
 
-All endpoints are mounted at `/api` on both apps.
+All packages are published to [JSR](https://jsr.io):
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/websites` | List all websites |
-| POST | `/api/websites` | Create a website |
-| GET | `/api/pages?websiteId=X` | List pages for a website |
-| POST | `/api/pages` | Create a page |
-| GET | `/api/components?pageId=X` | List components for a page |
-| POST | `/api/components` | Add a component |
-| PATCH | `/api/components/:id` | Update component props/styles |
-| DELETE | `/api/components/:id` | Remove a component |
-| GET | `/api/component-definitions` | List available component types |
-| GET | `/api/cms/collections?websiteId=X` | List CMS collections |
-| POST | `/api/cms/collections` | Create a collection |
-| GET | `/api/cms/items?collectionId=X` | List items in a collection |
-| POST | `/api/cms/items` | Create a CMS item |
+| Package | Description |
+|---------|-------------|
+| `@hi/utils` | Utility functions (clsx, tailwind-merge wrappers) |
+| `@hi/ui` | UI component library (Button, Dialog, Card, etc.) |
+| `@hi/database` | Drizzle ORM schema, client, migrations |
+| `@hi/render` | Element renderer, tree utilities |
+| `@hi/auth` | Authentication (Better Auth) + middleware |
+| `@hi/cms` | CMS collection schema builder |
+| `@hi/editor` | Element definitions, style presets, API routes, server |
+| `@hi/website` | Component registry, built-in sections, Tailwind CSS generator |
+| `@hi/create` | Project scaffolder CLI |
 
-## Database Schema
-
-7 tables with JSONB columns for flexible content storage:
-
-```
-websites ──< pages ──< components
-    │                      │
-    ├──< cms_collections   │
-    │         │            │
-    │         └──< cms_items
-    │
-    └──< assets
-
-component_definitions  (registry of available component types)
-```
-
-Migrations are version-controlled SQL files in `packages/database/drizzle/`. Modify the schema in `packages/database/src/schema.ts`, then run `pnpm db:generate` to create a new migration.
-
-## Production Deployment
-
-### Docker Compose (self-hosted)
+Install any package:
 
 ```bash
-cp .env.production.example .env.production
-# Edit .env.production with your domain and secure passwords
-
-docker compose -f docker-compose.prod.yml up -d
+deno add @hi/editor
 ```
 
-This starts three containers: PostgreSQL, the website app, and the editor app. Each Next.js app builds in standalone mode for minimal image size.
+## Self-Hosting
 
-### Manual deployment
+See [deploy/README.md](deploy/README.md) for full deployment docs.
+
+### Docker Compose (recommended)
 
 ```bash
-pnpm build
-pnpm db:migrate   # against your production DATABASE_URL
+cd deploy
+cp ../.env.example .env
+# Edit .env — set BETTER_AUTH_SECRET and BETTER_AUTH_URL
+
+docker compose up -d
+
+# Initialize database
+docker compose exec editor deno task db:push
+docker compose exec editor deno task db:seed
 ```
 
-Then run each app with `next start`. Set these environment variables:
+### Coolify
 
-- `DATABASE_URL` — PostgreSQL connection string
-- `WEBSITE_ID` — which website to render (for the web app)
+Use `deploy/docker-compose.coolify.yml` as the compose template in Coolify. Set `SERVICE_FQDN_EDITOR` to your domain.
 
-## Creating New Components
+### Environment Variables
 
-1. Create a file in `packages/website/src/components/`:
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `BETTER_AUTH_SECRET` | Yes | Random secret for auth |
+| `BETTER_AUTH_URL` | Yes | Public editor URL |
+| `WEBSITE_ID` | For web app | Which website to render |
+| `S3_ENDPOINT` | No | S3 storage endpoint |
+| `S3_ACCESS_KEY` | No | S3 credentials |
+| `S3_SECRET_KEY` | No | S3 credentials |
+| `S3_BUCKET` | No | S3 bucket name |
 
-```tsx
-import { z } from "zod";
-import { registerComponent } from "../registry/index";
+## Creating Custom Elements
 
-const myComponentSchema = z.object({
-  title: z.string().default("Hello"),
-});
+1. Define an element:
 
-function MyComponent({ title }: z.infer<typeof myComponentSchema>) {
-  return <div>{title}</div>;
-}
+```ts
+import { defineElement } from "@hi/editor";
 
-export { MyComponent };
-export { myComponentSchema };
-
-registerComponent({
-  type: "my-component",
-  name: "My Component",
+export const myElement = defineElement({
+  type: "my-element",
+  name: "My Element",
   category: "section",
-  schema: myComponentSchema,
-  defaultProps: myComponentSchema.parse({}),
-  defaultStyles: {},
-  component: MyComponent,
+  fields: {
+    title: textField("Title"),
+    subtitle: textField("Subtitle"),
+  },
+  defaultProps: { title: "Hello", subtitle: "" },
+  render: (props) => `<section><h1>${props.title}</h1></section>`,
 });
 ```
 
-2. Export it from `packages/website/src/components/index.ts`
-3. It automatically appears in the editor's section picker and the page renderer
+2. Register it in your config — it automatically appears in the editor's element picker and the page renderer.
 
 ## License
 
