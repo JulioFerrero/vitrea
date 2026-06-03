@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@hi/ui/button";
-import { Input } from "@hi/ui/input";
-import { Badge } from "@hi/ui/badge";
+import { Button } from "@vitrea/ui/button";
+import { Input } from "@vitrea/ui/input";
+import { Badge } from "@vitrea/ui/badge";
 import { createApiFetch } from "../lib/api";
 import { Trash2, UserPlus, Shield, ShieldOff, X } from "lucide-react";
-import { cn } from "@hi/utils";
+import { cn } from "@vitrea/utils";
 
 const api = createApiFetch();
 

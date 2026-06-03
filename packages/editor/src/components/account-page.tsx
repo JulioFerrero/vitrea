@@ -1,18 +1,25 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { useSession, signOut } from "@hi/auth/client";
-import { Button, Input, Divider } from "@hi/editor-ui/form-primitives";
+import { useSession } from "@vitrea/auth/client";
+import { Button, Input, Divider } from "@vitrea/editor-ui/form-primitives";
 import { createApiFetch } from "../lib/api";
-import { cn } from "@hi/utils";
+import { cn } from "@vitrea/utils";
 import { ArrowLeft, Lock, Trash2, Camera, Check, ShieldCheck, Loader2, Palette } from "lucide-react";
 import { navigate } from "../lib/navigate";
 
 const api = createApiFetch();
+type SessionUser = {
+  name: string;
+  email: string;
+  image?: string | null;
+  role?: string | null;
+  cursorColor?: string | null;
+};
 
 export function AccountPage({ onBack: _onBack }: { onBack: () => void }) {
   const { data: session, refetch } = useSession();
-  const user = session?.user;
+  const user = session?.user as SessionUser | undefined;
 
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
@@ -54,6 +61,10 @@ export function AccountPage({ onBack: _onBack }: { onBack: () => void }) {
     e.preventDefault();
     setSaving(true);
     setProfileMsg("");
+    if (!user) {
+      setSaving(false);
+      return;
+    }
     try {
       const updates: Record<string, string> = {};
       if (name !== user.name) updates.name = name;

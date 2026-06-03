@@ -1,16 +1,23 @@
 import { defineConfig, type Plugin } from "vite";
+import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import { resolve } from "node:path";
-import { denoWorkspacePlugin } from "./vite-plugin-deno.ts";
 import { Buffer } from "node:buffer";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import { config as loadDotenv } from "dotenv";
 import { WebSocketServer } from "ws";
+
+const currentDir = dirname(fileURLToPath(import.meta.url));
+loadDotenv({ path: resolve(currentDir, "../../.env") });
 
 type ClientInfo = { userId: string; name: string; color: string; siteId: string; pageId: string };
 const wsRooms = new Map<WebSocket, ClientInfo>();
 
-function wsRoomKey(siteId: string, pageId: string) { return `${siteId}:${pageId}`; }
+function wsRoomKey(siteId: string, pageId: string) {
+  return `${siteId}:${pageId}`;
+}
 
-function handleWsJoin(wss: InstanceType<typeof WebSocketServer>, ws: WebSocket, msg: Record<string, unknown>) {
+function handleWsJoin(ws: WebSocket, msg: Record<string, unknown>) {
   const { userId, name, color, siteId, pageId } = msg as Record<string, string>;
   if (!userId || !siteId || !pageId) return;
   const old = wsRooms.get(ws);
@@ -26,7 +33,7 @@ function handleWsJoin(wss: InstanceType<typeof WebSocketServer>, ws: WebSocket, 
   }
 }
 
-function handleWsCursor(wss: InstanceType<typeof WebSocketServer>, ws: WebSocket, msg: Record<string, unknown>) {
+function handleWsCursor(ws: WebSocket, msg: Record<string, unknown>) {
   const info = wsRooms.get(ws);
   if (!info) return;
   const key = wsRoomKey(info.siteId, info.pageId);
@@ -38,7 +45,7 @@ function handleWsCursor(wss: InstanceType<typeof WebSocketServer>, ws: WebSocket
   }
 }
 
-function handleWsUpdate(wss: InstanceType<typeof WebSocketServer>, ws: WebSocket, msg: Record<string, unknown>) {
+function handleWsUpdate(ws: WebSocket, msg: Record<string, unknown>) {
   const info = wsRooms.get(ws);
   if (!info) return;
   const key = wsRoomKey(info.siteId, info.pageId);
@@ -53,7 +60,7 @@ function handleWsUpdate(wss: InstanceType<typeof WebSocketServer>, ws: WebSocket
   }
 }
 
-function handleWsLeave(wss: InstanceType<typeof WebSocketServer>, ws: WebSocket) {
+function handleWsLeave(ws: WebSocket) {
   const info = wsRooms.get(ws);
   if (!info) return;
   wsRooms.delete(ws);
@@ -66,52 +73,52 @@ function handleWsLeave(wss: InstanceType<typeof WebSocketServer>, ws: WebSocket)
   }
 }
 
-const root = resolve(import.meta.dirname, "../..");
-
 function apiPlugin(): Plugin {
-  let apiApp: ReturnType<typeof Object>;
-  let tailwindFn: ReturnType<typeof Object>;
-  let iframeBaseCSSFn: ReturnType<typeof Object>;
-  let fontCSSResult: Promise<{ css: string; fontDirs: Map<string, string> }>;
+  let apiApp: { fetch: (req: Request) => Response | Promise<Response> };
+  let tailwindFn: (classes: string[]) => Promise<string>;
+  let iframeBaseCSSFn: () => Promise<string>;
   let resolvedFontDirs: Map<string, string> = new Map();
   let resolvedFontCSS = "";
 
   return {
-    name: "hi-api-middleware",
+    name: "vitrea-api-middleware",
     enforce: "pre",
     async configureServer(server) {
       const [{ app: importedApp }, { tailwindCssResponse, iframeBaseCSS, fontCSSWithAbsoluteURLs }] = await Promise.all([
-        import(resolve(root, "packages/editor/src/api/index.ts")),
-        import(resolve(root, "packages/website/src/lib/tailwind.ts")),
+        import("@vitrea/editor/api"),
+        import("@internal/web/tailwind"),
       ]);
       apiApp = importedApp;
       tailwindFn = tailwindCssResponse;
       iframeBaseCSSFn = iframeBaseCSS;
 
-      fontCSSResult = fontCSSWithAbsoluteURLs();
-      fontCSSResult.then((r) => {
-        resolvedFontCSS = r.css;
-        resolvedFontDirs = r.fontDirs;
+      fontCSSWithAbsoluteURLs().then((result: { css: string; fontDirs: Map<string, string> }) => {
+        resolvedFontCSS = result.css;
+        resolvedFontDirs = result.fontDirs;
       });
 
-      let wss: InstanceType<typeof WebSocketServer>;
+      let wss: InstanceType<typeof WebSocketServer> | undefined;
 
       server.httpServer?.on("upgrade", (req, socket, head) => {
         if (req.url !== "/ws") return;
         if (!wss) {
           wss = new WebSocketServer({ noServer: true });
-          wss.on("connection", (ws) => {
+          wss.on("connection", (ws: any) => {
             ws.on("message", (raw: Buffer) => {
               let msg: Record<string, unknown>;
-              try { msg = JSON.parse(raw.toString()); } catch { return; }
-              if (msg.type === "join") handleWsJoin(wss, ws, msg);
-              if (msg.type === "cursor") handleWsCursor(wss, ws, msg);
-              if (msg.type === "update") handleWsUpdate(wss, ws, msg);
+              try {
+                msg = JSON.parse(raw.toString());
+              } catch {
+                return;
+              }
+              if (msg.type === "join") handleWsJoin(ws, msg);
+              if (msg.type === "cursor") handleWsCursor(ws, msg);
+              if (msg.type === "update") handleWsUpdate(ws, msg);
             });
-            ws.on("close", () => handleWsLeave(wss, ws));
+            ws.on("close", () => handleWsLeave(ws));
           });
         }
-        wss.handleUpgrade(req, socket, head, (ws) => wss.emit("connection", ws, req));
+        wss.handleUpgrade(req, socket, head, (ws: any) => wss?.emit("connection", ws, req));
       });
 
       server.middlewares.use(async (req, res, next) => {
@@ -135,19 +142,25 @@ function apiPlugin(): Plugin {
               const [, pkgBaseName, fileName] = match;
               const dir = resolvedFontDirs.get(pkgBaseName!);
               if (dir) {
-                const { readFile, stat } = await import("node:fs/promises");
                 const { join } = await import("node:path");
+                const { readFile, stat } = await import("node:fs/promises");
                 const filePath = join(dir, fileName!);
                 try {
                   await stat(filePath);
-                  const FONT_MIME: Record<string, string> = { ".woff2": "font/woff2", ".woff": "font/woff", ".ttf": "font/ttf" };
+                  const fontMime: Record<string, string> = {
+                    ".woff2": "font/woff2",
+                    ".woff": "font/woff",
+                    ".ttf": "font/ttf",
+                  };
                   const ext = fileName!.lastIndexOf(".") >= 0 ? fileName!.slice(fileName!.lastIndexOf(".")) : "";
-                  const contentType = FONT_MIME[ext] ?? "application/octet-stream";
+                  const contentType = fontMime[ext] ?? "application/octet-stream";
                   const content = await readFile(filePath);
                   res.writeHead(200, { "content-type": contentType, "cache-control": "public, max-age=31536000, immutable" });
                   res.end(content);
                   return;
-                } catch {}
+                } catch {
+                  // fall through to 404 below
+                }
               }
             }
             res.writeHead(404);
@@ -175,26 +188,30 @@ function apiPlugin(): Plugin {
           const path = url.pathname.slice(4) || "/";
           const newUrl = new URL(path + url.search, url.origin);
           const headers: Record<string, string> = {};
-          for (const [k, v] of Object.entries(req.headers)) {
-            if (typeof v === "string") headers[k] = v;
-            else if (Array.isArray(v)) headers[k] = v.join(", ");
+          for (const [key, value] of Object.entries(req.headers)) {
+            if (typeof value === "string") headers[key] = value;
+            else if (Array.isArray(value)) headers[key] = value.join(", ");
           }
-          if (body && typeof body === "string" && !headers["content-type"]) headers["content-type"] = "application/json";
+          if (body && typeof body === "string" && !headers["content-type"]) {
+            headers["content-type"] = "application/json";
+          }
 
           const newReq = new Request(newUrl, {
             method,
             headers,
-            body: body || undefined,
+            body: typeof body === "string" ? body : body ? new Uint8Array(body) : undefined,
           });
 
           const apiRes = await apiApp.fetch(newReq);
           const resHeaders: Record<string, string> = {};
-          apiRes.headers.forEach((v: string, k: string) => { resHeaders[k] = v; });
+          apiRes.headers.forEach((value, key) => {
+            resHeaders[key] = value;
+          });
           res.writeHead(apiRes.status, resHeaders);
           const responseBody = await apiRes.arrayBuffer();
           res.end(Buffer.from(responseBody));
-        } catch (err) {
-          console.error("API middleware error:", err);
+        } catch (error) {
+          console.error("API middleware error:", error);
           res.writeHead(500);
           res.end("Internal Server Error");
         }
@@ -204,42 +221,8 @@ function apiPlugin(): Plugin {
 }
 
 export default defineConfig({
-  esbuild: {
-    jsxImportSource: "preact",
-    jsx: "automatic",
-  },
-  server: {
-    fs: {
-      allow: [
-        root,
-        resolve(root, "node_modules/.deno"),
-        resolve(root, "node_modules"),
-      ],
-    },
-  },
-  plugins: [
-    denoWorkspacePlugin(root, "@hi"),
-    apiPlugin(),
-    tailwindcss(),
-  ],
+  plugins: [react(), apiPlugin(), tailwindcss()],
   resolve: {
-    alias: [
-      { find: "react/jsx-runtime", replacement: "preact/jsx-runtime" },
-      { find: "react-dom", replacement: "preact/compat" },
-      { find: "react", replacement: "preact/compat" },
-      { find: "lucide-react", replacement: resolve(root, "node_modules/lucide-preact/dist/esm/lucide-preact.js") },
-      { find: "@fontsource-variable/geist", replacement: resolve(root, "node_modules/@fontsource-variable/geist") },
-      { find: "@fontsource/fraunces", replacement: resolve(root, "node_modules/@fontsource/fraunces") },
-      { find: "@fontsource/recursive", replacement: resolve(root, "node_modules/@fontsource/recursive") },
-      { find: "@hi/editor/styles.css", replacement: resolve(root, "packages/editor/src/styles.css") },
-      { find: "@hi/editor/api", replacement: resolve(root, "packages/editor/src/api/index.ts") },
-      { find: "@hi/website/styles.css", replacement: resolve(root, "packages/website/src/styles.css") },
-      { find: "@hi/database", replacement: resolve(root, "packages/database/src/index.ts") },
-      { find: "@hi/editor", replacement: resolve(root, "packages/editor/src/index.ts") },
-      { find: "@hi/render", replacement: resolve(root, "packages/render/src/index.ts") },
-      { find: "@hi/utils", replacement: resolve(root, "packages/utils/src/index.ts") },
-      { find: "@hi/website", replacement: resolve(root, "packages/website/src/index.ts") },
-    ],
-    dedupe: ["react", "react-dom", "react/jsx-runtime", "preact"],
+    dedupe: ["react", "react-dom"],
   },
 });

@@ -4,8 +4,8 @@ import React from "react";
 import { useState } from "react";
 import { useEditorStore, type SaveStatus } from "../../stores";
 import { useEditorContext } from "../../lib/context";
-import { Separator } from "@hi/editor-ui/separator";
-import { Badge } from "@hi/editor-ui/form-primitives";
+import { Separator } from "@vitrea/editor-ui/separator";
+import { Badge } from "@vitrea/editor-ui/form-primitives";
 import {
   Undo2,
   Redo2,
@@ -17,13 +17,13 @@ import {
   Image as ImageIcon,
   FileText,
 } from "lucide-react";
-import { cn } from "@hi/utils";
+import { cn } from "@vitrea/utils";
 import { ReviewDialog } from "../review-dialog";
 import { HistoryPanel } from "../history-panel";
 import { ProfileDropdown } from "../profile-dropdown";
-import { IconButton } from "@hi/editor-ui/icon-button";
+import { IconButton } from "@vitrea/editor-ui/icon-button";
 import { navigate } from "../../lib/navigate";
-import { glassStyle } from "@hi/editor-ui/glass";
+import { glassStyle } from "@vitrea/editor-ui/glass";
 
 function DraftStatusBadge() {
   const hasActiveDraft = useEditorStore((s) => s.hasActiveDraft);

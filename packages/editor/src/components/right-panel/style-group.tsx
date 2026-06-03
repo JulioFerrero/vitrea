@@ -1,6 +1,6 @@
 import React from "react";
 import type { StyleFieldConfig } from "../../types";
-import { CollapsibleSection } from "@hi/editor-ui/collapsible-section";
+import { CollapsibleSection } from "@vitrea/editor-ui/collapsible-section";
 import { SpacingFields, SizingFields } from "./spacing-sizing-fields";
 import { LayoutFields } from "./layout-fields";
 import { TypographyFields } from "./typography-fields";

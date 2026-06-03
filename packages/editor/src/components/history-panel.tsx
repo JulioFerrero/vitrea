@@ -3,11 +3,11 @@
 import { useState, useEffect } from "react";
 import { useEditorStore } from "../stores";
 import { useEditorContext } from "../lib/context";
-import { Modal } from "@hi/editor-ui/modal";
-import { Badge } from "@hi/editor-ui/form-primitives";
-import { Spinner } from "@hi/editor-ui/spinner";
-import { EmptyState } from "@hi/editor-ui/empty-state";
-import { ScrollArea } from "@hi/editor-ui/scroll-area";
+import { Modal } from "@vitrea/editor-ui/modal";
+import { Badge } from "@vitrea/editor-ui/form-primitives";
+import { Spinner } from "@vitrea/editor-ui/spinner";
+import { EmptyState } from "@vitrea/editor-ui/empty-state";
+import { ScrollArea } from "@vitrea/editor-ui/scroll-area";
 import { RotateCcw, Clock, Loader2 } from "lucide-react";
 
 interface RevisionItem {

@@ -2,7 +2,7 @@ import type { StateCreator } from "zustand";
 import type { RenderElement, PageItem, Viewport, PageElement } from "../types";
 import type { HistoryEntry } from "./history";
 import { computeUndo, computeRedo, canUndo, canRedo } from "./history";
-import { findElementById, insertChild, removeById, updateById, moveNode, duplicateNode, cloneTree, findById } from "@hi/render";
+import { findElementById, insertChild, removeById, updateById, moveNode, duplicateNode, cloneTree, findById } from "@vitrea/render";
 
 export type SaveStatus = "idle" | "saving" | "saved";
 
@@ -95,7 +95,11 @@ export const createEditorSlice: StateCreator<EditorStore> = (set, get) => ({
   selectElement: (id) => set({ selectedElementId: id }),
   setHoveredElement: (id) => set({ hoveredElementId: id }),
   pushHistory: () => set((s) => {
-    const entry: HistoryEntry = { content: cloneTree(s.content) };
+    const entry: HistoryEntry = {
+      content: cloneTree(s.content),
+      pages: s.pages,
+      selectedElementId: s.selectedElementId,
+    };
     const history = s._history.slice(0, s._historyIndex + 1);
     history.push(entry);
     if (history.length > 50) history.shift();
@@ -157,6 +161,9 @@ export const createEditorSlice: StateCreator<EditorStore> = (set, get) => ({
     set((s) => {
       const clone = cloneTree(s.content);
       const result = findById(clone, id);
+      if (!result) {
+        return { content: clone, isDirty: true, hasActiveDraft: true };
+      }
       const parentChildren = result.parent ? result.parent.children : clone;
       if (result && result.index < parentChildren.length - 1) {
         const el = parentChildren.splice(result.index, 1)[0];

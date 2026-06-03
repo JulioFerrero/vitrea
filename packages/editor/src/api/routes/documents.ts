@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { db, documents } from "@hi/database";
+import { db, documents } from "@vitrea/database";
 import { eq, and, desc, sql, inArray } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { getById, updateById, deleteById } from "./helpers";
@@ -55,7 +55,7 @@ export const documentsRoute = new Hono()
     zValidator("json", z.object({
       collectionId: z.string(),
       siteId: z.string(),
-      data: z.record(z.unknown()).optional(),
+      data: z.record(z.string(), z.unknown()).optional(),
       status: z.enum(["draft", "published"]).optional(),
     })),
     async (c) => {
@@ -73,7 +73,7 @@ export const documentsRoute = new Hono()
   .patch(
     "/:id",
     zValidator("json", z.object({
-      data: z.record(z.unknown()).optional(),
+      data: z.record(z.string(), z.unknown()).optional(),
       status: z.enum(["draft", "published"]).optional(),
     })),
     async (c) => {

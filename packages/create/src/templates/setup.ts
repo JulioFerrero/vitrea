@@ -1,9 +1,10 @@
-import type { PromptAnswers } from "../prompts.ts";
+import type { PromptAnswers } from "../prompts";
 
 export function drizzleConfigTs(): string {
-  return `import { defineConfig } from "drizzle-kit";
+  return `import "dotenv/config";
+import { defineConfig } from "drizzle-kit";
 
-const connectionString = Deno.env.get("DATABASE_URL");
+const connectionString = process.env.DATABASE_URL;
 
 if (!connectionString) {
   throw new Error("DATABASE_URL is not set");
@@ -21,23 +22,27 @@ export default defineConfig({
 }
 
 export function drizzleSchemaTs(): string {
-  return `export * from "jsr:@hi/database@^0.1.0/schema";
+  return `export * from "@vitrea/database/schema";
 `;
 }
 
 export function setupScriptTs(answers: PromptAnswers): string {
-  return `import { Confirm, Input, Select } from "@cliffy/prompt";
-import { fromFileUrl } from "@std/path";
+  return `import "dotenv/config";
+import { readFileSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
+import prompts from "prompts";
+import { spawn } from "node:child_process";
 
 type DatabaseChoice = "local" | "existing" | "skip";
 type StorageChoice = "local" | "existing" | "skip";
 
-const rootDir = fromFileUrl(new URL("../", import.meta.url));
-const envPath = fromFileUrl(new URL("../.env", import.meta.url));
+const rootDir = resolve(import.meta.dirname, "..");
+const envPath = resolve(rootDir, ".env");
 
 function readEnvFile(): string {
   try {
-    return Deno.readTextFileSync(envPath);
+    return readFileSync(envPath, "utf8");
   } catch {
     return "";
   }
@@ -58,32 +63,45 @@ function writeEnvValues(values: Record<string, string>): void {
   for (const [key, value] of Object.entries(values)) {
     content = upsertEnvValue(content, key, value);
   }
-  Deno.writeTextFileSync(envPath, content);
+  writeFileSync(envPath, content, "utf8");
 }
 
 async function run(command: string, args: string[], description: string): Promise<void> {
   console.log(\`\\n  -> \${description}\`);
-  const result = await new Deno.Command(command, {
-    args,
-    cwd: rootDir,
-    stdin: "inherit",
-    stdout: "inherit",
-    stderr: "inherit",
-  }).output();
-  if (!result.success) {
-    throw new Error(\`\${description} failed\`);
-  }
+  await new Promise<void>((resolvePromise, rejectPromise) => {
+    const child = spawn(command, args, {
+      cwd: rootDir,
+      stdio: "inherit",
+      shell: process.platform === "win32",
+    });
+
+    child.on("exit", (code) => {
+      if (code === 0) {
+        resolvePromise();
+        return;
+      }
+      rejectPromise(new Error(\`\${description} failed\`));
+    });
+    child.on("error", rejectPromise);
+  });
+}
+
+function onCancel(): never {
+  throw new Error("Setup cancelled");
 }
 
 async function configureDatabase(): Promise<void> {
-  const choice = await Select.prompt<DatabaseChoice>({
+  const { choice } = await prompts({
+    type: "select",
+    name: "choice",
     message: "Database setup",
-    options: [
-      { name: "Use local Docker Postgres", value: "local" },
-      { name: "Use an existing PostgreSQL database", value: "existing" },
-      { name: "Skip for now", value: "skip" },
+    choices: [
+      { title: "Use local Docker Postgres", value: "local" },
+      { title: "Use an existing PostgreSQL database", value: "existing" },
+      { title: "Skip for now", value: "skip" },
     ],
-  });
+    initial: 0,
+  }, { onCancel });
 
   if (choice === "skip") return;
 
@@ -92,43 +110,52 @@ async function configureDatabase(): Promise<void> {
       DATABASE_URL: "postgresql://hi:hi@localhost:5432/${answers.projectName}",
     });
     await run("docker", ["compose", "up", "-d", "postgres"], "starting local Postgres");
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    await delay(5000);
   } else {
     const current = readEnvFile().match(/^DATABASE_URL=(.*)$/m)?.[1] ?? "";
-    const databaseUrl = await Input.prompt({
+    const response = await prompts({
+      type: "text",
+      name: "databaseUrl",
       message: "PostgreSQL connection string",
-      default: current,
-      validate: (value) => value.trim().length > 0 || "DATABASE_URL is required",
-    });
-    writeEnvValues({ DATABASE_URL: databaseUrl.trim() });
+      initial: current,
+      validate: (value: string) => value.trim().length > 0 || "DATABASE_URL is required",
+    }, { onCancel });
+    writeEnvValues({ DATABASE_URL: response.databaseUrl.trim() });
   }
 
-  const runMigrations = await Confirm.prompt({
+  const migrations = await prompts({
+    type: "confirm",
+    name: "runMigrations",
     message: "Push the database schema now?",
-    default: true,
-  });
-  if (runMigrations) {
-    await run("deno", ["task", "db:push"], "pushing database schema");
+    initial: true,
+  }, { onCancel });
+  if (migrations.runMigrations) {
+    await run("pnpm", ["db:push"], "pushing database schema");
   }
 
-  const seedStarterData = await Confirm.prompt({
+  const seed = await prompts({
+    type: "confirm",
+    name: "seedStarterData",
     message: "Create starter site data now?",
-    default: true,
-  });
-  if (seedStarterData) {
-    await run("deno", ["task", "db:seed"], "creating starter site data");
+    initial: true,
+  }, { onCancel });
+  if (seed.seedStarterData) {
+    await run("pnpm", ["db:seed"], "creating starter site data");
   }
 }
 
 async function configureStorage(): Promise<void> {
-  const choice = await Select.prompt<StorageChoice>({
+  const { choice } = await prompts({
+    type: "select",
+    name: "choice",
     message: "Asset storage setup",
-    options: [
-      { name: "Run local S3 with SeaweedFS", value: "local" },
-      { name: "Use an existing S3-compatible storage", value: "existing" },
-      { name: "Skip for now", value: "skip" },
+    choices: [
+      { title: "Run local S3 with SeaweedFS", value: "local" },
+      { title: "Use an existing S3-compatible storage", value: "existing" },
+      { title: "Skip for now", value: "skip" },
     ],
-  });
+    initial: 0,
+  }, { onCancel });
 
   if (choice === "skip") {
     writeEnvValues({
@@ -155,60 +182,77 @@ async function configureStorage(): Promise<void> {
     return;
   }
 
-  const endpoint = await Input.prompt({
-    message: "S3 endpoint (leave blank for AWS S3)",
-    default: readEnvFile().match(/^S3_ENDPOINT=(.*)$/m)?.[1] ?? "",
-  });
-  const region = await Input.prompt({
-    message: "S3 region",
-    default: readEnvFile().match(/^S3_REGION=(.*)$/m)?.[1] ?? "us-east-1",
-  });
-  const bucket = await Input.prompt({
-    message: "S3 bucket",
-    default: readEnvFile().match(/^S3_BUCKET=(.*)$/m)?.[1] ?? "",
-    validate: (value) => value.trim().length > 0 || "S3 bucket is required",
-  });
-  const accessKey = await Input.prompt({
-    message: "S3 access key",
-    default: readEnvFile().match(/^S3_ACCESS_KEY=(.*)$/m)?.[1] ?? "",
-  });
-  const secretKey = await Input.prompt({
-    message: "S3 secret key",
-    default: readEnvFile().match(/^S3_SECRET_KEY=(.*)$/m)?.[1] ?? "",
-  });
-  const forcePathStyle = await Confirm.prompt({
-    message: "Use path-style S3 URLs?",
-    default: (readEnvFile().match(/^S3_FORCE_PATH_STYLE=(.*)$/m)?.[1] ?? "false") === "true",
-  });
+  const currentEnv = readEnvFile();
+  const response = await prompts([
+    {
+      type: "text",
+      name: "endpoint",
+      message: "S3 endpoint (leave blank for AWS S3)",
+      initial: currentEnv.match(/^S3_ENDPOINT=(.*)$/m)?.[1] ?? "",
+    },
+    {
+      type: "text",
+      name: "region",
+      message: "S3 region",
+      initial: currentEnv.match(/^S3_REGION=(.*)$/m)?.[1] ?? "us-east-1",
+    },
+    {
+      type: "text",
+      name: "bucket",
+      message: "S3 bucket",
+      initial: currentEnv.match(/^S3_BUCKET=(.*)$/m)?.[1] ?? "",
+      validate: (value: string) => value.trim().length > 0 || "S3 bucket is required",
+    },
+    {
+      type: "text",
+      name: "accessKey",
+      message: "S3 access key",
+      initial: currentEnv.match(/^S3_ACCESS_KEY=(.*)$/m)?.[1] ?? "",
+    },
+    {
+      type: "text",
+      name: "secretKey",
+      message: "S3 secret key",
+      initial: currentEnv.match(/^S3_SECRET_KEY=(.*)$/m)?.[1] ?? "",
+    },
+    {
+      type: "confirm",
+      name: "forcePathStyle",
+      message: "Use path-style S3 URLs?",
+      initial: (currentEnv.match(/^S3_FORCE_PATH_STYLE=(.*)$/m)?.[1] ?? "false") === "true",
+    },
+  ], { onCancel });
 
   writeEnvValues({
-    S3_ENDPOINT: endpoint.trim(),
-    S3_REGION: region.trim(),
-    S3_BUCKET: bucket.trim(),
-    S3_ACCESS_KEY: accessKey.trim(),
-    S3_SECRET_KEY: secretKey.trim(),
-    S3_FORCE_PATH_STYLE: forcePathStyle ? "true" : "false",
+    S3_ENDPOINT: response.endpoint.trim(),
+    S3_REGION: response.region.trim(),
+    S3_BUCKET: response.bucket.trim(),
+    S3_ACCESS_KEY: response.accessKey.trim(),
+    S3_SECRET_KEY: response.secretKey.trim(),
+    S3_FORCE_PATH_STYLE: response.forcePathStyle ? "true" : "false",
   });
 }
 
 console.log("\\n  Project setup\\n");
 await configureDatabase();
 await configureStorage();
-console.log("\\n  Setup complete. You can now run: deno task dev\\n");
+console.log("\\n  Setup complete. You can now run: pnpm dev\\n");
 `;
 }
 
 export function seedScriptTs(answers: PromptAnswers): string {
-  return `import { fromFileUrl } from "@std/path";
+  return `import "dotenv/config";
+import { readFileSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
-import { db, pages, sites } from "@hi/database";
+import { closeDatabase, db, pages, sites } from "@vitrea/database";
 
-const envPath = fromFileUrl(new URL("../.env", import.meta.url));
+const envPath = resolve(import.meta.dirname, "..", ".env");
 
 function readEnvFile(): string {
   try {
-    return Deno.readTextFileSync(envPath);
+    return readFileSync(envPath, "utf8");
   } catch {
     return "";
   }
@@ -227,36 +271,40 @@ function upsertEnvValue(content: string, key: string, value: string): string {
 function writeWebsiteId(siteId: string): void {
   const current = readEnvFile();
   const next = upsertEnvValue(current, "WEBSITE_ID", siteId);
-  Deno.writeTextFileSync(envPath, next);
+  writeFileSync(envPath, next, "utf8");
 }
 
-const [existingSite] = await db.select().from(sites).limit(1);
+try {
+  const [existingSite] = await db.select().from(sites).limit(1);
 
-const site = existingSite ?? (await db.insert(sites).values({
-  id: nanoid(),
-  slug: "${answers.projectName}",
-  data: { name: "${answers.projectName}" },
-}).returning())[0];
-
-const [existingHomePage] = await db
-  .select()
-  .from(pages)
-  .where(eq(pages.siteId, site.id))
-  .limit(1);
-
-if (!existingHomePage) {
-  await db.insert(pages).values({
+  const site = existingSite ?? (await db.insert(sites).values({
     id: nanoid(),
-    siteId: site.id,
-    slug: "home",
-    data: { title: "Home", path: "/", status: "published" },
-    content: [],
-    pubContent: [],
-  });
+    slug: "${answers.projectName}",
+    data: { name: "${answers.projectName}" },
+  }).returning())[0];
+
+  const [existingHomePage] = await db
+    .select()
+    .from(pages)
+    .where(eq(pages.siteId, site.id))
+    .limit(1);
+
+  if (!existingHomePage) {
+    await db.insert(pages).values({
+      id: nanoid(),
+      siteId: site.id,
+      slug: "home",
+      data: { title: "Home", path: "/", status: "published" },
+      content: [],
+      pubContent: [],
+    });
+  }
+
+  writeWebsiteId(site.id);
+
+  console.log(\`Starter data ready. WEBSITE_ID=\${site.id}\`);
+} finally {
+  await closeDatabase();
 }
-
-writeWebsiteId(site.id);
-
-console.log(\`Starter data ready. WEBSITE_ID=\${site.id}\`);
 `;
 }

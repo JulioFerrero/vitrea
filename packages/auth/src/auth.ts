@@ -1,17 +1,12 @@
+import process from "node:process";
 import { betterAuth } from "better-auth";
 import { APIError } from "better-auth/api";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
-import { db, user as userTable } from "@hi/database";
+import { db, user as userTable } from "@vitrea/database";
 import { sql } from "drizzle-orm";
 
 function env(key: string, fallback?: string): string | undefined {
-  try {
-    return (globalThis as Record<string, unknown>).Deno
-      ? (Deno.env.get(key) ?? fallback)
-      : (process.env[key] ?? fallback);
-  } catch {
-    return process.env[key] ?? fallback;
-  }
+  return process.env[key] ?? fallback;
 }
 
 export const auth = betterAuth({
@@ -62,7 +57,7 @@ export const auth = betterAuth({
             return { data: { ...user, role: "admin" } };
           }
 
-          const session = ctx.context?.session;
+          const session = ctx?.context?.session;
           const sessionUser = session?.user as Record<string, unknown> | undefined;
 
           if (!session || sessionUser?.role !== "admin") {
@@ -79,7 +74,7 @@ export const auth = betterAuth({
       },
       update: {
         before: async (data, ctx) => {
-          const session = ctx.context?.session;
+          const session = ctx?.context?.session;
           const sessionUser = session?.user as Record<string, unknown> | undefined;
 
           if (sessionUser?.role !== "admin") {
@@ -95,7 +90,7 @@ export const auth = betterAuth({
       },
       delete: {
         before: async (user, ctx) => {
-          const session = ctx.context?.session;
+          const session = ctx?.context?.session;
           const sessionUser = session?.user as Record<string, unknown> | undefined;
 
           if (sessionUser?.role !== "admin") {

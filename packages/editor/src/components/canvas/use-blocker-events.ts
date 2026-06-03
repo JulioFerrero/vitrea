@@ -8,7 +8,7 @@ import {
   querySelectedOutline,
 } from "./canvas-helpers";
 import { useInlineEditing } from "./use-inline-editing";
-import { findElementById } from "@hi/render";
+import { findElementById } from "@vitrea/render";
 
 export function useBlockerEvents(
   blockerRef: React.RefObject<HTMLDivElement | null>,

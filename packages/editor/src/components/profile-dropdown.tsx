@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useSession, signOut } from "@hi/auth/client";
-import { cn } from "@hi/utils";
+import { useSession, signOut } from "@vitrea/auth/client";
+import { cn } from "@vitrea/utils";
 import { ChevronDown, User, LogOut } from "lucide-react";
 import { EditProfileModal } from "./edit-profile-modal";
-import { Dropdown, DropdownItem, DropdownHeader } from "@hi/editor-ui/dropdown";
+import { Dropdown, DropdownItem, DropdownHeader } from "@vitrea/editor-ui/dropdown";
 
 export function ProfileDropdown() {
   const { data: session } = useSession();

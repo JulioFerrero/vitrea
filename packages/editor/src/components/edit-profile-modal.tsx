@@ -1,18 +1,25 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useSession, signOut } from "@hi/auth/client";
-import { cn } from "@hi/utils";
+import { useSession, signOut } from "@vitrea/auth/client";
+import { cn } from "@vitrea/utils";
 import { Camera, Loader2, ShieldCheck } from "lucide-react";
 import { createApiFetch } from "../lib/api";
-import { Modal } from "@hi/editor-ui/modal";
-import { Label, SectionLabel, Button, Alert, Divider, ColorInput, Field, Input } from "@hi/editor-ui/form-primitives";
+import { Modal } from "@vitrea/editor-ui/modal";
+import { Label, SectionLabel, Button, Alert, Divider, ColorInput, Field, Input } from "@vitrea/editor-ui/form-primitives";
 
 const api = createApiFetch();
+type SessionUser = {
+  name: string;
+  email: string;
+  image?: string | null;
+  role?: string | null;
+  cursorColor?: string | null;
+};
 
 export function EditProfileModal({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const { data: session, refetch } = useSession();
-  const user = session?.user;
+  const user = session?.user as SessionUser | undefined;
 
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");

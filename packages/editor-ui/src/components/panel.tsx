@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@hi/utils";
+import { cn } from "@vitrea/utils";
 import { glassStyle, glassDarkStyle, glassPanelClass } from "../lib/glass";
 
 export function Panel({

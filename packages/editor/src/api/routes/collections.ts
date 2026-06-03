@@ -1,7 +1,8 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { db, collections } from "@hi/database";
+import { db, collections } from "@vitrea/database";
+import type { CollectionField } from "@vitrea/database";
 import { eq, and } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { getById, updateById, deleteById } from "./helpers";
@@ -25,7 +26,7 @@ export const collectionsRoute = new Hono()
       name: z.string().min(1),
       label: z.string().min(1),
       icon: z.string().optional(),
-      fields: z.array(z.record(z.unknown())).optional(),
+      fields: z.array(z.record(z.string(), z.unknown())).optional(),
     })),
     async (c) => {
       const body = c.req.valid("json");
@@ -40,7 +41,7 @@ export const collectionsRoute = new Hono()
         name: body.name,
         label: body.label,
         icon: body.icon ?? "folder",
-        fields: (body.fields ?? []) as Record<string, unknown>[],
+        fields: (body.fields ?? []) as CollectionField[],
       }).returning();
       return c.json(row, 201);
     }
@@ -50,7 +51,7 @@ export const collectionsRoute = new Hono()
     zValidator("json", z.object({
       label: z.string().min(1).optional(),
       icon: z.string().optional(),
-      fields: z.array(z.record(z.unknown())).optional(),
+      fields: z.array(z.record(z.string(), z.unknown())).optional(),
     })),
     async (c) => {
       const body = c.req.valid("json");

@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Modal } from "@hi/editor-ui/modal";
-import { Button } from "@hi/editor-ui/form-primitives";
-import { Spinner } from "@hi/editor-ui/spinner";
-import { EmptyState } from "@hi/editor-ui/empty-state";
-import { cn } from "@hi/utils";
+import { Modal } from "@vitrea/editor-ui/modal";
+import { Button } from "@vitrea/editor-ui/form-primitives";
+import { Spinner } from "@vitrea/editor-ui/spinner";
+import { EmptyState } from "@vitrea/editor-ui/empty-state";
+import { cn } from "@vitrea/utils";
 import { Upload, Image as ImageIcon, Trash2, Check } from "lucide-react";
-import type { EditorApi } from "../../types";
+import type { EditorApi } from "../types";
 
 interface FileEntry {
   id: string;

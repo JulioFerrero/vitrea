@@ -4,7 +4,7 @@ import { useEditorContext } from "../../lib/context";
 import { getIcon } from "../../icons";
 import { ChevronUp } from "lucide-react";
 import { ToolbarButton } from "./toolbar-button";
-import { findElementById } from "@hi/render";
+import { findElementById } from "@vitrea/render";
 
 interface ElementButton {
   type: string;
@@ -33,8 +33,6 @@ export function ElementToolbar({
   const containerRef = useRef<HTMLDivElement>(null);
   const [perRow, setPerRow] = useState(Infinity);
   const [expanded, setExpanded] = useState(false);
-
-  if (!pageId) return null;
 
   const selected = selectedElementId
     ? findElementById(content, selectedElementId)
@@ -67,6 +65,8 @@ export function ElementToolbar({
     ro.observe(container);
     return () => ro.disconnect();
   }, [allButtons.length]);
+
+  if (!pageId) return null;
 
   const effectivePerRow = Math.max(perRow, 1);
   const rows = effectivePerRow >= allButtons.length

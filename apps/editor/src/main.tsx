@@ -1,5 +1,10 @@
-import { render } from "preact";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 import { App } from "./app";
 import "../assets/styles.css";
 
-render(<App />, document.getElementById("root")!);
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);

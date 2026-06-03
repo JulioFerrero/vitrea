@@ -1,46 +1,66 @@
-import type { PromptAnswers } from "../prompts.ts";
+import type { PromptAnswers } from "../prompts";
 
-export function rootDenoJson(_answers: PromptAnswers): string {
+export function rootPackageJson(_answers: PromptAnswers): string {
   return JSON.stringify({
-    workspace: ["apps/*", "packages/*"],
-    tasks: {
-      "setup": "deno run -A --env-file=.env ./scripts/setup.ts",
-      "dev:web": "cd apps/web && deno task dev",
-      "dev:editor": "cd apps/editor && deno task dev",
-      "dev": "deno task dev:editor & deno task dev:web",
-      "build:web": "cd apps/web && deno task build",
-      "build:editor": "cd apps/editor && deno task build",
-      "build": "deno task build:web && deno task build:editor",
-      "db:push": "deno run -A --env-file=.env npm:drizzle-kit push --config=./drizzle.config.ts",
-      "db:seed": "deno run -A --env-file=.env ./scripts/seed.ts",
+    name: "vitrea-project",
+    private: true,
+    packageManager: "pnpm@9.15.0",
+    engines: {
+      node: ">=20.11.0",
     },
-    imports: {
-      "@std/path": "jsr:@std/path@^1.0.0",
-      "@cliffy/prompt": "jsr:@cliffy/prompt@^1.0.0",
-      "hono": "npm:hono@^4.7.0",
-      "better-auth": "npm:better-auth@^1.6.0",
-      "@better-auth/drizzle-adapter": "npm:@better-auth/drizzle-adapter@^1.6.0",
-      "drizzle-orm": "npm:drizzle-orm@^0.43.0",
-      "@base-ui/react": "npm:@base-ui/react@^1.0.0",
-      "react-arborist": "npm:react-arborist@^3.6.0",
-      "class-variance-authority": "npm:class-variance-authority@^0.7.0",
-      "nanoid": "npm:nanoid@^5.1.0",
-      "clsx": "npm:clsx@^2.1.0",
-      "tailwind-merge": "npm:tailwind-merge@^3.2.0",
-    "lucide-preact": "npm:lucide-preact@^0.509.0",
-      "@dnd-kit/core": "npm:@dnd-kit/core@^6.3.0",
-      "@dnd-kit/sortable": "npm:@dnd-kit/sortable@^9.0.0",
-      "@dnd-kit/utilities": "npm:@dnd-kit/utilities@^3.2.0",
-      "@aws-sdk/client-s3": "npm:@aws-sdk/client-s3@^3.750.0",
-      "@aws-sdk/s3-request-presigner": "npm:@aws-sdk/s3-request-presigner@^3.750.0",
+    scripts: {
+      setup: "tsx ./scripts/setup.ts",
+      "dev:web": "pnpm --filter @app/web dev",
+      "dev:editor": "pnpm --filter @app/editor dev",
+      dev: "concurrently -n web,editor -c blue,magenta \"pnpm dev:web\" \"pnpm dev:editor\"",
+      "build:web": "pnpm --filter @app/web build",
+      "build:editor": "pnpm --filter @app/editor build",
+      build: "pnpm build:web && pnpm build:editor",
+      "db:push": "drizzle-kit push --config=./drizzle.config.ts",
+      "db:seed": "tsx ./scripts/seed.ts",
     },
+    dependencies: {
+      "@vitrea/database": "^0.1.1",
+      "drizzle-orm": "^0.43.0",
+      nanoid: "^5.1.0",
+      postgres: "^3.4.5",
+      prompts: "^2.4.2",
+    },
+    devDependencies: {
+      "@types/node": "^22.10.2",
+      concurrently: "^9.1.0",
+      dotenv: "^16.4.7",
+      "drizzle-kit": "^0.31.0",
+      tsx: "^4.19.2",
+      typescript: "^5.7.2",
+    },
+  }, null, 2) + "\n";
+}
+
+export function pnpmWorkspaceYaml(): string {
+  return `packages:\n  - "apps/*"\n  - "internal/*"\n  - "packages/*"\n`;
+}
+
+export function rootTsconfigBase(): string {
+  return JSON.stringify({
     compilerOptions: {
-      lib: ["ES2022", "DOM", "DOM.Iterable", "deno.ns"],
+      target: "ES2022",
+      lib: ["ES2022", "DOM", "DOM.Iterable"],
+      module: "ESNext",
+      moduleResolution: "Bundler",
       jsx: "react-jsx",
-      jsxImportSource: "preact",
+      strict: true,
+      skipLibCheck: true,
+      esModuleInterop: true,
+      allowSyntheticDefaultImports: true,
+      resolveJsonModule: true,
+      noEmit: true,
+      baseUrl: ".",
+      paths: {
+        "@internal/editor": ["internal/editor/src/index.ts"],
+        "@internal/web": ["internal/web/src/index.ts"],
+      },
     },
-    lint: { rules: { exclude: ["no-sloppy-imports", "no-import-prefix", "no-unversioned-import", "no-slow-types", "no-explicit-any"] } },
-    unstable: ["bare-node-builtins", "detect-cjs", "node-globals", "sloppy-imports"],
-    nodeModulesDir: "auto",
-  }, null, 2);
+    exclude: ["node_modules", ".next", "dist"],
+  }, null, 2) + "\n";
 }

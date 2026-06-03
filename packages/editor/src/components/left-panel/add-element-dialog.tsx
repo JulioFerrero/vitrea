@@ -1,5 +1,5 @@
 import { getIcon } from "../../icons";
-import { Modal } from "@hi/editor-ui/modal";
+import { Modal } from "@vitrea/editor-ui/modal";
 
 export function AddElementDialog({
   open,

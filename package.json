@@ -1,0 +1,25 @@
+{
+  "name": "web-builder",
+  "private": true,
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev:create": "pnpm --filter @vitrea/create dev",
+    "build:create": "pnpm --filter @vitrea/create build",
+    "dev:web": "pnpm --filter @app/web dev",
+    "dev:editor": "pnpm --filter @app/editor dev",
+    "dev": "concurrently -n web,editor -c blue,magenta \"pnpm dev:web\" \"pnpm dev:editor\"",
+    "build:web": "pnpm --filter @app/web build",
+    "build:editor": "pnpm --filter @app/editor build",
+    "build": "pnpm build:web && pnpm build:editor",
+    "db:push": "drizzle-kit push --config=./packages/database/drizzle.config.ts"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0",
+    "dotenv": "^16.4.7",
+    "drizzle-kit": "^0.31.0",
+    "typescript": "^5.7.2"
+  }
+}

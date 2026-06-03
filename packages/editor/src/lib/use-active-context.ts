@@ -1,6 +1,6 @@
 import { useEditorStore } from "../stores";
 import { useEditorContext } from "./context";
-import { findElementById } from "@hi/render";
+import { findElementById } from "@vitrea/render";
 
 export function useActiveContext() {
   const activePageId = useEditorStore((state) => state.activePageId);

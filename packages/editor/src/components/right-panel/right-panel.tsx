@@ -1,13 +1,13 @@
 import { useEditorStore } from "../../stores";
 import { useEditorContext } from "../../lib/context";
-import { glassStyle } from "@hi/editor-ui/glass";
+import { glassStyle } from "@vitrea/editor-ui/glass";
 import { Copy, Trash2, Upload, RotateCcw } from "lucide-react";
 import { CompactInput, Label, Btn, BtnGroup, SectionLabel } from "./primitives";
-import { IconButton } from "@hi/editor-ui/icon-button";
+import { IconButton } from "@vitrea/editor-ui/icon-button";
 import { ContentField } from "./content-field";
 import { StyleGroup } from "./style-group";
 import { derivePath, slugify } from "../../lib/paths";
-import { findElementById } from "@hi/render";
+import { findElementById } from "@vitrea/render";
 
 export function RightPanel() {
   const selectedElementId = useEditorStore((s) => s.selectedElementId);
@@ -77,7 +77,15 @@ export function RightPanel() {
 
   const typeConfig = schema.elementTypes.find((t) => t.type === selected.type);
   const updateData = (key: string, value: unknown) => actions.updateNodeData(selected.id, { ...(selected.data as Record<string, unknown> ?? {}), [key]: value });
-  const updateStyle = (key: string, value: string) => actions.updateNodeStyles(selected.id, { ...(selected.styles as Record<string, string> ?? {}), [key]: value || undefined });
+  const updateStyle = (key: string, value: string) => {
+    const styles = { ...(selected.styles as Record<string, string> ?? {}) };
+    if (value) {
+      styles[key] = value;
+    } else {
+      delete styles[key];
+    }
+    actions.updateNodeStyles(selected.id, styles);
+  };
 
   return (
     <div className="w-[240px] h-full flex flex-col backdrop-blur-[10px] relative rounded-2xl" style={glassStyle}>
@@ -85,7 +93,7 @@ export function RightPanel() {
         <span className="text-[11px] font-semibold capitalize text-white">{typeConfig?.label ?? selected.type}</span>
         <div className="flex items-center gap-0.5">
           <IconButton icon={Copy} label="Duplicate" onClick={() => actions.duplicateNode(selected.id)} iconSize="h-3 w-3" />
-          <IconButton icon={Trash2} label="Delete" onClick={() => actions.deleteNode(selected.id)} variant="danger" iconSize="h-3 w-3" />
+          <IconButton icon={Trash2} label="Delete" onClick={() => actions.deleteNode(selected.id)} iconSize="h-3 w-3" className="text-red-400/80" />
         </div>
       </div>
 

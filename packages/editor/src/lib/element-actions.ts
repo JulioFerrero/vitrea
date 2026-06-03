@@ -1,6 +1,6 @@
 import { useEditorStore } from "../stores";
 import type { EditorApi, EditorSchema, PageElement } from "../types";
-import { createElement } from "@hi/render";
+import { createElement } from "@vitrea/render";
 import { sendCollabUpdate } from "./collab-bridge";
 
 export function createElementActions(api: EditorApi, schema: EditorSchema) {

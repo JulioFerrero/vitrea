@@ -1,4 +1,4 @@
-import { db } from "@hi/database";
+import { db } from "@vitrea/database";
 import { eq } from "drizzle-orm";
 import type { PgTable } from "drizzle-orm/pg-core";
 

@@ -4,13 +4,10 @@ import {
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { nanoid } from "nanoid";
+import process from "node:process";
 
 function env(key: string, fallback?: string): string | undefined {
-  try {
-    return Deno.env.get(key) ?? fallback;
-  } catch {
-    return process.env[key] ?? fallback;
-  }
+  return process.env[key] ?? fallback;
 }
 
 function getS3Client() {

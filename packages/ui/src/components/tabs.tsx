@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
-import { cn } from "@hi/utils";
+import { cn } from "@vitrea/utils";
 
 const Tabs = TabsPrimitive.Root;
 

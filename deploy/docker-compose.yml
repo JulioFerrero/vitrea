@@ -32,7 +32,7 @@ services:
       dockerfile: ../deploy/Dockerfile
     restart: unless-stopped
     ports:
-      - "${EDITOR_PORT:-3000}:5173"
+      - "${EDITOR_PORT:-3001}:3001"
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-hi}:${POSTGRES_PASSWORD:-hi}@postgres:5432/${POSTGRES_DB:-hi}
       S3_ENDPOINT: ${S3_ENDPOINT:-http://seaweedfs:8333}
@@ -43,7 +43,7 @@ services:
       S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-true}
       ASSET_BASE_URL: ${ASSET_BASE_URL:-}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-}
-      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3001}
     depends_on:
       postgres:
         condition: service_healthy
@@ -58,7 +58,7 @@ services:
       dockerfile: ../deploy/Dockerfile.web
     restart: unless-stopped
     ports:
-      - "${WEB_PORT:-8000}:8000"
+      - "${WEB_PORT:-3000}:3000"
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-hi}:${POSTGRES_PASSWORD:-hi}@postgres:5432/${POSTGRES_DB:-hi}
       WEBSITE_ID: ${WEBSITE_ID:-}

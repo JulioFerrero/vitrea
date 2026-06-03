@@ -1,4 +1,4 @@
-import { cn } from "@hi/utils";
+import { cn } from "@vitrea/utils";
 import type { StyleFieldConfig } from "../../types";
 import { Label, ColorField, IconBtnGroup, inputBase } from "./primitives";
 import { ICON_MAP } from "./icon-configs";

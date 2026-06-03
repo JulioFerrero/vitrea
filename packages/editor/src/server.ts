@@ -1,14 +1,25 @@
-import { app as apiApp } from "./api/index";
+import { createServer as createHttpServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { join } from "node:path";
 import { readFile, stat } from "node:fs/promises";
+import { Buffer } from "node:buffer";
+import { WebSocket, WebSocketServer } from "ws";
+import { app as apiApp } from "./api/index";
 
 type ClientInfo = { userId: string; name: string; color: string; siteId: string; pageId: string };
+type MessageData = string | Buffer | ArrayBuffer | Buffer[];
+type ServerSocket = WebSocket & {
+  on(event: "message", listener: (raw: MessageData) => void): void;
+  on(event: "close" | "error", listener: () => void): void;
+};
 
 const rooms = new Map<string, Map<WebSocket, ClientInfo>>();
 
 function getRoom(key: string) {
   let room = rooms.get(key);
-  if (!room) { room = new Map(); rooms.set(key, room); }
+  if (!room) {
+    room = new Map();
+    rooms.set(key, room);
+  }
   return room;
 }
 
@@ -27,19 +38,28 @@ function broadcast(key: string, from: WebSocket, msg: object) {
   }
 }
 
-function handleMessage(ws: WebSocket, raw: string) {
+function parseRawMessage(raw: MessageData): string {
+  if (typeof raw === "string") return raw;
+  if (Buffer.isBuffer(raw)) return raw.toString("utf8");
+  if (Array.isArray(raw)) return Buffer.concat(raw).toString("utf8");
+  return Buffer.from(raw).toString("utf8");
+}
+
+function handleMessage(ws: WebSocket, raw: MessageData) {
   let msg: Record<string, unknown>;
-  try { msg = JSON.parse(raw); } catch { return; }
+  try {
+    msg = JSON.parse(parseRawMessage(raw));
+  } catch {
+    return;
+  }
 
   if (msg.type === "join") {
     const { userId, name, color, siteId, pageId } = msg as Record<string, string>;
     if (!userId || !siteId || !pageId) return;
 
-    console.log("[ws] join:", name, userId, "room:", siteId, pageId);
-
     for (const [key, existing] of rooms) {
-      if (existing.delete(ws)) {
-        console.log("[ws] removed from previous room:", key);
+      if (existing.delete(ws) && existing.size === 0) {
+        rooms.delete(key);
       }
     }
 
@@ -56,8 +76,6 @@ function handleMessage(ws: WebSocket, raw: string) {
     const info = findClient(ws);
     if (!info) return;
     const key = roomKey(info.siteId, info.pageId);
-    const room = rooms.get(key);
-    if (room) console.log("[ws] cursor from", info.name, "room:", key, "members:", room.size);
     broadcast(key, ws, { type: "cursor", userId: info.userId, x: msg.x, y: msg.y });
   }
 
@@ -83,13 +101,11 @@ function findClient(ws: WebSocket): ClientInfo | undefined {
 function handleDisconnect(ws: WebSocket) {
   for (const [key, room] of rooms) {
     const info = room.get(ws);
-    if (info) {
-      console.log("[ws] disconnect:", info.name, "room:", key);
-      room.delete(ws);
-      broadcast(key, ws, { type: "leave", userId: info.userId });
-      if (room.size === 0) rooms.delete(key);
-      return;
-    }
+    if (!info) continue;
+    room.delete(ws);
+    broadcast(key, ws, { type: "leave", userId: info.userId });
+    if (room.size === 0) rooms.delete(key);
+    return;
   }
 }
 
@@ -122,57 +138,120 @@ function getMimeType(path: string): string {
   return ext >= 0 ? mimeTypes[path.slice(ext)] ?? "application/octet-stream" : "application/octet-stream";
 }
 
+async function readRequestBody(req: IncomingMessage): Promise<Buffer | undefined> {
+  if (req.method === "GET" || req.method === "HEAD") return undefined;
+  const chunks: Buffer[] = [];
+  for await (const chunk of req) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+  return chunks.length > 0 ? Buffer.concat(chunks) : undefined;
+}
+
+function writeFetchResponse(res: ServerResponse, response: Response) {
+  const headers: Record<string, string> = {};
+  response.headers.forEach((value, key) => {
+    headers[key] = value;
+  });
+  res.writeHead(response.status, headers);
+  return response.arrayBuffer().then((body) => {
+    res.end(Buffer.from(body));
+  });
+}
+
 export function createServer(options: CreateServerOptions) {
-  const { port = 5173, hostname = "0.0.0.0", distDir, tailwindCSS, iframeBaseCSS, fontFileHandler } = options;
+  const {
+    port = 5173,
+    hostname = "0.0.0.0",
+    distDir,
+    tailwindCSS,
+    iframeBaseCSS,
+    fontFileHandler,
+  } = options;
 
-  Deno.serve({ port, hostname }, async (req: Request) => {
-    const url = new URL(req.url);
-
-    if (url.pathname === "/ws" && req.headers.get("upgrade") === "websocket") {
-      const { socket, response } = Deno.upgradeWebSocket(req);
-      console.log("[ws] new connection from", req.headers.get("host"));
-      socket.onopen = () => {};
-      socket.onmessage = (ev) => handleMessage(socket, ev.data as string);
-      socket.onclose = () => handleDisconnect(socket);
-      socket.onerror = () => handleDisconnect(socket);
-      return response;
-    }
-
-    if (url.pathname === "/api/tailwind" && req.method === "POST" && tailwindCSS) {
-      const body = await req.json();
-      const css = await tailwindCSS(body.classes ?? []);
-      return new Response(css, { headers: { "content-type": "text/css" } });
-    }
-
-    if (url.pathname === "/api/iframe-base" && iframeBaseCSS) {
-      const css = await iframeBaseCSS();
-      return new Response(css, { headers: { "content-type": "text/css", "cache-control": "public, max-age=60" } });
-    }
-
-    if (url.pathname.startsWith("/fonts/") && fontFileHandler) {
-      const response = await fontFileHandler(url.pathname);
-      if (response) return response;
-    }
-
-    if (url.pathname.startsWith("/api/")) {
-      const path = url.pathname.slice(4) || "/";
-      const newUrl = new URL(path + url.search, url.origin);
-      const newReq = new Request(newUrl, req);
-      return apiApp.fetch(newReq);
-    }
-
-    let filePath = join(distDir, url.pathname === "/" ? "index.html" : url.pathname);
+  const server = createHttpServer(async (req, res) => {
     try {
-      await stat(filePath);
-    } catch {
-      filePath = join(distDir, "index.html");
-    }
+      const url = new URL(req.url ?? "/", `http://${req.headers.host ?? `${hostname}:${port}`}`);
 
-    try {
-      const content = await readFile(filePath);
-      return new Response(new Uint8Array(content), { headers: { "content-type": getMimeType(filePath) } });
+      if (url.pathname === "/api/tailwind" && req.method === "POST" && tailwindCSS) {
+        const rawBody = await readRequestBody(req);
+        const parsed = rawBody ? JSON.parse(rawBody.toString("utf8")) : {};
+        res.writeHead(200, { "content-type": "text/css" });
+        res.end(await tailwindCSS(parsed.classes ?? []));
+        return;
+      }
+
+      if (url.pathname === "/api/iframe-base" && iframeBaseCSS) {
+        res.writeHead(200, { "content-type": "text/css", "cache-control": "public, max-age=60" });
+        res.end(await iframeBaseCSS());
+        return;
+      }
+
+      if (url.pathname.startsWith("/fonts/") && fontFileHandler) {
+        const response = await fontFileHandler(url.pathname);
+        if (response) {
+          await writeFetchResponse(res, response);
+          return;
+        }
+      }
+
+      if (url.pathname.startsWith("/api/")) {
+        const path = url.pathname.slice(4) || "/";
+        const proxyUrl = new URL(path + url.search, url.origin);
+        const body = await readRequestBody(req);
+        const headers = new Headers();
+        for (const [key, value] of Object.entries(req.headers)) {
+          if (typeof value === "string") headers.set(key, value);
+          else if (Array.isArray(value)) headers.set(key, value.join(", "));
+        }
+        const request = new Request(proxyUrl, {
+          method: req.method,
+          headers,
+          body: body ? new Uint8Array(body) : undefined,
+        });
+        await writeFetchResponse(res, await apiApp.fetch(request));
+        return;
+      }
+
+      let filePath = join(distDir, url.pathname === "/" ? "index.html" : url.pathname);
+      try {
+        await stat(filePath);
+      } catch {
+        filePath = join(distDir, "index.html");
+      }
+
+      try {
+        const content = await readFile(filePath);
+        res.writeHead(200, { "content-type": getMimeType(filePath) });
+        res.end(content);
+      } catch {
+        res.writeHead(404);
+        res.end("Not Found");
+      }
     } catch {
-      return new Response("Not Found", { status: 404 });
+      res.writeHead(500);
+      res.end("Internal Server Error");
     }
   });
+
+  const wss = new WebSocketServer({ noServer: true });
+  wss.on("connection", (ws: unknown) => {
+    const socket = ws as ServerSocket;
+    socket.on("message", (raw) => handleMessage(socket, raw));
+    socket.on("close", () => handleDisconnect(socket));
+    socket.on("error", () => handleDisconnect(socket));
+  });
+
+  server.on("upgrade", (req, socket, head) => {
+    if (req.url !== "/ws") {
+      socket.destroy();
+      return;
+    }
+
+    wss.handleUpgrade(req, socket, head, (ws: unknown) => {
+      wss.emit("connection", ws, req);
+    });
+  });
+
+  server.listen(port, hostname);
+  return server;
 }

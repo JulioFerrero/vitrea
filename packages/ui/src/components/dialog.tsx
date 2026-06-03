@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
-import { cn } from "@hi/utils";
+import { cn } from "@vitrea/utils";
 import { X } from "lucide-react";
 
 const Dialog = DialogPrimitive.Root;

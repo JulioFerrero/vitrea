@@ -16,7 +16,7 @@ import { ElementNode } from "./element-node";
 import { AddElementDialog } from "./add-element-dialog";
 import { derivePath } from "../../lib/paths";
 import { countNodes } from "./utils";
-import { glassStyle, glassPanelClass } from "@hi/editor-ui/glass";
+import { glassStyle, glassPanelClass } from "@vitrea/editor-ui/glass";
 
 interface PageTreeData {
   id: string;

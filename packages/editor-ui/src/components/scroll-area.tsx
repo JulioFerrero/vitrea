@@ -1,4 +1,4 @@
-import { cn } from "@hi/utils";
+import { cn } from "@vitrea/utils";
 
 export function ScrollArea({ children, className }: { children: React.ReactNode; className?: string }) {
   return (

@@ -1,44 +1,47 @@
-import { join } from "@std/path";
-import { ensureDir } from "@std/fs";
-import type { PromptAnswers } from "./prompts.ts";
+import { dirname, join } from "node:path";
+import { mkdir, writeFile } from "node:fs/promises";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import type { PromptAnswers } from "./prompts";
 import {
-  rootDenoJson, envFile, gitignore,
-  webDenoJson, webMainTs, webViteConfig, webUtils, webAppLayout, webIndexRoute, webCatchAllRoute,
-  editorDenoJson, editorViteConfig, editorServerTs, editorIndexHtml, editorMainTsx, editorAppTsx, editorStylesCss,
+  rootPackageJson, pnpmWorkspaceYaml, rootTsconfigBase, envFile, gitignore,
+  webPackageJson, webNextConfig, webTsconfig, webNextEnvDts, webPostcssConfig, webAppLayout, webGlobalsCss, webCatchAllRoute,
+  editorPackageJson, editorTsconfig, editorViteConfig, editorIndexHtml, editorMainTsx, editorAppTsx, editorStylesCss,
   drizzleConfigTs, drizzleSchemaTs, setupScriptTs, seedScriptTs,
-  websitePkgDenoJson, websitePkgIndex, websitePkgElementsIndex, websitePkgContent, websitePkgStructure, websitePkgComponentsIndex,
-  websiteElementHero, websiteElementFeatures, websiteElementFooter,
-  websiteComponentHero, websiteComponentFeatures, websiteComponentFooter,
+  internalWebPackageJson, internalEditorPackageJson, internalPkgTsconfig, internalWebIndex, internalWebRenderer, internalWebStylesCss, internalWebComponentsIndex,
+  internalEditorIndex, internalEditorElementsIndex, internalEditorContent, internalEditorStructure,
+  internalEditorElementHero, internalEditorElementFeatures, internalEditorElementFooter,
+  internalWebComponentHero, internalWebComponentFeatures, internalWebComponentFooter,
   dockerComposeFull, dockerComposeLocal, seaweedfsConfig, vercelJson, flyToml, railwayJson,
-} from "./templates/index.ts";
+} from "./templates/index";
+
+const execFileAsync = promisify(execFile);
 
 export function listFiles(answers: PromptAnswers): string[] {
   const f = [
-    "deno.json", ".env", ".gitignore", "drizzle.config.ts",
+    "package.json", "pnpm-workspace.yaml", "tsconfig.base.json", ".env", ".gitignore", "drizzle.config.ts",
     "drizzle/schema.ts", "scripts/setup.ts", "scripts/seed.ts",
-    "apps/web/deno.json", "apps/web/main.ts", "apps/web/vite.config.ts", "apps/web/utils.ts",
-    "apps/web/routes/_app.tsx", "apps/web/routes/index.tsx", "apps/web/routes/[[slug]].tsx",
-    "apps/editor/deno.json", "apps/editor/server.ts", "apps/editor/vite.config.ts",
-    "apps/editor/index.html", "apps/editor/src/main.tsx", "apps/editor/src/app.tsx",
-    "apps/editor/assets/styles.css",
-    "packages/website/deno.json", "packages/website/src/index.ts",
-    "packages/website/src/elements/index.ts",
-    "packages/website/src/elements/content.ts",
-    "packages/website/src/elements/structure.ts",
-    "packages/website/src/components/index.ts",
+    "apps/web/package.json", "apps/web/next.config.ts", "apps/web/tsconfig.json", "apps/web/next-env.d.ts",
+    "apps/web/postcss.config.mjs", "apps/web/src/app/layout.tsx", "apps/web/src/app/globals.css", "apps/web/src/app/[[...slug]]/page.tsx",
+    "apps/editor/package.json", "apps/editor/tsconfig.json", "apps/editor/vite.config.ts", "apps/editor/index.html",
+    "apps/editor/src/main.tsx", "apps/editor/src/app.tsx", "apps/editor/assets/styles.css",
+    "internal/web/package.json", "internal/web/tsconfig.json", "internal/web/src/index.ts",
+    "internal/web/src/renderer.tsx", "internal/web/src/styles.css", "internal/web/src/components/index.ts",
+    "internal/editor/package.json", "internal/editor/tsconfig.json", "internal/editor/src/index.ts",
+    "internal/editor/src/elements/index.ts", "internal/editor/src/elements/content.ts", "internal/editor/src/elements/structure.ts",
   ];
   if (answers.includeExamples) {
     f.push(
-      "packages/website/src/elements/hero-section.ts",
-      "packages/website/src/elements/features-section.ts",
-      "packages/website/src/elements/footer-section.ts",
-      "packages/website/src/components/hero-section.tsx",
-      "packages/website/src/components/features-section.tsx",
-      "packages/website/src/components/footer-section.tsx",
+      "internal/editor/src/elements/hero-section.ts",
+      "internal/editor/src/elements/features-section.ts",
+      "internal/editor/src/elements/footer-section.ts",
+      "internal/web/src/components/hero-section.tsx",
+      "internal/web/src/components/features-section.tsx",
+      "internal/web/src/components/footer-section.tsx",
     );
   }
   if (answers.environment === "vps") {
-    f.push("docker-compose.yml", "Dockerfile", "Dockerfile.web");
+    f.push("docker-compose.yml");
     if (answers.storage === "seaweedfs") f.push("seaweedfs/s3.json");
   } else if (answers.environment === "local") {
     f.push("docker-compose.yml", "seaweedfs/s3.json");
@@ -51,11 +54,13 @@ export function listFiles(answers: PromptAnswers): string[] {
 export async function scaffold(dir: string, answers: PromptAnswers): Promise<void> {
   const w = async (path: string, content: string) => {
     const fp = join(dir, path);
-    await ensureDir(fp.substring(0, fp.lastIndexOf("/")));
-    await Deno.writeTextFile(fp, content);
+    await mkdir(dirname(fp), { recursive: true });
+    await writeFile(fp, content, "utf8");
   };
 
-  await w("deno.json", rootDenoJson(answers));
+  await w("package.json", rootPackageJson(answers));
+  await w("pnpm-workspace.yaml", pnpmWorkspaceYaml());
+  await w("tsconfig.base.json", rootTsconfigBase());
   await w(".env", envFile(answers));
   await w(".gitignore", gitignore());
   await w("drizzle.config.ts", drizzleConfigTs());
@@ -63,41 +68,44 @@ export async function scaffold(dir: string, answers: PromptAnswers): Promise<voi
   await w("scripts/setup.ts", setupScriptTs(answers));
   await w("scripts/seed.ts", seedScriptTs(answers));
 
-  // apps/web
-  await w("apps/web/deno.json", webDenoJson(answers));
-  await w("apps/web/main.ts", webMainTs());
-  await w("apps/web/vite.config.ts", webViteConfig());
-  await w("apps/web/utils.ts", webUtils());
-  await w("apps/web/routes/_app.tsx", webAppLayout(answers));
-  await w("apps/web/routes/index.tsx", webIndexRoute(answers));
-  await w("apps/web/routes/[[slug]].tsx", webCatchAllRoute());
+  await w("apps/web/package.json", webPackageJson());
+  await w("apps/web/next.config.ts", webNextConfig());
+  await w("apps/web/tsconfig.json", webTsconfig());
+  await w("apps/web/next-env.d.ts", webNextEnvDts());
+  await w("apps/web/postcss.config.mjs", webPostcssConfig());
+  await w("apps/web/src/app/layout.tsx", webAppLayout(answers));
+  await w("apps/web/src/app/globals.css", webGlobalsCss());
+  await w("apps/web/src/app/[[...slug]]/page.tsx", webCatchAllRoute());
 
-  // apps/editor
-  await w("apps/editor/deno.json", editorDenoJson(answers));
-  await w("apps/editor/server.ts", editorServerTs());
+  await w("apps/editor/package.json", editorPackageJson());
+  await w("apps/editor/tsconfig.json", editorTsconfig());
   await w("apps/editor/vite.config.ts", editorViteConfig());
   await w("apps/editor/index.html", editorIndexHtml(answers));
   await w("apps/editor/src/main.tsx", editorMainTsx());
-  await w("apps/editor/src/app.tsx", editorAppTsx(answers));
+  await w("apps/editor/src/app.tsx", editorAppTsx());
   await w("apps/editor/assets/styles.css", editorStylesCss());
 
-  // packages/website — user's custom elements & components on top of the published @hi packages
-  await w("packages/website/deno.json", websitePkgDenoJson());
-  await w("packages/website/src/index.ts", websitePkgIndex(answers));
-  await w("packages/website/src/elements/index.ts", websitePkgElementsIndex(answers));
-  await w("packages/website/src/elements/content.ts", websitePkgContent());
-  await w("packages/website/src/elements/structure.ts", websitePkgStructure());
-  await w("packages/website/src/components/index.ts", websitePkgComponentsIndex(answers));
+  await w("internal/web/package.json", internalWebPackageJson());
+  await w("internal/web/tsconfig.json", internalPkgTsconfig());
+  await w("internal/web/src/index.ts", internalWebIndex());
+  await w("internal/web/src/renderer.tsx", internalWebRenderer());
+  await w("internal/web/src/styles.css", internalWebStylesCss());
+  await w("internal/web/src/components/index.ts", internalWebComponentsIndex(answers));
+  await w("internal/editor/package.json", internalEditorPackageJson());
+  await w("internal/editor/tsconfig.json", internalPkgTsconfig());
+  await w("internal/editor/src/index.ts", internalEditorIndex());
+  await w("internal/editor/src/elements/index.ts", internalEditorElementsIndex(answers));
+  await w("internal/editor/src/elements/content.ts", internalEditorContent());
+  await w("internal/editor/src/elements/structure.ts", internalEditorStructure());
   if (answers.includeExamples) {
-    await w("packages/website/src/elements/hero-section.ts", websiteElementHero(answers));
-    await w("packages/website/src/elements/features-section.ts", websiteElementFeatures());
-    await w("packages/website/src/elements/footer-section.ts", websiteElementFooter(answers));
-    await w("packages/website/src/components/hero-section.tsx", websiteComponentHero());
-    await w("packages/website/src/components/features-section.tsx", websiteComponentFeatures());
-    await w("packages/website/src/components/footer-section.tsx", websiteComponentFooter());
+    await w("internal/editor/src/elements/hero-section.ts", internalEditorElementHero(answers));
+    await w("internal/editor/src/elements/features-section.ts", internalEditorElementFeatures());
+    await w("internal/editor/src/elements/footer-section.ts", internalEditorElementFooter(answers));
+    await w("internal/web/src/components/hero-section.tsx", internalWebComponentHero());
+    await w("internal/web/src/components/features-section.tsx", internalWebComponentFeatures());
+    await w("internal/web/src/components/footer-section.tsx", internalWebComponentFooter());
   }
 
-  // deploy
   if (answers.environment === "vps") {
     await w("docker-compose.yml", dockerComposeFull(answers));
     if (answers.storage === "seaweedfs") await w("seaweedfs/s3.json", seaweedfsConfig());
@@ -113,7 +121,7 @@ export async function scaffold(dir: string, answers: PromptAnswers): Promise<voi
   }
 
   if (answers.initGit) {
-    await new Deno.Command("git", { args: ["init", dir] }).output();
-    await new Deno.Command("git", { args: ["-C", dir, "add", "."] }).output();
+    await execFileAsync("git", ["init"], { cwd: dir });
+    await execFileAsync("git", ["add", "."], { cwd: dir });
   }
 }

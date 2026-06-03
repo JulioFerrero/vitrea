@@ -20,9 +20,9 @@ import { useCmsContext } from "../../lib/context";
 import { createCmsActions } from "../../lib/cms-actions";
 import { ReferencePicker } from "./reference-picker";
 import { MediaLibrary } from "../media-library";
-import { Modal } from "@hi/editor-ui/modal";
-import { Button, Input } from "@hi/editor-ui/form-primitives";
-import { cn } from "@hi/utils";
+import { Modal } from "@vitrea/editor-ui/modal";
+import { Button, Input } from "@vitrea/editor-ui/form-primitives";
+import { cn } from "@vitrea/utils";
 import { Image as ImageIcon } from "lucide-react";
 
 const textareaClass = "flex w-full rounded-xl border border-white/10 bg-transparent px-3 py-2 text-sm text-white/80 placeholder:text-white/20 focus:outline-none focus:ring-1 focus:ring-editor-ring/30 focus:border-editor-ring/40 transition-all duration-200 resize-y min-h-[80px]";

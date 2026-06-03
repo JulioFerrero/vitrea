@@ -1,0 +1,20 @@
+{
+  "name": "@internal/editor",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./references": "./src/lib/references.ts"
+  },
+  "files": [
+    "src"
+  ],
+  "dependencies": {
+    "@vitrea/cms": "workspace:*",
+    "@vitrea/database": "workspace:*",
+    "@vitrea/editor": "workspace:*",
+    "@vitrea/render": "workspace:*",
+    "drizzle-orm": "^0.43.0"
+  }
+}

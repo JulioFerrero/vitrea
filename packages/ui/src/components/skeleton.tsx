@@ -1,4 +1,4 @@
-import { cn } from "@hi/utils";
+import { cn } from "@vitrea/utils";
 
 function Skeleton({
   className,

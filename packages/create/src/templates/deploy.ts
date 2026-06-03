@@ -1,4 +1,4 @@
-import type { PromptAnswers } from "../prompts.ts";
+import type { PromptAnswers } from "../prompts";
 
 export function dockerComposeFull(answers: PromptAnswers): string {
   const s3Service = answers.storage === "seaweedfs" ? `
@@ -46,12 +46,14 @@ export function dockerComposeFull(answers: PromptAnswers): string {
       - internal
 ${s3Service}
   editor:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "corepack enable && pnpm install && pnpm --filter @app/editor start"
+    volumes:
+      - .:/app
     restart: unless-stopped
     ports:
-      - "\${EDITOR_PORT:-3000}:5173"
+      - "\${EDITOR_PORT:-3001}:3001"
     environment:
       DATABASE_URL: postgresql://\${POSTGRES_USER:-hi}:\${POSTGRES_PASSWORD:-hi}@postgres:5432/\${POSTGRES_DB:-${answers.projectName}}${s3Env}
       ASSET_BASE_URL: \${ASSET_BASE_URL:-}
@@ -64,12 +66,14 @@ ${s3Service}
       - internal
 
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile.web
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "corepack enable && pnpm install && pnpm --filter @app/web start"
+    volumes:
+      - .:/app
     restart: unless-stopped
     ports:
-      - "\${WEB_PORT:-8000}:8000"
+      - "\${WEB_PORT:-3000}:3000"
     environment:
       DATABASE_URL: postgresql://\${POSTGRES_USER:-hi}:\${POSTGRES_PASSWORD:-hi}@postgres:5432/\${POSTGRES_DB:-${answers.projectName}}
       WEBSITE_ID: \${WEBSITE_ID:-}
@@ -133,24 +137,17 @@ export function seaweedfsConfig(): string {
 
 export function vercelJson(): string {
   return JSON.stringify({
-    buildCommand: "deno task build",
-    outputDirectory: "apps/web/_fresh",
-    installCommand: "deno install",
+    installCommand: "pnpm install",
+    buildCommand: "pnpm build:web",
   }, null, 2);
 }
 
 export function flyToml(): string {
-  return `app = "hi-editor"
+  return `app = "vitrea-editor"
 primary_region = "sjc"
 
-[build]
-  dockerfile = "Dockerfile"
-
-[env]
-  PORT = "5173"
-
 [http_service]
-  internal_port = 5173
+  internal_port = 3001
   force_https = true
   auto_stop_machines = "stop"
   auto_start_machines = true
@@ -161,7 +158,7 @@ primary_region = "sjc"
 export function railwayJson(): string {
   return JSON.stringify({
     "$schema": "https://railway.app/railway.schema.json",
-    build: { builder: "DOCKERFILE", dockerfilePath: "Dockerfile" },
-    deploy: { restartPolicyType: "ON_FAILURE" },
+    build: { builder: "NIXPACKS" },
+    deploy: { startCommand: "pnpm --filter @app/editor start", restartPolicyType: "ON_FAILURE" },
   }, null, 2);
 }

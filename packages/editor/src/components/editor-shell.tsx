@@ -5,7 +5,7 @@ import { TopBar } from "./top-bar/top-bar";
 import { LeftPanel } from "./left-panel/left-panel";
 import { RightPanel } from "./right-panel/right-panel";
 import { Canvas } from "./canvas/canvas";
-import { glassStyle } from "@hi/editor-ui/glass";
+import { glassStyle } from "@vitrea/editor-ui/glass";
 
 const PanelContext = createContext({
   leftOpen: true,

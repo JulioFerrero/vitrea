@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button, Input } from "@hi/editor-ui/form-primitives";
-import { Modal } from "@hi/editor-ui/modal";
-import { Card, CardHeader, CardTitle, CardDescription } from "@hi/ui/card";
+import { Button, Input } from "@vitrea/editor-ui/form-primitives";
+import { Modal } from "@vitrea/editor-ui/modal";
+import { Card, CardHeader, CardTitle, CardDescription } from "@vitrea/ui/card";
 import { Plus, Globe, Users, Feather, Square, Layout, PenLine, Palette, Check, Trash2, Image as ImageIcon, Settings } from "lucide-react";
 import { ProfileDropdown } from "./profile-dropdown";
-import { ConfirmDialog } from "@hi/editor-ui/confirm-dialog";
-import { cn } from "@hi/utils";
+import { ConfirmDialog } from "@vitrea/editor-ui/confirm-dialog";
+import { cn } from "@vitrea/utils";
 import { navigate } from "../lib/navigate";
 import type React from "react";
 import type { EditorApi } from "../types";

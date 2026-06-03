@@ -1,12 +1,13 @@
 node_modules
 .next
+out
 dist
 .turbo
 .vite
+coverage
 *.tsbuildinfo
 .env
 .env.local
 .env*.local
+*.local
 _tw_gen.css
-**/_fresh/
-apps/web/_fresh/*

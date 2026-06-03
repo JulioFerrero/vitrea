@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { cn } from "@hi/utils";
+import { cn } from "@vitrea/utils";
 import { glassDarkStyle, overlayStyle } from "../lib/glass";
 
 export function Modal({

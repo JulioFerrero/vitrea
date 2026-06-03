@@ -1,14 +1,14 @@
 import { Hono } from "hono";
-import { db, user, account, session } from "@hi/database";
+import { db, user, account, session } from "@vitrea/database";
 import { eq } from "drizzle-orm";
-import { auth } from "@hi/auth";
-import { hashPassword } from "@hi/auth/crypto";
+import { auth } from "@vitrea/auth";
+import { hashPassword } from "@vitrea/auth/crypto";
 import {
   authMiddleware,
   requireAuth,
   requireAdmin,
   type AuthVariables,
-} from "@hi/auth/middleware";
+} from "@vitrea/auth/middleware";
 import { uploadFile } from "../../lib/storage";
 
 export const adminUsersRoute = new Hono<{ Variables: AuthVariables }>();
@@ -25,7 +25,7 @@ adminUsersRoute.post("/me/photo", async (c) => {
 
   const uploaded = await uploadFile(file);
 
-  await db.update(user).set({ image: uploaded.url } satisfies typeof user.$inferInsert).where(eq(user.id, sessionUser.id));
+  await db.update(user).set({ image: uploaded.url } as Partial<typeof user.$inferInsert>).where(eq(user.id, sessionUser.id));
 
   return c.json({ url: uploaded.url });
 });
@@ -104,6 +104,7 @@ adminUsersRoute.post("/", requireAdmin, async (c) => {
 
 adminUsersRoute.patch("/:id", requireAdmin, async (c) => {
   const id = c.req.param("id");
+  if (!id) return c.json({ error: "id required" }, 400);
   const body = await c.req.json();
   const { name, role } = body as { name?: string; role?: string };
 
@@ -135,6 +136,7 @@ adminUsersRoute.patch("/:id", requireAdmin, async (c) => {
 adminUsersRoute.delete("/:id", requireAdmin, async (c) => {
   const sessionUser = c.get("user");
   const id = c.req.param("id");
+  if (!id) return c.json({ error: "id required" }, 400);
 
   if (sessionUser?.id === id) {
     return c.json({ error: "You cannot delete your own account" }, 400);

@@ -1,5 +1,5 @@
 /**
- * @hi/render — Element renderer, tree utilities, and Tailwind CSS generator.
+ * @vitrea/render — Element renderer, tree utilities, and Tailwind CSS generator.
  *
  * Renders page element trees using React components, provides immutable tree
  * manipulation functions, and includes a Tailwind CSS generator for server-side
@@ -8,7 +8,7 @@
  * ## Example
  *
  * ```tsx
- * import { RenderPage, createElement } from "@hi/render";
+ * import { RenderPage, createElement } from "@vitrea/render";
  *
  * const tree = [
  *   createElement("hero-section", { title: "Hello" }, { padding: "8" }),
@@ -24,10 +24,6 @@
 
 export { RenderPage, ElementRenderer, classesFromStyles, inlineStylesFromTokens } from "./renderer";
 export { withStyles } from "./with-styles";
-export { createTailwindGenerator } from "./tailwind";
-export { createWebsiteServer, defineSiteConfig } from "./server";
 export { findById, findElementById, insertChild, removeById, updateById, moveNode, duplicateNode, cloneTree, walkTree, createElement, generateId } from "./tree-utils";
 export type { PageElement } from "./tree-utils";
-export type { TailwindGenerator } from "./tailwind";
-export type { SiteConfig } from "./server";
 export type { RenderElement, ElementProps, RendererMap } from "./types";

@@ -1,5 +1,5 @@
 import React from "react";
-import { cn } from "@hi/utils";
+import { cn } from "@vitrea/utils";
 import { File, ChevronRight } from "lucide-react";
 import type { NodeRendererProps } from "react-arborist";
 import type { CtxMenuState } from "./collapsible-section";

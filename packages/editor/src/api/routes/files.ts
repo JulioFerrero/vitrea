@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { db, files } from "@hi/database";
+import { db, files } from "@vitrea/database";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { uploadFile, deleteFile, extractKeyFromUrl } from "../../lib/storage";
@@ -17,7 +17,7 @@ export const filesRoute = new Hono()
     "/",
     zValidator("json", z.object({
       siteId: z.string(),
-      data: z.record(z.unknown()),
+      data: z.record(z.string(), z.unknown()),
     })),
     async (c) => {
       const body = c.req.valid("json");
@@ -71,7 +71,7 @@ export const filesRoute = new Hono()
     return c.json({ ok: true });
   })
   .patch("/:id", zValidator("json", z.object({
-    data: z.record(z.unknown()).optional(),
+    data: z.record(z.string(), z.unknown()).optional(),
   })), async (c) => {
     const id = c.req.param("id");
     const body = c.req.valid("json");

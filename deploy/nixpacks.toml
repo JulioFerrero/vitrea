@@ -1,8 +1,8 @@
 [phases.setup]
-nixPkgs = ["deno"]
+nixPkgs = ["nodejs", "pnpm"]
 
 [phases.build]
-cmds = ["deno task build:editor"]
+cmds = ["pnpm install --no-frozen-lockfile", "pnpm build:editor"]
 
 [start]
-cmd = "deno run -A --env apps/editor/server.ts"
+cmd = "pnpm --filter @app/editor start"

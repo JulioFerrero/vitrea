@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { signUp } from "@hi/auth/client";
-import { Button } from "@hi/ui/button";
-import { Input } from "@hi/ui/input";
+import { signUp } from "@vitrea/auth/client";
+import { Button } from "@vitrea/ui/button";
+import { Input } from "@vitrea/ui/input";
 import { Check } from "lucide-react";
 
 interface SetupPageProps {

@@ -1,7 +1,7 @@
 import { ElementToolbar } from "./element-toolbar";
 import { Minus, Plus, Maximize } from "lucide-react";
-import { IconButton } from "@hi/editor-ui/icon-button";
-import { Toolbar } from "@hi/editor-ui/toolbar";
+import { IconButton } from "@vitrea/editor-ui/icon-button";
+import { Toolbar } from "@vitrea/editor-ui/toolbar";
 
 export function CanvasToolbar({
   pageId,

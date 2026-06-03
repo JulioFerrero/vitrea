@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { db, documents, collections } from "@hi/database";
+import { db, documents, collections } from "@vitrea/database";
 import { eq, and, asc, desc, sql, inArray } from "drizzle-orm";
 
 type FilterOp = "==" | "!=" | "<" | ">" | "<=" | ">=" | "in" | "nin" | "contains" | "startsWith" | "endsWith";
@@ -153,15 +153,7 @@ export const cmsQueryRoute = new Hono()
           const idArray = [...allRefIds];
           const allRefDocs = await db.select().from(documents).where(
             inArray(documents.id, idArray),
-          ) as Array<{
-            id: string;
-            collectionId: string;
-            siteId: string;
-            data: Record<string, unknown>;
-            status: string;
-            createdAt: string;
-            updatedAt: string;
-          }>;
+          );
 
           const docMap = new Map(allRefDocs.map((d) => [d.id, d]));
 

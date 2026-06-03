@@ -1,9 +1,0 @@
-{
-  "name": "@hi/editor-app",
-  "version": "0.1.0",
-  "tasks": {
-    "dev": "next dev --port 3001",
-    "build": "next build",
-    "start": "next start"
-  }
-}

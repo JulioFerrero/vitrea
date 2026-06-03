@@ -1,10 +1,11 @@
-import { Input, Select, Confirm, Toggle } from "@cliffy/prompt";
-import { parseArgs } from "@std/cli";
+import { parseArgs } from "node:util";
+import process from "node:process";
+import prompts from "prompts";
 
 export type Environment = "vps" | "local" | "cloud";
 export type StorageOption = "seaweedfs" | "s3" | "skip";
 export type CloudProvider = "vercel" | "railway" | "fly";
-export type Framework = "fresh";
+export type Framework = "next";
 
 export interface PromptAnswers {
   projectName: string;
@@ -18,111 +19,147 @@ export interface PromptAnswers {
 }
 
 export function parseFlags(args: string[]): PromptAnswers | null {
-  const flags = parseArgs(args, {
-    string: ["name", "env", "framework", "storage", "cloud"],
-    boolean: ["examples", "git", "start"],
-    default: { examples: true, git: true, start: false },
+  const { values } = parseArgs({
+    args,
+    options: {
+      name: { type: "string", short: "n" },
+      env: { type: "string" },
+      framework: { type: "string" },
+      storage: { type: "string" },
+      cloud: { type: "string" },
+      examples: { type: "boolean", default: true },
+      git: { type: "boolean", default: true },
+      start: { type: "boolean", default: false },
+    },
+    allowPositionals: false,
   });
 
-  if (!flags.name) return null;
+  if (!values.name) return null;
 
-  const env = (flags.env || "local") as Environment;
-  const storage = (flags.storage || (env === "vps" ? "seaweedfs" : "skip")) as StorageOption;
-  const cloudProvider = flags.cloud as CloudProvider | undefined;
+  const env = (values.env ?? "local") as Environment;
+  const storage = (values.storage ?? (env === "vps" ? "seaweedfs" : "skip")) as StorageOption;
+  const cloudProvider = values.cloud as CloudProvider | undefined;
 
   return {
-    projectName: flags.name,
-    framework: (flags.framework || "fresh") as Framework,
+    projectName: values.name,
+    framework: (values.framework ?? "next") as Framework,
     environment: env,
     storage,
     cloudProvider: cloudProvider || (env === "cloud" ? "vercel" : undefined),
-    includeExamples: flags.examples,
-    initGit: flags.git,
-    startNow: flags.start && env === "local",
+    includeExamples: values.examples ?? true,
+    initGit: values.git ?? true,
+    startNow: Boolean(values.start) && env === "local",
   };
 }
 
+function onCancel(): never {
+  throw new Error("Prompt cancelled");
+}
+
 export async function promptInteractive(): Promise<PromptAnswers> {
-  const os = Deno.build.os;
-  let osLabel = "Linux";
-  if (os === "darwin") osLabel = "macOS";
-  else if (os === "windows") osLabel = "Windows";
+  const osMap: Record<string, string> = {
+    darwin: "macOS",
+    win32: "Windows",
+    linux: "Linux",
+  };
+  const osLabel = osMap[process.platform] ?? process.platform;
 
-  const projectName: string = await Input.prompt({
+  const project = await prompts({
+    type: "text",
+    name: "projectName",
     message: "Project name",
-    default: "my-site",
-  });
+    initial: "my-site",
+  }, { onCancel });
 
-  const frameworkRaw = await Select.prompt({
+  const framework = await prompts({
+    type: "select",
+    name: "framework",
     message: "Website framework",
-    options: [
-      { name: "Fresh (Deno)", value: "fresh", disabled: false },
+    choices: [
+      { title: "Next.js", value: "next" },
     ],
-    hint: "More frameworks coming soon",
-  });
+    initial: 0,
+  }, { onCancel });
 
-  const environmentRaw = await Select.prompt({
+  const environmentAnswer = await prompts({
+    type: "select",
+    name: "environment",
     message: "Where are you setting up?",
-    options: [
-      { name: `Local machine (${osLabel})`, value: "local" },
-      { name: "VPS / Server — Docker Compose", value: "vps" },
-      { name: "Cloud — Vercel, Railway, Fly.io", value: "cloud" },
+    choices: [
+      { title: `Local machine (${osLabel})`, value: "local" },
+      { title: "VPS / Server - Docker Compose", value: "vps" },
+      { title: "Cloud - Vercel, Railway, Fly.io", value: "cloud" },
     ],
-  });
-  const environment = environmentRaw as Environment;
+    initial: 0,
+  }, { onCancel });
+  const environment = environmentAnswer.environment as Environment;
 
   let storage: StorageOption = "skip";
   let cloudProvider: CloudProvider | undefined;
 
   if (environment === "vps") {
-    const storageRaw = await Select.prompt({
+    const storageAnswer = await prompts({
+      type: "select",
+      name: "storage",
       message: "File storage",
-      options: [
-        { name: "SeaweedFS (self-hosted)", value: "seaweedfs" },
-        { name: "External S3", value: "s3" },
-        { name: "Skip", value: "skip" },
+      choices: [
+        { title: "SeaweedFS (self-hosted)", value: "seaweedfs" },
+        { title: "External S3", value: "s3" },
+        { title: "Skip", value: "skip" },
       ],
-    });
-    storage = storageRaw as StorageOption;
+      initial: 0,
+    }, { onCancel });
+    storage = storageAnswer.storage as StorageOption;
   } else if (environment === "cloud") {
-    const cloudRaw = await Select.prompt({
+    const cloudAnswer = await prompts({
+      type: "select",
+      name: "cloudProvider",
       message: "Cloud provider",
-      options: [
-        { name: "Vercel + Neon", value: "vercel" },
-        { name: "Railway", value: "railway" },
-        { name: "Fly.io", value: "fly" },
+      choices: [
+        { title: "Vercel + Neon", value: "vercel" },
+        { title: "Railway", value: "railway" },
+        { title: "Fly.io", value: "fly" },
       ],
-    });
-    cloudProvider = cloudRaw as CloudProvider;
+      initial: 0,
+    }, { onCancel });
+    cloudProvider = cloudAnswer.cloudProvider as CloudProvider;
     storage = "s3";
   }
 
-  const includeExamples: boolean = await Confirm.prompt({
-    message: "Include example components?",
-    default: true,
-  });
-
-  const initGit: boolean = await Toggle.prompt({
-    message: "Initialize git?",
-    default: true,
-  });
-
-  let startNow = false;
-  if (environment === "local") {
-    startNow = await Confirm.prompt({
-      message: "Run setup after creation?",
-      default: true,
-    });
-  }
+  const toggles = await prompts([
+    {
+      type: "confirm",
+      name: "includeExamples",
+      message: "Include example components?",
+      initial: true,
+    },
+    {
+      type: "confirm",
+      name: "initGit",
+      message: "Initialize git?",
+      initial: true,
+    },
+    environment === "local"
+      ? {
+          type: "confirm",
+          name: "startNow",
+          message: "Run setup after creation?",
+          initial: true,
+        }
+      : {
+          type: null,
+          name: "startNow",
+        },
+  ], { onCancel });
 
   return {
-    projectName,
-    framework: frameworkRaw as Framework,
+    projectName: project.projectName,
+    framework: framework.framework as Framework,
     environment,
     storage,
     cloudProvider,
-    includeExamples,
-    initGit,
-    startNow,
+    includeExamples: toggles.includeExamples,
+    initGit: toggles.initGit,
+    startNow: Boolean(toggles.startNow),
   };
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import { cn } from "@hi/utils";
+import { cn } from "@vitrea/utils";
 import { File, ChevronRight } from "lucide-react";
 import { getIcon } from "../../icons";
 import type { NodeRendererProps } from "react-arborist";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { cn } from "@hi/utils";
+import { cn } from "@vitrea/utils";
 import { ChevronRight } from "lucide-react";
 
 export function CollapsibleSection({

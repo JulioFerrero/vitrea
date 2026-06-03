@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "@hi/auth/client";
-import { Button } from "@hi/ui/button";
-import { Input } from "@hi/ui/input";
-import { cn } from "@hi/utils";
+import { signIn } from "@vitrea/auth/client";
+import { Button } from "@vitrea/ui/button";
+import { Input } from "@vitrea/ui/input";
+import { cn } from "@vitrea/utils";
 
 interface LoginPageProps {
   onSuccess: () => void;

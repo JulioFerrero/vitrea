@@ -1,0 +1,44 @@
+{
+  "name": "@vitrea/auth",
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "types": "./dist/auth.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/auth.d.ts",
+      "import": "./dist/auth.js"
+    },
+    "./client": {
+      "types": "./dist/auth-client.d.ts",
+      "import": "./dist/auth-client.js"
+    },
+    "./middleware": {
+      "types": "./dist/middleware.d.ts",
+      "import": "./dist/middleware.js"
+    },
+    "./crypto": {
+      "types": "./dist/crypto.d.ts",
+      "import": "./dist/crypto.js"
+    }
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.json && node ../../scripts/fix-esm-imports.mjs dist",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@better-auth/drizzle-adapter": "^1.6.0",
+    "@vitrea/database": "workspace:*",
+    "better-auth": "^1.6.0",
+    "drizzle-orm": "^0.43.0",
+    "hono": "^4.12.21",
+    "react": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}

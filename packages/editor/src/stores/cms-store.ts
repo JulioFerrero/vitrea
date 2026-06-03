@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { CmsFieldConfig } from "@hi/cms";
+import type { CmsFieldConfig } from "@vitrea/cms";
 
 export type { CmsFieldConfig };
 

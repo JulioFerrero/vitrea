@@ -1,0 +1,25 @@
+{
+  "name": "@internal/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./tailwind": "./src/lib/tailwind.ts",
+    "./styles.css": "./src/styles.css"
+  },
+  "files": [
+    "src"
+  ],
+  "dependencies": {
+    "@fontsource/fraunces": "^5.2.9",
+    "@fontsource/recursive": "^5.2.8",
+    "@vitrea/editor": "workspace:*",
+    "@vitrea/render": "workspace:*",
+    "react": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.1.0"
+  }
+}

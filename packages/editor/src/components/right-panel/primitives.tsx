@@ -1,10 +1,10 @@
 import React from "react";
-import { cn } from "@hi/utils";
-import { inputBase, Button as SharedButton, Input as SharedInput } from "@hi/editor-ui/form-primitives";
-export { inputBase } from "@hi/editor-ui/form-primitives";
-export { Button, Input } from "@hi/editor-ui/form-primitives";
+import { cn } from "@vitrea/utils";
+import { inputBase, Button as SharedButton, Input as SharedInput } from "@vitrea/editor-ui/form-primitives";
+export { inputBase } from "@vitrea/editor-ui/form-primitives";
+export { Button, Input } from "@vitrea/editor-ui/form-primitives";
 
-export { CollapsibleSection } from "@hi/editor-ui/collapsible-section";
+export { CollapsibleSection } from "@vitrea/editor-ui/collapsible-section";
 
 export function SectionLabel({ children }: { children: React.ReactNode }) {
   return <div className="flex items-center gap-2 px-3 py-1.5"><span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/90">{children}</span></div>;

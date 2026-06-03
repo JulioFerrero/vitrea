@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button, Input, Divider } from "@hi/editor-ui/form-primitives";
+import { Button, Input, Divider } from "@vitrea/editor-ui/form-primitives";
 import { createApiFetch } from "../lib/api";
 import { ArrowLeft, Globe, Check, Loader2 } from "lucide-react";
-import { cn } from "@hi/utils";
+import { cn } from "@vitrea/utils";
 
 const api = createApiFetch();
 

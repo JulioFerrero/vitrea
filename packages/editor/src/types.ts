@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
-import type { CollectionConfig, StructureItem } from "@hi/cms";
-import type { RenderElement as BaseRenderElement } from "@hi/render";
-export type { PageElement } from "@hi/render";
+import type { CollectionConfig, StructureItem } from "@vitrea/cms";
+import type { RenderElement as BaseRenderElement } from "@vitrea/render";
+export type { PageElement } from "@vitrea/render";
 
 export interface FieldConfig {
   name: string;

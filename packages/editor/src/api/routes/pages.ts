@@ -1,13 +1,13 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { db, pages, revisions } from "@hi/database";
+import { db, pages, revisions } from "@vitrea/database";
 import { eq, desc } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { getById, updateById, deleteById } from "./helpers";
-import { cloneTree } from "@hi/render";
-import type { PageContent, PageData } from "@hi/database";
-import type { PageElement } from "@hi/render";
+import { cloneTree } from "@vitrea/render";
+import type { PageContent, PageData } from "@vitrea/database";
+import type { PageElement } from "@vitrea/render";
 
 export const pagesRoute = new Hono()
   .get("/", async (c) => {
@@ -28,7 +28,7 @@ export const pagesRoute = new Hono()
     zValidator("json", z.object({
       siteId: z.string(),
       slug: z.string().min(1),
-      data: z.record(z.unknown()).optional(),
+      data: z.record(z.string(), z.unknown()).optional(),
     })),
     async (c) => {
       const body = c.req.valid("json");
@@ -45,7 +45,7 @@ export const pagesRoute = new Hono()
     "/:id",
     zValidator("json", z.object({
       slug: z.string().min(1).optional(),
-      data: z.record(z.unknown()).optional(),
+      data: z.record(z.string(), z.unknown()).optional(),
       content: z.any().optional(),
     })),
     async (c) => {

@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useCmsStore } from "../stores/cms-store";
 import { useEditorStore } from "../stores";
 import { useEditorContext } from "./context";
-import { walkTree } from "@hi/render";
+import { cloneTree, walkTree } from "@vitrea/render";
 
 export function useCmsSync() {
   const { schema } = useEditorContext();
@@ -33,7 +33,9 @@ export function useCmsSync() {
           if (!value) continue;
           const ids = Array.isArray(value) ? value.map(String) : [String(value)];
           if (ids.some((id) => addedKeys.includes(id))) {
-            useEditorStore.getState().markElementStale(el.id);
+            useEditorStore.setState((editorState) => ({
+              content: cloneTree(editorState.content),
+            }));
             return;
           }
         }

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { cn } from "@hi/utils";
+import { cn } from "@vitrea/utils";
 import {
   Plus,
   Trash2,

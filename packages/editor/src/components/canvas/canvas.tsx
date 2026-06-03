@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useEditorStore } from "../../stores";
 import { useEditorContext } from "../../lib/context";
-import { useSession } from "@hi/auth/client";
+import { useSession } from "@vitrea/auth/client";
 import { useKeyboardShortcuts } from "./use-keyboard-shortcuts";
 import { usePanZoom } from "./use-pan-zoom";
 import { useBlockerEvents } from "./use-blocker-events";

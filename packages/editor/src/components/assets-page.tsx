@@ -1,15 +1,15 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Button, Input } from "@hi/editor-ui/form-primitives";
-import { Modal } from "@hi/editor-ui/modal";
-import { ConfirmDialog } from "@hi/editor-ui/confirm-dialog";
-import { SearchInput } from "@hi/editor-ui/search-input";
-import { Spinner } from "@hi/editor-ui/spinner";
-import { EmptyState } from "@hi/editor-ui/empty-state";
+import { Button, Input } from "@vitrea/editor-ui/form-primitives";
+import { Modal } from "@vitrea/editor-ui/modal";
+import { ConfirmDialog } from "@vitrea/editor-ui/confirm-dialog";
+import { SearchInput } from "@vitrea/editor-ui/search-input";
+import { Spinner } from "@vitrea/editor-ui/spinner";
+import { EmptyState } from "@vitrea/editor-ui/empty-state";
 import { createApiFetch } from "../lib/api";
 import { useEditorStore } from "../stores";
-import { cn } from "@hi/utils";
+import { cn } from "@vitrea/utils";
 import { ArrowLeft, Trash2, Pencil, Check, X, Upload, Image as ImageIcon, Copy } from "lucide-react";
 
 const api = createApiFetch();

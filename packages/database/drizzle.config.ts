@@ -1,6 +1,8 @@
+import "dotenv/config";
 import { defineConfig } from "drizzle-kit";
+import process from "node:process";
 
-const connectionString = Deno.env.get("DATABASE_URL");
+const connectionString = process.env.DATABASE_URL;
 
 export default defineConfig({
   schema: "./packages/database/src/schema.ts",

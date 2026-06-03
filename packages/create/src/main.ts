@@ -1,114 +1,146 @@
-import { resolve } from "@std/path";
-import { ensureDir } from "@std/fs";
-import { parseArgs } from "@std/cli";
-import { Confirm } from "@cliffy/prompt";
-import { parseFlags, promptInteractive } from "./prompts.ts";
-import { scaffold } from "./scaffold.ts";
+#!/usr/bin/env node
 
-const bold = "\x1b[1m";
-const cyan = "\x1b[36m";
-const green = "\x1b[32m";
-const yellow = "\x1b[33m";
-const gray = "\x1b[90m";
-const reset = "\x1b[0m";
+import { mkdir } from "node:fs/promises";
+import { parseArgs } from "node:util";
+import { resolve } from "node:path";
+import { spawn } from "node:child_process";
+import process from "node:process";
+import pc from "picocolors";
+import prompts from "prompts";
+import { parseFlags, promptInteractive } from "./prompts";
+import { listFiles, scaffold } from "./scaffold";
 
-const dirFlags = parseArgs(Deno.args, { string: ["dir"], boolean: ["preview"], default: { dir: ".", preview: false }, alias: { d: "dir", p: "preview" } });
-const outDir = dirFlags.dir || ".";
-const preview = dirFlags.preview;
-
-const answers = parseFlags(Deno.args) ?? await promptInteractive();
-
-const hasName = Deno.args.find((a) => a === "--name" || a === "-n");
-if (!hasName) {
-  console.log(`\n  ${bold}Hi!${reset} Let's set up your Editor project.\n`);
+function onCancel(): never {
+  throw new Error("Prompt cancelled");
 }
 
-const targetDir = resolve(outDir, answers.projectName);
+async function run(command: string, args: string[], cwd: string): Promise<void> {
+  await new Promise<void>((resolvePromise, rejectPromise) => {
+    const child = spawn(command, args, {
+      cwd,
+      stdio: "inherit",
+      shell: process.platform === "win32",
+    });
+    child.on("exit", (code) => {
+      if (code === 0) {
+        resolvePromise();
+        return;
+      }
+      rejectPromise(new Error(`${command} ${args.join(" ")} failed`));
+    });
+    child.on("error", rejectPromise);
+  });
+}
 
-if (preview) {
-  console.log(`\n  ${yellow}${bold}PREVIEW${reset} — no files will be written\n`);
-  console.log(`  ${bold}Would create:${reset} ${cyan}${targetDir}/${reset}\n`);
-  console.log(`  ${gray}my-site/`);
-  console.log(`  ├── apps/`);
-  console.log(`  │   ├── web/          ${answers.framework} website`);
-  console.log(`  │   └── editor/       visual editor`);
-  console.log(`  ├── packages/`);
-  console.log(`  │   └── website/      your components & elements`);
-  console.log(`  └── deno.json${reset}\n`);
+const { values } = parseArgs({
+  args: process.argv.slice(2),
+  options: {
+    dir: { type: "string", short: "d", default: "." },
+    preview: { type: "boolean", short: "p", default: false },
+  },
+  allowPositionals: false,
+});
 
-  console.log(`  ${bold}Selected:${reset}`);
+const answers = parseFlags(process.argv.slice(2)) ?? await promptInteractive();
+
+const hasName = process.argv.slice(2).some((arg) => arg === "--name" || arg === "-n");
+if (!hasName) {
+  console.log(`\n  ${pc.bold("Vitrea")} Let's set up your Editor project.\n`);
+}
+
+const targetDir = resolve(values.dir ?? ".", answers.projectName);
+
+if (values.preview) {
+  console.log(`\n  ${pc.yellow(pc.bold("PREVIEW"))} - no files will be written\n`);
+  console.log(`  ${pc.bold("Would create:")} ${pc.cyan(`${targetDir}/`)}\n`);
+  console.log(`  ${pc.gray(`${answers.projectName}/`)}`);
+  console.log(`  ${pc.gray("  |- apps/")}`);
+  console.log(`  ${pc.gray(`  |  |- web/          ${answers.framework} website`)}`);
+  console.log(`  ${pc.gray("  |  |- editor/       visual editor")}`);
+  console.log(`  ${pc.gray("  |- packages/")}`);
+  console.log(`  ${pc.gray("  |  |- website/      your components and elements")}`);
+  console.log(`  ${pc.gray("  |- package.json")}`);
+  console.log(`  ${pc.gray("  |- pnpm-workspace.yaml")}`);
+  console.log("");
+
+  console.log(`  ${pc.bold("Selected:")}`);
   console.log(`    Environment: ${answers.environment}`);
   console.log(`    Framework:   ${answers.framework}`);
   console.log(`    Storage:     ${answers.storage}`);
   if (answers.cloudProvider) console.log(`    Cloud:       ${answers.cloudProvider}`);
   console.log(`    Examples:    ${answers.includeExamples}`);
   console.log(`    Git:         ${answers.initGit}`);
-  console.log(`    Run setup:   ${answers.startNow}\n`);
+  console.log(`    Run setup:   ${answers.startNow}`);
+  console.log("");
 
-  const { listFiles } = await import("./scaffold.ts");
   const files = listFiles(answers);
-  console.log(`  ${bold}Files:${reset}\n`);
-  for (const f of files) {
-    console.log(`    ${cyan}${f}${reset}`);
+  console.log(`  ${pc.bold("Files:")}\n`);
+  for (const file of files) {
+    console.log(`    ${pc.cyan(file)}`);
   }
   console.log("");
-  Deno.exit(0);
+  process.exit(0);
 }
 
-await ensureDir(targetDir);
+await mkdir(targetDir, { recursive: true });
 await scaffold(targetDir, answers);
 
-console.log(`\n  ${green}${bold}Ready!${reset} Created at ${cyan}${targetDir}/${reset}`);
+console.log(`\n  ${pc.green(pc.bold("Ready!"))} Created at ${pc.cyan(`${targetDir}/`)}`);
 
+let installed = false;
 let ranLocalSetup = false;
-if (answers.environment === "local" && Deno.stdin.isTerminal()) {
-  const runSetupNow = answers.startNow || await Confirm.prompt({
-    message: "Run local project setup now? Configure database and storage",
-    default: true,
-  });
+if (answers.environment === "local") {
+  const runSetupNow = answers.startNow || (await prompts({
+    type: "confirm",
+    name: "runSetupNow",
+    message: "Install dependencies and run local setup now?",
+    initial: true,
+  }, { onCancel })).runSetupNow;
 
   if (runSetupNow) {
+    installed = true;
     ranLocalSetup = true;
-    console.log(`\n  ${bold}Running setup...${reset}\n`);
-    await new Deno.Command("deno", {
-      args: ["task", "setup"],
-      cwd: targetDir,
-      stdin: "inherit",
-      stdout: "inherit",
-      stderr: "inherit",
-    }).output();
+    console.log(`\n  ${pc.bold("Installing dependencies...")}\n`);
+    await run("pnpm", ["install"], targetDir);
+    console.log(`\n  ${pc.bold("Running setup...")}\n`);
+    await run("pnpm", ["setup"], targetDir);
   }
 }
 
 if (!ranLocalSetup) {
-  console.log(`\n  ${bold}Next steps:${reset}\n`);
-  const s = (n: number, cmd: string, desc: string) =>
-    `  ${gray}${n}.${reset}  ${cyan}${cmd}${reset}  ${gray}${desc}${reset}`;
+  console.log(`\n  ${pc.bold("Next steps:")}\n`);
+  const step = (index: number, command: string, description: string) =>
+    `  ${pc.gray(`${index}.`)}  ${pc.cyan(command)}${description ? `  ${pc.gray(description)}` : ""}`;
 
   if (answers.environment === "local") {
-    console.log(s(1, `cd ${answers.projectName}`, ""));
-    console.log(s(2, "deno task setup", "choose database and storage"));
-    console.log(s(3, "deno task dev", "start editor + website"));
+    console.log(step(1, `cd ${answers.projectName}`, ""));
+    console.log(step(2, "pnpm install", "install dependencies"));
+    console.log(step(3, "pnpm setup", "choose database and storage"));
+    console.log(step(4, "pnpm dev", "start editor and website"));
   } else if (answers.environment === "vps") {
-    console.log(s(1, "Edit .env", "set passwords and domain"));
-    console.log(s(2, "docker compose up -d", "start all services"));
-    console.log(s(3, "deno task db:push", "push schema"));
-    console.log(s(4, "deno task db:seed", "seed sample data"));
+    console.log(step(1, "pnpm install", "install dependencies"));
+    console.log(step(2, "Edit .env", "set passwords and domain"));
+    console.log(step(3, "docker compose up -d", "start services"));
+    console.log(step(4, "pnpm db:push", "push schema"));
+    console.log(step(5, "pnpm db:seed", "seed starter data"));
   } else if (answers.cloudProvider === "vercel") {
-    console.log(s(1, "Create a Neon DB", "https://neon.tech"));
-    console.log(s(2, "vercel link", "connect to Vercel"));
-    console.log(s(3, "vercel deploy", "deploy"));
+    console.log(step(1, "pnpm install", "install dependencies"));
+    console.log(step(2, "Create a Neon DB", "connect database"));
+    console.log(step(3, "vercel link", "connect to Vercel"));
+    console.log(step(4, "vercel deploy", "deploy"));
   } else if (answers.cloudProvider === "railway") {
-    console.log(s(1, "Push to GitHub", "connect at railway.app"));
-    console.log(s(2, "Add PostgreSQL", "in Railway dashboard"));
-    console.log(s(3, "Set env vars", "BETTER_AUTH_SECRET, etc."));
+    console.log(step(1, "pnpm install", "install dependencies"));
+    console.log(step(2, "Push to GitHub", "connect at railway.app"));
+    console.log(step(3, "Add PostgreSQL", "in Railway dashboard"));
+    console.log(step(4, "Set env vars", "BETTER_AUTH_SECRET and storage values"));
   } else if (answers.cloudProvider === "fly") {
-    console.log(s(1, "fly launch", "create the app"));
-    console.log(s(2, "fly postgres create", "add database"));
-    console.log(s(3, "fly deploy", "deploy"));
+    console.log(step(1, "pnpm install", "install dependencies"));
+    console.log(step(2, "fly launch", "create the app"));
+    console.log(step(3, "fly postgres create", "add database"));
+    console.log(step(4, "fly deploy", "deploy"));
   }
-} else if (answers.environment === "local") {
-  console.log(`\n  ${bold}Next step:${reset}\n`);
-  console.log(`  ${gray}1.${reset}  ${cyan}cd ${answers.projectName} && deno task dev${reset}  ${gray}start editor + website${reset}`);
+} else if (installed) {
+  console.log(`\n  ${pc.bold("Next step:")}\n`);
+  console.log(`  ${pc.gray("1.")}  ${pc.cyan(`cd ${answers.projectName} && pnpm dev`)}  ${pc.gray("start editor and website")}`);
 }
 console.log("");

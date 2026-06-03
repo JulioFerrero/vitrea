@@ -1,0 +1,103 @@
+{
+  "name": "@vitrea/editor-ui",
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./glass": {
+      "types": "./dist/lib/glass.d.ts",
+      "import": "./dist/lib/glass.js"
+    },
+    "./modal": {
+      "types": "./dist/components/modal.d.ts",
+      "import": "./dist/components/modal.js"
+    },
+    "./confirm-dialog": {
+      "types": "./dist/components/confirm-dialog.d.ts",
+      "import": "./dist/components/confirm-dialog.js"
+    },
+    "./prompt-dialog": {
+      "types": "./dist/components/prompt-dialog.d.ts",
+      "import": "./dist/components/prompt-dialog.js"
+    },
+    "./spinner": {
+      "types": "./dist/components/spinner.d.ts",
+      "import": "./dist/components/spinner.js"
+    },
+    "./empty-state": {
+      "types": "./dist/components/empty-state.d.ts",
+      "import": "./dist/components/empty-state.js"
+    },
+    "./search-input": {
+      "types": "./dist/components/search-input.d.ts",
+      "import": "./dist/components/search-input.js"
+    },
+    "./file-upload": {
+      "types": "./dist/components/file-upload.d.ts",
+      "import": "./dist/components/file-upload.js"
+    },
+    "./page-shell": {
+      "types": "./dist/components/page-shell.d.ts",
+      "import": "./dist/components/page-shell.js"
+    },
+    "./dropdown": {
+      "types": "./dist/components/dropdown.d.ts",
+      "import": "./dist/components/dropdown.js"
+    },
+    "./scroll-area": {
+      "types": "./dist/components/scroll-area.d.ts",
+      "import": "./dist/components/scroll-area.js"
+    },
+    "./separator": {
+      "types": "./dist/components/separator.d.ts",
+      "import": "./dist/components/separator.js"
+    },
+    "./form-primitives": {
+      "types": "./dist/components/form-primitives.d.ts",
+      "import": "./dist/components/form-primitives.js"
+    },
+    "./icon-button": {
+      "types": "./dist/components/icon-button.d.ts",
+      "import": "./dist/components/icon-button.js"
+    },
+    "./avatar": {
+      "types": "./dist/components/avatar.d.ts",
+      "import": "./dist/components/avatar.js"
+    },
+    "./collapsible-section": {
+      "types": "./dist/components/collapsible-section.d.ts",
+      "import": "./dist/components/collapsible-section.js"
+    },
+    "./panel": {
+      "types": "./dist/components/panel.d.ts",
+      "import": "./dist/components/panel.js"
+    },
+    "./toolbar": {
+      "types": "./dist/components/toolbar.d.ts",
+      "import": "./dist/components/toolbar.js"
+    }
+  },
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.json && node ../../scripts/fix-esm-imports.mjs dist",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@vitrea/utils": "workspace:*",
+    "lucide-react": "^0.509.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "typescript": "^5.7.2"
+  }
+}

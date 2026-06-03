@@ -4,11 +4,11 @@ import { useState, useEffect, useMemo } from "react";
 import { useCmsContext } from "../../lib/context";
 import { createCmsActions } from "../../lib/cms-actions";
 import { useCmsStore, type CmsDocumentItem } from "../../stores/cms-store";
-import { Modal } from "@hi/editor-ui/modal";
-import { Button } from "@hi/editor-ui/form-primitives";
-import { SearchInput } from "@hi/editor-ui/search-input";
-import { Spinner } from "@hi/editor-ui/spinner";
-import { EmptyState } from "@hi/editor-ui/empty-state";
+import { Modal } from "@vitrea/editor-ui/modal";
+import { Button } from "@vitrea/editor-ui/form-primitives";
+import { SearchInput } from "@vitrea/editor-ui/search-input";
+import { Spinner } from "@vitrea/editor-ui/spinner";
+import { EmptyState } from "@vitrea/editor-ui/empty-state";
 
 interface ReferencePickerProps {
   collection: string;

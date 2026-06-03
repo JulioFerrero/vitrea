@@ -5,7 +5,7 @@ import { ReferencePicker } from "../cms/reference-picker";
 import { MediaLibrary } from "../media-library";
 import { useCmsStore } from "../../stores/cms-store";
 import { useEditorStore } from "../../stores";
-import { cn } from "@hi/utils";
+import { cn } from "@vitrea/utils";
 import { Image as ImageIcon } from "lucide-react";
 import type { EditorApi } from "../../types";
 

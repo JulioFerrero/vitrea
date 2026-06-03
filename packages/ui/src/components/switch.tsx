@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Switch as SwitchPrimitive } from "@base-ui/react/switch";
-import { cn } from "@hi/utils";
+import { cn } from "@vitrea/utils";
 
 const Switch = React.forwardRef<
   HTMLButtonElement,

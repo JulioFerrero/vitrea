@@ -1,9 +1,12 @@
 import { QueryBuilder } from "./builder";
-import type { QueryResult } from "./types";
+import type { QueryBuilderAPI, QueryResult } from "./types";
 
 export type CmsFetchFn = (path: string, init?: RequestInit) => Promise<unknown>;
+export interface CmsClient {
+  query(collection: string): QueryBuilderAPI;
+}
 
-export function createCmsClient(api: { fetch: CmsFetchFn }) {
+export function createCmsClient(api: { fetch: CmsFetchFn }): CmsClient {
   class RuntimeQueryBuilder extends QueryBuilder {
     override async execute(): Promise<QueryResult> {
       const spec = this.toJSON();
@@ -17,11 +20,11 @@ export function createCmsClient(api: { fetch: CmsFetchFn }) {
   }
 
   return {
-    query(collection: string): RuntimeQueryBuilder {
+    query(collection: string): QueryBuilderAPI {
       return new RuntimeQueryBuilder(collection);
     },
   };
 }
 
-export type { QueryResult, QuerySpec } from "./types";
+export type { QueryBuilderAPI, QueryResult, QuerySpec } from "./types";
 export { QueryBuilder } from "./builder";

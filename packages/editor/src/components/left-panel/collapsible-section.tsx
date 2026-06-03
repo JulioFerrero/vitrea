@@ -1,4 +1,4 @@
-export { CollapsibleSection } from "@hi/editor-ui/collapsible-section";
+export { CollapsibleSection } from "@vitrea/editor-ui/collapsible-section";
 
 export interface CtxMenuState {
   x: number;

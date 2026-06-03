@@ -1,5 +1,5 @@
 import { type ComponentPropsWithoutRef, forwardRef } from "react";
-import { cn } from "@hi/utils";
+import { cn } from "@vitrea/utils";
 
 const Input = forwardRef<HTMLInputElement, ComponentPropsWithoutRef<"input">>(
   ({ className, type, ...props }, ref) => {

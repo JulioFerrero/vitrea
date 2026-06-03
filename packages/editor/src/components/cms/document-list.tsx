@@ -4,8 +4,8 @@ import { useMemo } from "react";
 import { useCmsStore, type CmsCollectionItem } from "../../stores/cms-store";
 import { useCmsContext } from "../../lib/context";
 import { createCmsActions } from "../../lib/cms-actions";
-import { Spinner } from "@hi/editor-ui/spinner";
-import { EmptyState } from "@hi/editor-ui/empty-state";
+import { Spinner } from "@vitrea/editor-ui/spinner";
+import { EmptyState } from "@vitrea/editor-ui/empty-state";
 
 interface DocumentListProps {
   collection: CmsCollectionItem;

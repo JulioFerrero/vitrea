@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { cn } from "@hi/utils";
+import { cn } from "@vitrea/utils";
 import { glassDarkStyle } from "../lib/glass";
 
 export function Dropdown({
@@ -22,7 +22,7 @@ export function Dropdown({
   const [animIn, setAnimIn] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const close = useCallback(() => {
     setOpen(false);

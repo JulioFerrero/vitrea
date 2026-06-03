@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback, useState } from "react";
 import { useEditorStore } from "../../stores";
-import { findElementById, findById } from "@hi/render";
+import { findElementById, findById } from "@vitrea/render";
 
 export function useElementDrop(
   queryElementAtPoint: (x: number, y: number) => { el: HTMLElement } | null,

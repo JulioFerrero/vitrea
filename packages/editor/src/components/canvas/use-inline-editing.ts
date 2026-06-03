@@ -2,7 +2,7 @@ import { useRef, useCallback } from "react";
 import type { EditorActions } from "../../lib/actions";
 import type { CursorMode } from "./canvas-cursor";
 import { useEditorStore } from "../../stores";
-import { findElementById } from "@hi/render";
+import { findElementById } from "@vitrea/render";
 
 export function useInlineEditing(
   actions: EditorActions,

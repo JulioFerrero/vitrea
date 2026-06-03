@@ -1,8 +1,8 @@
 import { Hono } from "hono";
-import { db, siteMembers, user } from "@hi/database";
+import { db, siteMembers, user } from "@vitrea/database";
 import { eq, and } from "drizzle-orm";
 import { nanoid } from "nanoid";
-import { requireAdmin, type AuthVariables } from "@hi/auth/middleware";
+import { requireAdmin, type AuthVariables } from "@vitrea/auth/middleware";
 
 export const siteMembersRoute = new Hono<{
   Variables: AuthVariables;
@@ -49,6 +49,7 @@ siteMembersRoute.post("/", requireAdmin, async (c) => {
 
 siteMembersRoute.delete("/:id", requireAdmin, async (c) => {
   const id = c.req.param("id");
+  if (!id) return c.json({ error: "id required" }, 400);
   const [row] = await db
     .delete(siteMembers)
     .where(eq(siteMembers.id, id))

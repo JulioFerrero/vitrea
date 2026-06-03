@@ -1,13 +1,13 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
-import { db, sites, pages, siteMembers } from "@hi/database";
+import { db, sites, pages, siteMembers } from "@vitrea/database";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { getById, updateById, deleteById } from "./helpers";
-import { createElement } from "@hi/render";
-import type { PageElement } from "@hi/render";
-import type { AuthVariables } from "@hi/auth/middleware";
+import { createElement } from "@vitrea/render";
+import type { PageElement } from "@vitrea/render";
+import type { AuthVariables } from "@vitrea/auth/middleware";
 
 function el(type: string, data: Record<string, unknown> = {}, styles: Record<string, string> = {}, children: PageElement[] = []): PageElement {
   return createElement(type, data, styles, children);
@@ -197,7 +197,7 @@ export const sitesRoute = new Hono<{ Variables: AuthVariables }>()
     "/",
     zValidator("json", z.object({
       slug: z.string().min(1),
-      data: z.record(z.unknown()).optional(),
+      data: z.record(z.string(), z.unknown()).optional(),
     })),
     async (c) => {
       const body = c.req.valid("json");
@@ -244,7 +244,7 @@ export const sitesRoute = new Hono<{ Variables: AuthVariables }>()
     "/:id",
     zValidator("json", z.object({
       slug: z.string().min(1).optional(),
-      data: z.record(z.unknown()).optional(),
+      data: z.record(z.string(), z.unknown()).optional(),
     })),
     async (c) => {
       const body = c.req.valid("json");

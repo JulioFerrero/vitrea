@@ -4,11 +4,11 @@ import { useState, useEffect, useMemo } from "react";
 import { useEditorStore } from "../stores";
 import { useEditorContext } from "../lib/context";
 import { useCmsStore } from "../stores/cms-store";
-import { Modal } from "@hi/editor-ui/modal";
-import { Button, Badge } from "@hi/editor-ui/form-primitives";
-import { Spinner } from "@hi/editor-ui/spinner";
-import { EmptyState } from "@hi/editor-ui/empty-state";
-import { ScrollArea } from "@hi/editor-ui/scroll-area";
+import { Modal } from "@vitrea/editor-ui/modal";
+import { Button, Badge } from "@vitrea/editor-ui/form-primitives";
+import { Spinner } from "@vitrea/editor-ui/spinner";
+import { EmptyState } from "@vitrea/editor-ui/empty-state";
+import { ScrollArea } from "@vitrea/editor-ui/scroll-area";
 import { Plus, Pencil, Upload, Loader2 } from "lucide-react";
 import type { RenderElement } from "../types";
 
@@ -121,9 +121,9 @@ export function ReviewDialog({
           await actions.saveAll();
         } catch { /* ignore save errors */ }
         try {
-          const data = await actions.getDiff(activePageId);
-          try { await preloadReferences(data, documentCache); } catch { /* non-critical */ }
-          setDiff(data as DiffData);
+          const diffData = await actions.getDiff(activePageId) as DiffData;
+          try { await preloadReferences(diffData, documentCache); } catch { /* non-critical */ }
+          setDiff(diffData);
         } catch (e) {
           console.error("Review dialog error:", e);
           setDiff(null);

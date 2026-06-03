@@ -15,7 +15,12 @@ import type { EditorAppProps } from "../types";
 
 type View = "dashboard" | "editor" | "content" | "users" | "account" | "assets" | "settings";
 
-function parsePath(pathname: string): { view: View; siteId: string | null } {
+type RouteSnapshot = { view: View; siteId: string | null };
+
+let cachedPathname: string | null = null;
+let cachedSnapshot: RouteSnapshot | null = null;
+
+function parsePath(pathname: string): RouteSnapshot {
   const seg = pathname.split("/").filter(Boolean);
   if (seg[0] === "admin" && seg[1] === "users") return { view: "users", siteId: null };
   if (seg[0] === "account") return { view: "account", siteId: null };
@@ -31,7 +36,20 @@ function subscribe(onStoreChange: () => void) {
 }
 
 function getSnapshot() {
-  return parsePath(globalThis.location.pathname);
+  const pathname = globalThis.location.pathname;
+  if (pathname === cachedPathname && cachedSnapshot) {
+    return cachedSnapshot;
+  }
+
+  const snapshot = parsePath(pathname);
+  // #region debug-point A:editor-app-snapshot
+  (((globalThis as typeof globalThis & { __editorAppSnapshotDebugCount?: number }).__editorAppSnapshotDebugCount ??= 0) < 3 &&
+    (((globalThis as typeof globalThis & { __editorAppSnapshotDebugCount?: number }).__editorAppSnapshotDebugCount as number) += 1,
+    fetch("http://127.0.0.1:7777/event", { method: "POST", body: JSON.stringify({ sessionId: "editor-tailwind-client", runId: "post-buffer-fix", hypothesisId: "A", location: "packages/editor/src/components/app.tsx:34", msg: "[DEBUG] getSnapshot computed route", data: snapshot, ts: Date.now() }) }).catch(() => {})));
+  // #endregion
+  cachedPathname = pathname;
+  cachedSnapshot = snapshot;
+  return snapshot;
 }
 
 export function EditorApp({ schema, renderer, api = createApiFetch() }: Readonly<EditorAppProps>) {
@@ -54,5 +72,5 @@ export function EditorApp({ schema, renderer, api = createApiFetch() }: Readonly
     content = createElement(Dashboard, { api, onSelectSite: (id: string) => navigate(`/${id}`) });
   }
 
-  return createElement(AuthGate, { api }, content);
+  return <AuthGate api={api}>{content}</AuthGate>;
 }

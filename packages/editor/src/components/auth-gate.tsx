@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSession } from "@hi/auth/client";
+import { useSession } from "@vitrea/auth/client";
 import { LoginPage } from "./login-page";
 import { SetupPage } from "./setup-page";
-import { Spinner } from "@hi/editor-ui/spinner";
+import { Spinner } from "@vitrea/editor-ui/spinner";
 
 interface AuthGateProps {
   children: React.ReactNode;
