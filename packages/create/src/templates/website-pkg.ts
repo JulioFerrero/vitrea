@@ -8,7 +8,7 @@ export function websitePkgDenoJson(): string {
     imports: {
       "react": "npm:react@^19.1.0",
       "react/jsx-runtime": "npm:react@^19.1.0/jsx-runtime",
-      "@hi/editor": "jsr:@hi/editor@^0.1.0",
+      "@hi/editor": "jsr:@hi/editor@^0.1.1",
       "@hi/render": "jsr:@hi/render@^0.1.0",
       "@hi/website": "jsr:@hi/website@^0.1.0",
       "@hi/cms": "jsr:@hi/cms@^0.1.0",

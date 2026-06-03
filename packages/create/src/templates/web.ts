@@ -3,9 +3,9 @@ import type { PromptAnswers } from "../prompts.ts";
 export function webDenoJson(_answers: PromptAnswers): string {
   return JSON.stringify({
     tasks: {
-      dev: "deno run -A --env=../../.env npm:vite",
+      dev: "deno run -A --env-file=../../.env npm:vite",
       build: "vite build",
-      start: "deno serve -A --env=../../.env _fresh/server.js",
+      start: "deno serve -A --env-file=../../.env _fresh/server.js",
     },
     imports: {
       "@/": "./",

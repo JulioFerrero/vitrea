@@ -1,3 +1,4 @@
+export { EditorApp } from "./components/app";
 export { Editor } from "./components/editor";
 export { Dashboard } from "./components/dashboard";
 export { CmsView } from "./components/cms/cms-view";
@@ -17,4 +18,4 @@ export { spacingStyles, sizingStyles, typographyStyles, backgroundStyles, layout
 export { sectionElement, rowElement, columnElement, gridElement, headingElement, textElement, imageElement, buttonElement, linkElement, dividerElement, spacerElement, videoElement, htmlElement } from "./atoms";
 export { defineConfig } from "./config";
 export { getIcon, hasIcon } from "./icons";
-export type { EditorProps, EditorSchema, EditorConfig, ElementTypeConfig, FieldConfig, StyleGroupConfig, StyleFieldConfig, EditorApi, PageItem, RenderElement as EditorRenderElement, Viewport, RendererAdapter } from "./types";
+export type { EditorAppProps, EditorProps, EditorSchema, EditorConfig, ElementTypeConfig, FieldConfig, StyleGroupConfig, StyleFieldConfig, EditorApi, PageItem, RenderElement as EditorRenderElement, Viewport, RendererAdapter } from "./types";

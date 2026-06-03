@@ -1,8 +1,7 @@
 import type { ComponentType } from "react";
 import type { CollectionConfig, StructureItem } from "@hi/cms";
-import type { RenderElement as BaseRenderElement, PageElement } from "@hi/render";
-
-export type { PageElement };
+import type { RenderElement as BaseRenderElement } from "@hi/render";
+export type { PageElement } from "@hi/render";
 
 export interface FieldConfig {
   name: string;
@@ -71,6 +70,12 @@ export interface EditorProps {
   schema: EditorSchema;
   api: EditorApi;
   renderer: RendererAdapter;
+}
+
+export interface EditorAppProps {
+  schema: EditorSchema;
+  renderer: RendererAdapter;
+  api?: EditorApi;
 }
 
 export interface EditorConfig {
