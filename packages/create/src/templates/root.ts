@@ -1,19 +1,22 @@
 import type { PromptAnswers } from "../prompts.ts";
 
-export function rootDenoJson(answers: PromptAnswers): string {
+export function rootDenoJson(_answers: PromptAnswers): string {
   return JSON.stringify({
     workspace: ["apps/*", "packages/*"],
     tasks: {
+      "setup": "deno run -A --env .env ./scripts/setup.ts",
       "dev:web": "cd apps/web && deno task dev",
       "dev:editor": "cd apps/editor && deno task dev",
       "dev": "deno task dev:editor & deno task dev:web",
       "build:web": "cd apps/web && deno task build",
       "build:editor": "cd apps/editor && deno task build",
       "build": "deno task build:web && deno task build:editor",
-      "db:push": "deno run -A --env .env npm:drizzle-kit push",
-      "db:seed": "deno run -A --env .env jsr:@hi/database/seed",
+      "db:push": "deno run -A --env .env npm:drizzle-kit push --config=./drizzle.config.ts",
+      "db:seed": "deno run -A --env .env ./scripts/seed.ts",
     },
     imports: {
+      "@std/path": "jsr:@std/path@^1.0.0",
+      "@cliffy/prompt": "jsr:@cliffy/prompt@^1.0.0",
       "hono": "npm:hono@^4.7.0",
       "better-auth": "npm:better-auth@^1.6.0",
       "@better-auth/drizzle-adapter": "npm:@better-auth/drizzle-adapter@^1.6.0",

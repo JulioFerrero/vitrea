@@ -21,14 +21,10 @@ export function editorDenoJson(_answers: PromptAnswers): string {
       "vite": "npm:vite@^7.1.3",
       "@fontsource/fraunces": "npm:@fontsource/fraunces@^5.2.9",
       "@fontsource/recursive": "npm:@fontsource/recursive@^5.2.8",
-      "@hi/editor": "../../packages/editor/src/index.ts",
-      "@hi/editor/api": "../../packages/editor/src/api/index.ts",
-      "@hi/editor/server": "../../packages/editor/src/server.ts",
-      "@hi/render": "../../packages/render/src/index.ts",
-      "@hi/ui": "../../packages/ui/src/index.ts",
-      "@hi/database": "../../packages/database/src/index.ts",
-      "@hi/utils": "../../packages/utils/src/index.ts",
-      "@hi/website": "../../packages/website/src/index.ts",
+      "@hi/editor": "jsr:@hi/editor@^0.1.0",
+      "@hi/editor/api": "jsr:@hi/editor@^0.1.0/api",
+      "@hi/editor/server": "jsr:@hi/editor@^0.1.0/server",
+      "@site/website": "../../packages/website/src/index.ts",
     },
     compilerOptions: {
       lib: ["dom", "dom.asynciterable", "dom.iterable", "deno.ns"],
@@ -45,7 +41,6 @@ export function editorViteConfig(): string {
   return `import { defineConfig } from "vite";
 import tailwindcss from "@tailwindcss/vite";
 import { resolve } from "node:path";
-import { denoWorkspacePlugin } from "./vite-plugin-deno";
 
 const root = resolve(import.meta.dirname, "../..");
 
@@ -54,10 +49,7 @@ export default defineConfig({
     jsxImportSource: "preact",
     jsx: "automatic",
   },
-  plugins: [
-    denoWorkspacePlugin(root, "@hi"),
-    tailwindcss(),
-  ],
+  plugins: [tailwindcss()],
   resolve: {
     alias: [
       { find: "react/jsx-runtime", replacement: "preact/jsx-runtime" },
@@ -66,8 +58,6 @@ export default defineConfig({
       { find: "lucide-react", replacement: resolve(root, "node_modules/lucide-preact/dist/esm/lucide-preact.js") },
       { find: "@fontsource/fraunces", replacement: resolve(root, "node_modules/@fontsource/fraunces") },
       { find: "@fontsource/recursive", replacement: resolve(root, "node_modules/@fontsource/recursive") },
-      { find: "@hi/editor/styles.css", replacement: resolve(root, "packages/editor/src/styles.css") },
-      { find: "@hi/website/styles.css", replacement: resolve(root, "packages/website/styles.css") },
     ],
     dedupe: ["react", "react-dom", "react/jsx-runtime", "preact"],
   },
@@ -75,68 +65,9 @@ export default defineConfig({
 `;
 }
 
-export function editorVitePluginDeno(): string {
-  return `import type { Plugin } from "vite";
-import { resolve } from "node:path";
-import { readFileSync, existsSync } from "node:fs";
-
-const EXTENSIONS = [".tsx", ".ts", ".jsx", ".js", "/index.tsx", "/index.ts"];
-
-const cache = new Map<string, Record<string, string>>();
-
-function loadExports(pkgRoot: string): Record<string, string> {
-  if (cache.has(pkgRoot)) return cache.get(pkgRoot)!;
-  try {
-    const json = JSON.parse(readFileSync(resolve(pkgRoot, "deno.json"), "utf-8"));
-    const rawExports = json.exports;
-    if (!rawExports) return {};
-    if (typeof rawExports === "string") {
-      const result = { ".": resolve(pkgRoot, rawExports) };
-      cache.set(pkgRoot, result);
-      return result;
-    }
-    const exports: Record<string, string> = {};
-    for (const [key, val] of Object.entries(rawExports)) {
-      if (typeof val === "string") {
-        exports[key] = resolve(pkgRoot, val);
-      } else if (typeof val === "object" && val !== null) {
-        const target = (val as Record<string, string>).default || (val as Record<string, string>).sass;
-        if (target) exports[key] = resolve(pkgRoot, target);
-      }
-    }
-    cache.set(pkgRoot, exports);
-    return exports;
-  } catch {
-    return {};
-  }
-}
-
-export function denoWorkspacePlugin(workspaceRoot: string, scope: string): Plugin {
-  return {
-    name: "deno-workspace-resolve",
-    enforce: "pre",
-    resolveId(source, _importer) {
-      if (!source.startsWith(scope + "/")) return null;
-      const parts = source.slice(scope.length + 1).split("/");
-      const pkgName = parts[0];
-      const subpath = parts.length > 1 ? "./" + parts.slice(1).join("/") : ".";
-      const pkgRoot = resolve(workspaceRoot, "packages", pkgName);
-      const exports = loadExports(pkgRoot);
-      if (exports[subpath]) return exports[subpath];
-      for (const ext of EXTENSIONS) {
-        const candidate = resolve(pkgRoot, "src", parts.slice(1).join("/") + ext);
-        if (existsSync(candidate)) return candidate;
-      }
-      return null;
-    },
-  };
-}
-`;
-}
-
 export function editorServerTs(): string {
   return `import { createServer } from "@hi/editor/server";
-import { tailwindCssResponse, iframeBaseCSS, fontCSSWithAbsoluteURLs } from "@hi/website";
+import { tailwindCssResponse, iframeBaseCSS, fontCSSWithAbsoluteURLs } from "@site/website";
 import { join } from "node:path";
 import { readFile, stat } from "node:fs/promises";
 
@@ -209,7 +140,7 @@ render(<App />, document.getElementById("root")!);
 export function editorAppTsx(_answers: PromptAnswers): string {
   return `import { useState, useEffect } from "react";
 import { createApiFetch, Dashboard, Editor, CmsView, AuthGate, UsersPage, AccountPage, AssetsPage, SiteSettingsPage } from "@hi/editor";
-import { schema, websiteRenderer } from "@hi/website";
+import { schema, websiteRenderer } from "@site/website";
 
 const api = createApiFetch();
 

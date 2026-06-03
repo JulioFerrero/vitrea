@@ -87,7 +87,7 @@ networks:
 `;
 }
 
-export function dockerComposeLocal(): string {
+export function dockerComposeLocal(answers: PromptAnswers): string {
   return `services:
   postgres:
     image: postgres:16-alpine
@@ -97,17 +97,28 @@ export function dockerComposeLocal(): string {
     environment:
       POSTGRES_USER: hi
       POSTGRES_PASSWORD: hi
-      POSTGRES_DB: hi
+      POSTGRES_DB: ${answers.projectName}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U hi -d hi"]
+      test: ["CMD-SHELL", "pg_isready -U hi -d ${answers.projectName}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
+  seaweedfs:
+    image: chrislusf/seaweedfs
+    restart: unless-stopped
+    command: server -s3 -s3.config=/config/s3.json -dir=/data -ip.bind=0.0.0.0
+    ports:
+      - "8333:8333"
+    volumes:
+      - seaweed_data:/data
+      - ./seaweedfs/s3.json:/config/s3.json
+
 volumes:
   pgdata:
+  seaweed_data:
 `;
 }
 

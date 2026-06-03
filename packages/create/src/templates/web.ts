@@ -20,9 +20,8 @@ export function webDenoJson(_answers: PromptAnswers): string {
       "@tailwindcss/vite": "npm:@tailwindcss/vite@^4.1.0",
       "tailwindcss": "npm:tailwindcss@^4.1.0",
       "vite": "npm:vite@^7.1.3",
-      "@hi/render": "../../packages/render/src/index.ts",
-      "@hi/database": "../../packages/database/src/index.ts",
-      "@hi/website": "../../packages/website/src/index.ts",
+      "@hi/database": "jsr:@hi/database@^0.1.0",
+      "@site/website": "../../packages/website/src/index.ts",
     },
     compilerOptions: {
       lib: ["dom", "dom.asynciterable", "dom.iterable", "deno.ns"],
@@ -105,7 +104,7 @@ export default define.page(function Index() {
 export function webCatchAllRoute(): string {
   return `import { page } from "fresh";
 import { define } from "../utils.ts";
-import { PageRenderer, COMPONENT_REGISTRY, type RenderElement } from "@hi/website";
+import { PageRenderer, COMPONENT_REGISTRY, type RenderElement } from "@site/website";
 import { db, pages } from "@hi/database";
 import { eq } from "drizzle-orm";
 

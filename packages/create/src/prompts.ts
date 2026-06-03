@@ -44,7 +44,9 @@ export function parseFlags(args: string[]): PromptAnswers | null {
 
 export async function promptInteractive(): Promise<PromptAnswers> {
   const os = Deno.build.os;
-  const osLabel = os === "darwin" ? "macOS" : os === "windows" ? "Windows" : "Linux";
+  let osLabel = "Linux";
+  if (os === "darwin") osLabel = "macOS";
+  else if (os === "windows") osLabel = "Windows";
 
   const projectName: string = await Input.prompt({
     message: "Project name",
@@ -108,7 +110,7 @@ export async function promptInteractive(): Promise<PromptAnswers> {
   let startNow = false;
   if (environment === "local") {
     startNow = await Confirm.prompt({
-      message: "Start everything now?",
+      message: "Run setup after creation?",
       default: true,
     });
   }

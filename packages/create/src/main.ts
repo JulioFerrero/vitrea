@@ -1,6 +1,7 @@
 import { resolve } from "@std/path";
 import { ensureDir } from "@std/fs";
 import { parseArgs } from "@std/cli";
+import { Confirm } from "@cliffy/prompt";
 import { parseFlags, promptInteractive } from "./prompts.ts";
 import { scaffold } from "./scaffold.ts";
 
@@ -42,7 +43,7 @@ if (preview) {
   if (answers.cloudProvider) console.log(`    Cloud:       ${answers.cloudProvider}`);
   console.log(`    Examples:    ${answers.includeExamples}`);
   console.log(`    Git:         ${answers.initGit}`);
-  console.log(`    Start now:   ${answers.startNow}\n`);
+  console.log(`    Run setup:   ${answers.startNow}\n`);
 
   const { listFiles } = await import("./scaffold.ts");
   const files = listFiles(answers);
@@ -59,17 +60,35 @@ await scaffold(targetDir, answers);
 
 console.log(`\n  ${green}${bold}Ready!${reset} Created at ${cyan}${targetDir}/${reset}`);
 
-if (!answers.startNow) {
+let ranLocalSetup = false;
+if (answers.environment === "local" && Deno.stdin.isTerminal()) {
+  const runSetupNow = answers.startNow || await Confirm.prompt({
+    message: "Run local project setup now? Configure database and storage",
+    default: true,
+  });
+
+  if (runSetupNow) {
+    ranLocalSetup = true;
+    console.log(`\n  ${bold}Running setup...${reset}\n`);
+    await new Deno.Command("deno", {
+      args: ["task", "setup"],
+      cwd: targetDir,
+      stdin: "inherit",
+      stdout: "inherit",
+      stderr: "inherit",
+    }).output();
+  }
+}
+
+if (!ranLocalSetup) {
   console.log(`\n  ${bold}Next steps:${reset}\n`);
   const s = (n: number, cmd: string, desc: string) =>
     `  ${gray}${n}.${reset}  ${cyan}${cmd}${reset}  ${gray}${desc}${reset}`;
 
   if (answers.environment === "local") {
     console.log(s(1, `cd ${answers.projectName}`, ""));
-    console.log(s(2, "docker compose up -d", "start Postgres"));
-    console.log(s(3, "deno task db:push", "push schema"));
-    console.log(s(4, "deno task db:seed", "seed sample data"));
-    console.log(s(5, "deno task dev", "start editor + website"));
+    console.log(s(2, "deno task setup", "choose database and storage"));
+    console.log(s(3, "deno task dev", "start editor + website"));
   } else if (answers.environment === "vps") {
     console.log(s(1, "Edit .env", "set passwords and domain"));
     console.log(s(2, "docker compose up -d", "start all services"));
@@ -88,5 +107,8 @@ if (!answers.startNow) {
     console.log(s(2, "fly postgres create", "add database"));
     console.log(s(3, "fly deploy", "deploy"));
   }
+} else if (answers.environment === "local") {
+  console.log(`\n  ${bold}Next step:${reset}\n`);
+  console.log(`  ${gray}1.${reset}  ${cyan}cd ${answers.projectName} && deno task dev${reset}  ${gray}start editor + website${reset}`);
 }
 console.log("");
