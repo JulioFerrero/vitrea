@@ -82,7 +82,7 @@ export function CollectionListSidebar() {
               }`}
             >
               <span className="truncate">{col.label}</span>
-              <span className="text-[10px] ml-2 text-white/30">
+              <span className="text-[11px] ml-2 text-white/30">
                 {(documentsByCollection[col.name] ?? []).length}
               </span>
             </button>
@@ -122,7 +122,7 @@ export function CollectionListSidebar() {
                     >
                       <span className="truncate">{item.title}</span>
                       <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"
-                        className="text-white/20 flex-shrink-0 ml-2">
+                        className="text-white flex-shrink-0 ml-2">
                         <path d="M3 2l4 3-4 3" />
                       </svg>
                     </button>
@@ -151,7 +151,7 @@ export function CollectionListSidebar() {
                       }`}
                     >
                       <span className="truncate">{item.title ?? colObj.label}</span>
-                      <span className={`text-[10px] ml-2 ${isSelected ? "text-editor-ring/70" : "text-white/30"}`}>
+                      <span className={`text-[11px] ml-2 ${isSelected ? "text-editor-ring/70" : "text-white/30"}`}>
                         {(documentsByCollection[docKey(item.collection ?? "", filter)] ?? []).length}
                       </span>
                     </button>

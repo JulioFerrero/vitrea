@@ -46,7 +46,7 @@ export function TypographyFields({ fields, styles, updateStyle }: {
                 {f.options?.map((opt) => (
                   <button type="button" key={opt} onClick={() => updateStyle(f.name, val === opt ? "" : opt)} title={opt}
                     className={cn(
-                      "px-2 py-1 text-[10px] font-medium rounded-md transition-colors",
+                      "px-2 py-1 text-[11px] font-medium rounded-md transition-colors",
                       opt === "bold" || opt === "extrabold" || opt === "black" ? "font-bold" : opt === "semibold" || opt === "medium" ? "font-medium" : "font-normal",
                        val === opt ? "bg-white text-black" : "text-white/80 hover:bg-white/10 hover:text-white"
                     )}>

@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@hi/utils";
-import { glassStyle, glassDarkStyle, glassPanelClass } from "../../lib/glass";
+import { glassStyle, glassDarkStyle, glassPanelClass } from "../lib/glass";
 
 export function Panel({
   children,

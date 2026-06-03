@@ -16,7 +16,7 @@ import { ElementNode } from "./element-node";
 import { AddElementDialog } from "./add-element-dialog";
 import { derivePath } from "../../lib/paths";
 import { countNodes } from "./utils";
-import { glassStyle, glassPanelClass } from "../../lib/glass";
+import { glassStyle, glassPanelClass } from "@hi/editor-ui/glass";
 
 interface PageTreeData {
   id: string;
@@ -183,9 +183,9 @@ export function LeftPanel() {
               const title = prompt("Page title:"); if (!title) return;
               await actions.createPage(activeSiteId, title, title.toLowerCase().replace(/\s+/g, "-"), rootPage?.id);
             }}
-            className="mx-2 mb-1 flex items-center gap-1.5 rounded px-2 py-1 text-[10px] text-white/80 hover:bg-white/10 hover:text-white transition-colors"
+            className="mx-2 mb-1 flex items-center gap-1.5 rounded px-2 py-1 text-[11px] text-white/80 hover:bg-white/10 hover:text-white transition-colors"
           >
-            <Plus className="h-3 w-3" /><span>Add page</span>
+            <Plus className="h-3 w-3 text-white" /><span>Add page</span>
           </button>
         )}
       </CollapsibleSection>
@@ -195,7 +195,7 @@ export function LeftPanel() {
       <CollapsibleSection title="Elements" icon={Layers}>
         <div className="flex-1 overflow-y-auto overflow-x-hidden px-1 pb-1 editor-scroll">
           {elementTreeData.length === 0 ? (
-            <p className="px-3 py-4 text-[10px] text-white/60 text-center">{activePageId ? "No elements" : "Select a page"}</p>
+            <p className="px-3 py-4 text-[11px] text-white/60 text-center">{activePageId ? "No elements" : "Select a page"}</p>
           ) : (
             <Tree<ElementTreeData>
               data={elementTreeData}

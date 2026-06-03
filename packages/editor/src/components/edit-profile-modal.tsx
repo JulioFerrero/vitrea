@@ -3,10 +3,10 @@
 import { useState, useRef, useEffect } from "react";
 import { useSession, signOut } from "@hi/auth/client";
 import { cn } from "@hi/utils";
-import { Camera, Loader2, Palette, ShieldCheck } from "lucide-react";
+import { Camera, Loader2, ShieldCheck } from "lucide-react";
 import { createApiFetch } from "../lib/api";
-import { Modal } from "./shared/modal";
-import { GlassLabel, GlassSectionLabel, GlassButton, inputBase } from "./shared/form-primitives";
+import { Modal } from "@hi/editor-ui/modal";
+import { Label, SectionLabel, Button, Alert, Divider, ColorInput, Field, Input } from "@hi/editor-ui/form-primitives";
 
 const api = createApiFetch();
 
@@ -109,7 +109,7 @@ export function EditProfileModal({ open, onOpenChange }: { open: boolean; onOpen
     catch { alert("Failed to delete account"); }
   }
 
-  if (!open || !user) return null;
+  if (!user) return null;
 
   const initials = (user.name ?? "?")
     .split(" ")
@@ -144,9 +144,9 @@ export function EditProfileModal({ open, onOpenChange }: { open: boolean; onOpen
                 uploading ? "opacity-100 bg-black/60" : "opacity-0 group-hover:opacity-100 bg-black/40",
               )}>
                 {uploading ? (
-                  <Loader2 className="h-5 w-5 text-white/80 animate-spin" />
+                  <Loader2 className="h-5 w-5 text-white animate-spin" />
                 ) : (
-                  <Camera className="h-5 w-5 text-white/80" />
+                  <Camera className="h-5 w-5 text-white" />
                 )}
               </div>
             </button>
@@ -166,76 +166,51 @@ export function EditProfileModal({ open, onOpenChange }: { open: boolean; onOpen
           </div>
         </div>
 
-        <div className="h-px bg-white/[0.06]" />
+        <Divider />
 
         <form onSubmit={handleSaveProfile} className="space-y-4">
-          <GlassSectionLabel>Profile</GlassSectionLabel>
+          <SectionLabel>Profile</SectionLabel>
           <div className="space-y-3">
-            <div>
-              <GlassLabel>Name</GlassLabel>
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className={inputBase} />
-            </div>
-            <div>
-              <GlassLabel>Email</GlassLabel>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className={inputBase} />
-            </div>
-            <div>
-              <GlassLabel>Cursor Color</GlassLabel>
-              <div className="flex items-center gap-2 flex-wrap">
-                <input
-                  type="color"
-                  value={cursorColor}
-                  onChange={(e) => setCursorColor(e.target.value)}
-                  className="h-7 w-10 rounded-md border border-white/10 bg-white/[0.06] cursor-pointer appearance-none [&::-webkit-color-swatch-wrapper]:p-1 [&::-webkit-color-swatch]:rounded-md [&::-webkit-color-swatch]:border-none"
-                />
-                {["#7B61FF", "#FF6B6B", "#4ECDC4", "#FFE66D", "#FF8A5C", "#A8E6CF", "#FF61D2", "#6C5CE7"].map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => setCursorColor(c)}
-                    className={cn(
-                      "h-6 w-6 rounded-full border-2 transition-all",
-                      cursorColor === c ? "border-white/60 scale-110" : "border-transparent hover:border-white/20",
-                    )}
-                    style={{ background: c }}
-                  />
-                ))}
-                <Palette className="h-4 w-4 text-white/30 ml-1" />
-              </div>
-            </div>
+            <Field label="Name">
+              <Input value={name} onChange={setName} placeholder="Your name" />
+            </Field>
+            <Field label="Email">
+              <Input type="email" value={email} onChange={setEmail} placeholder="you@example.com" />
+            </Field>
+            <Field label="Cursor Color">
+              <ColorInput value={cursorColor} onChange={setCursorColor} />
+            </Field>
           </div>
           {profileMsg && (
-            <p className={cn("text-xs rounded-lg px-3 py-2", profileMsg.includes("updated") || profileMsg.includes("uploaded") ? "bg-emerald-500/[0.08] text-emerald-400 border border-emerald-500/[0.1]" : "bg-red-500/[0.08] text-red-400 border border-red-500/[0.1]")}>{profileMsg}</p>
+            <Alert variant={profileMsg.includes("updated") || profileMsg.includes("uploaded") ? "success" : "error"}>{profileMsg}</Alert>
           )}
-          <GlassButton type="submit" disabled={saving}>{saving ? "Saving..." : "Save Profile"}</GlassButton>
+          <Button type="submit" disabled={saving}>{saving ? "Saving..." : "Save Profile"}</Button>
         </form>
 
-        <div className="h-px bg-white/[0.06]" />
+        <Divider />
 
         <form onSubmit={handleChangePassword} className="space-y-4">
-          <GlassSectionLabel>Change Password</GlassSectionLabel>
+          <SectionLabel>Change Password</SectionLabel>
           <div className="space-y-3">
-            <div>
-              <GlassLabel>Current Password</GlassLabel>
-              <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Current password" required className={inputBase} />
-            </div>
-            <div>
-              <GlassLabel>New Password</GlassLabel>
-              <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Min 8 characters" required minLength={8} className={inputBase} />
-            </div>
+            <Field label="Current Password">
+              <Input type="password" value={currentPassword} onChange={setCurrentPassword} placeholder="Current password" required />
+            </Field>
+            <Field label="New Password">
+              <Input type="password" value={newPassword} onChange={setNewPassword} placeholder="Min 8 characters" required minLength={8} />
+            </Field>
           </div>
           {passwordMsg && (
-            <p className={cn("text-xs rounded-lg px-3 py-2", passwordMsg.includes("changed") ? "bg-emerald-500/[0.08] text-emerald-400 border border-emerald-500/[0.1]" : "bg-red-500/[0.08] text-red-400 border border-red-500/[0.1]")}>{passwordMsg}</p>
+            <Alert variant={passwordMsg.includes("changed") ? "success" : "error"}>{passwordMsg}</Alert>
           )}
-          <GlassButton type="submit" disabled={passwordSaving}>{passwordSaving ? "Updating..." : "Update Password"}</GlassButton>
+          <Button type="submit" disabled={passwordSaving}>{passwordSaving ? "Updating..." : "Update Password"}</Button>
         </form>
 
-        <div className="h-px bg-white/[0.06]" />
+        <Divider />
 
         <div className="space-y-3">
-          <GlassSectionLabel>Danger Zone</GlassSectionLabel>
+          <SectionLabel>Danger Zone</SectionLabel>
           <p className="text-[11px] text-white/40">Permanently delete your account and all data. Irreversible.</p>
-          <GlassButton variant="danger" onClick={handleDeleteAccount}>Delete Account</GlassButton>
+          <Button variant="danger" onClick={handleDeleteAccount}>Delete Account</Button>
         </div>
       </div>
     </Modal>

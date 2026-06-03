@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@hi/utils";
-import { glassStyle } from "../../lib/glass";
+import { glassStyle } from "../lib/glass";
 
 export function Toolbar({
   children,

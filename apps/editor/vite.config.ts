@@ -208,6 +208,15 @@ export default defineConfig({
     jsxImportSource: "preact",
     jsx: "automatic",
   },
+  server: {
+    fs: {
+      allow: [
+        root,
+        resolve(root, "node_modules/.deno"),
+        resolve(root, "node_modules"),
+      ],
+    },
+  },
   plugins: [
     denoWorkspacePlugin(root, "@hi"),
     apiPlugin(),
@@ -219,6 +228,7 @@ export default defineConfig({
       { find: "react-dom", replacement: "preact/compat" },
       { find: "react", replacement: "preact/compat" },
       { find: "lucide-react", replacement: resolve(root, "node_modules/lucide-preact/dist/esm/lucide-preact.js") },
+      { find: "@fontsource-variable/geist", replacement: resolve(root, "node_modules/@fontsource-variable/geist") },
       { find: "@fontsource/fraunces", replacement: resolve(root, "node_modules/@fontsource/fraunces") },
       { find: "@fontsource/recursive", replacement: resolve(root, "node_modules/@fontsource/recursive") },
       { find: "@hi/editor/styles.css", replacement: resolve(root, "packages/editor/src/styles.css") },

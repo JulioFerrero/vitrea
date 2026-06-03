@@ -1,4 +1,4 @@
-export { CollapsibleSection } from "../shared/collapsible-section";
+export { CollapsibleSection } from "@hi/editor-ui/collapsible-section";
 
 export interface CtxMenuState {
   x: number;

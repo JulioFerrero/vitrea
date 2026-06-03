@@ -1,8 +1,9 @@
 import { useEditorStore } from "../../stores";
 import { useEditorContext } from "../../lib/context";
-import { glassStyle } from "../../lib/glass";
+import { glassStyle } from "@hi/editor-ui/glass";
 import { Copy, Trash2, Upload, RotateCcw } from "lucide-react";
-import { IconBtn, CompactInput, Label, Btn, BtnGroup, SectionLabel } from "./primitives";
+import { CompactInput, Label, Btn, BtnGroup, SectionLabel } from "./primitives";
+import { IconButton } from "@hi/editor-ui/icon-button";
 import { ContentField } from "./content-field";
 import { StyleGroup } from "./style-group";
 import { derivePath, slugify } from "../../lib/paths";
@@ -68,7 +69,7 @@ export function RightPanel() {
             </div>
           </>
         ) : (
-          <div className="px-3 py-8 text-[10px] text-white/60 text-center">Select a page</div>
+          <div className="px-3 py-8 text-[11px] text-white/60 text-center">Select a page</div>
         )}
       </div>
     );
@@ -83,12 +84,8 @@ export function RightPanel() {
       <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.06]">
         <span className="text-[11px] font-semibold capitalize text-white">{typeConfig?.label ?? selected.type}</span>
         <div className="flex items-center gap-0.5">
-          <IconBtn onClick={() => actions.duplicateNode(selected.id)} title="Duplicate" hoverColor="editor-ring">
-            <Copy className="h-3 w-3" />
-          </IconBtn>
-          <IconBtn onClick={() => actions.deleteNode(selected.id)} title="Delete" hoverColor="destructive">
-            <Trash2 className="h-3 w-3" />
-          </IconBtn>
+          <IconButton icon={Copy} label="Duplicate" onClick={() => actions.duplicateNode(selected.id)} iconSize="h-3 w-3" />
+          <IconButton icon={Trash2} label="Delete" onClick={() => actions.deleteNode(selected.id)} variant="danger" iconSize="h-3 w-3" />
         </div>
       </div>
 

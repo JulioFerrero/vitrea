@@ -4,6 +4,8 @@ import { useMemo } from "react";
 import { useCmsStore, type CmsCollectionItem } from "../../stores/cms-store";
 import { useCmsContext } from "../../lib/context";
 import { createCmsActions } from "../../lib/cms-actions";
+import { Spinner } from "@hi/editor-ui/spinner";
+import { EmptyState } from "@hi/editor-ui/empty-state";
 
 interface DocumentListProps {
   collection: CmsCollectionItem;
@@ -49,21 +51,18 @@ export function DocumentList({ collection, siteId }: DocumentListProps) {
 
       {isLoading && (
         <div className="flex items-center justify-center py-16">
-          <p className="text-xs text-white/30">Loading...</p>
+          <Spinner />
         </div>
       )}
 
       {!isLoading && documents.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-24 gap-3">
-          <p className="text-sm text-white/30">No {collection.label.toLowerCase()}s yet</p>
-          <button
-            type="button"
-            onClick={handleCreate}
-            className="text-xs text-editor-ring hover:text-editor-hover transition-colors"
-          >
-            Create your first {collection.label.toLowerCase()}
-          </button>
-        </div>
+        <EmptyState
+          title={`No ${collection.label.toLowerCase()}s yet`}
+          action={{
+            label: `Create your first ${collection.label.toLowerCase()}`,
+            onClick: handleCreate,
+          }}
+        />
       )}
 
       {!isLoading && documents.length > 0 && (
@@ -85,7 +84,7 @@ export function DocumentList({ collection, siteId }: DocumentListProps) {
                 </div>
                 <div className="flex items-center gap-2 ml-3 flex-shrink-0">
                   <span
-                    className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                    className={`text-[11px] px-1.5 py-0.5 rounded-full font-medium ${
                       doc.status === "published"
                         ? "bg-emerald-500/10 text-emerald-400"
                         : "bg-amber-500/10 text-amber-400"
@@ -96,9 +95,9 @@ export function DocumentList({ collection, siteId }: DocumentListProps) {
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); handleDelete(doc); }}
-                    className="h-7 w-7 flex items-center justify-center rounded-lg text-white/20 hover:text-destructive hover:bg-destructive/10 transition-all duration-200 opacity-0 group-hover:opacity-100"
+                    className="h-7 w-7 flex items-center justify-center rounded-lg text-white hover:text-destructive hover:bg-destructive/10 transition-all duration-200 opacity-0 group-hover:opacity-100"
                   >
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="text-white">
                       <path d="M3 3.5l6 6M9 3.5l-6 6" />
                     </svg>
                   </button>

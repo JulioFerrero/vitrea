@@ -153,7 +153,7 @@ export function UsersPage({ onBack: _onBack }: { onBack: () => void }) {
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-medium text-foreground truncate">{u.name}</span>
                       <Badge className={cn(
-                        "text-[10px]",
+                        "text-[11px]",
                         u.role === "admin"
                           ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
                           : "bg-white/5 text-white/40 border-white/10"

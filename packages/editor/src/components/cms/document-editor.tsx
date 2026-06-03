@@ -20,9 +20,8 @@ import { useCmsContext } from "../../lib/context";
 import { createCmsActions } from "../../lib/cms-actions";
 import { ReferencePicker } from "./reference-picker";
 import { MediaLibrary } from "../media-library";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@hi/ui/dialog";
-import { Button } from "@hi/ui/button";
-import { Input } from "@hi/ui/input";
+import { Modal } from "@hi/editor-ui/modal";
+import { Button, Input } from "@hi/editor-ui/form-primitives";
 import { cn } from "@hi/utils";
 import { Image as ImageIcon } from "lucide-react";
 
@@ -69,7 +68,7 @@ export function DocumentEditor({ document, collection, siteId }: {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h2 className="text-base font-semibold text-white/80">{collection.label}</h2>
-          <p className="text-[10px] text-white/30 mt-0.5 font-mono">{document.id}</p>
+          <p className="text-[11px] text-white/30 mt-0.5 font-mono">{document.id}</p>
         </div>
         <div className="flex items-center gap-2">
           <button type="button" onClick={toggleStatus}
@@ -112,7 +111,7 @@ export function DocumentEditor({ document, collection, siteId }: {
         })}
       </div>
 
-      <div className="mt-10 pt-4 border-t border-white/[0.06] text-[10px] text-white/20 font-mono">
+      <div className="mt-10 pt-4 border-t border-white/[0.06] text-[11px] text-white/20 font-mono">
         Created: {new Date(document.createdAt).toLocaleString()}
         <br />Updated: {new Date(document.updatedAt).toLocaleString()}
       </div>
@@ -183,12 +182,12 @@ function FormField({ field, value, onChange, siteId }: {
           <div className="relative group rounded-xl overflow-hidden border border-white/[0.06] bg-editor-surface">
             <img src={str} alt="" className="w-full max-h-48 object-cover" />
             <button type="button" onClick={() => onChange("")}
-              className="absolute top-2 right-2 h-7 w-7 flex items-center justify-center rounded-lg bg-black/60 text-white/60 hover:text-white hover:bg-black/80 opacity-0 group-hover:opacity-100 transition-all">&times;</button>
+              className="absolute top-2 right-2 h-7 w-7 flex items-center justify-center rounded-lg bg-black/60 text-white hover:text-white hover:bg-black/80 opacity-0 group-hover:opacity-100 transition-all">&times;</button>
           </div>
         ) : (
           <div className="space-y-1">
-            <Input type="text" placeholder="Image URL..."
-              value={str} onChange={(e) => onChange(e.target.value)} />
+            <Input placeholder="Image URL..."
+              value={str} onChange={(v) => onChange(v)} />
             <MediaPickerButton onChange={onChange} api={cmsCtx.api} siteId={siteId} />
           </div>
         )}
@@ -206,7 +205,7 @@ function FormField({ field, value, onChange, siteId }: {
         type={field.type === "number" ? "number" : "text"}
         value={str}
         placeholder={(field.default as string) ?? ""}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(v) => onChange(v)}
       />
     </div>
   );
@@ -308,39 +307,33 @@ function ArrayBlock({ field, items, onChange, siteId }: {
         + Add {label}
       </button>
 
-      <Dialog open={editingIndex !== null} onOpenChange={(open) => { if (!open) setEditingIndex(null); }}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-white/80 text-base">
-              {label} #{editingIndex !== null ? editingIndex + 1 : ""}
-            </DialogTitle>
-            <DialogDescription className="text-white/40">
-              Edit this {label.toLowerCase()} item
-            </DialogDescription>
-          </DialogHeader>
+      <Modal open={editingIndex !== null} onOpenChange={(o) => { if (!o) setEditingIndex(null); }} variant="flat" maxWidth="max-w-lg">
+        <h2 className="text-base font-semibold text-white tracking-tight">
+          {label} #{editingIndex !== null ? editingIndex + 1 : ""}
+        </h2>
+        <p className="text-sm text-white/40 mt-1">Edit this {label.toLowerCase()} item</p>
 
-          <div className="space-y-5 py-2 max-h-[55vh] overflow-y-auto editor-scroll">
-            {editingItem && subs.map((sf) => (
-              <FormField
-                key={sf.name}
-                field={sf}
-                value={editingItem[sf.name]}
-                onChange={(v) => editItem(editingIndex!, sf.name, v)}
-                siteId={siteId}
-              />
-            ))}
-          </div>
+        <div className="space-y-5 py-2 max-h-[55vh] overflow-y-auto editor-scroll mt-4">
+          {editingItem && subs.map((sf) => (
+            <FormField
+              key={sf.name}
+              field={sf}
+              value={editingItem[sf.name]}
+              onChange={(v) => editItem(editingIndex!, sf.name, v)}
+              siteId={siteId}
+            />
+          ))}
+        </div>
 
-          <DialogFooter>
-            <Button variant="destructive" size="sm" onClick={() => { remove(editingIndex!); setEditingIndex(null); }}>
-              Remove
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setEditingIndex(null)}>
-              Done
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="danger" onClick={() => { remove(editingIndex!); setEditingIndex(null); }}>
+            Remove
+          </Button>
+          <Button variant="outline" onClick={() => setEditingIndex(null)}>
+            Done
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }
@@ -378,7 +371,7 @@ const SortableItem = memo(function SortableItem({ id, item: _item, index, previe
             : "border-white/[0.06] bg-editor-surface/60 hover:border-white/10 hover:bg-editor-surface"
       )}>
       <button type="button" {...attributes} {...listeners}
-        className="h-6 w-6 flex-shrink-0 flex items-center justify-center rounded text-white/20 hover:text-white/50 cursor-grab active:cursor-grabbing transition-colors">
+        className="h-6 w-6 flex-shrink-0 flex items-center justify-center rounded text-white hover:text-white/50 cursor-grab active:cursor-grabbing transition-colors">
         <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
           <circle cx="3" cy="2.5" r="0.9" />
           <circle cx="9" cy="2.5" r="0.9" />
@@ -391,7 +384,7 @@ const SortableItem = memo(function SortableItem({ id, item: _item, index, previe
 
       <button type="button" onClick={onEdit}
         className="flex-1 text-left min-w-0 flex items-center gap-2">
-        <span className="text-[10px] text-white/20 flex-shrink-0 font-mono tabular-nums">#{index + 1}</span>
+        <span className="text-[11px] text-white/20 flex-shrink-0 font-mono tabular-nums">#{index + 1}</span>
         <span className="text-sm text-white/70 truncate">{preview}</span>
       </button>
 
@@ -416,9 +409,9 @@ function MediaPickerButton({ onChange, api, siteId }: {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1 text-[10px] text-white/30 hover:text-editor-ring transition-colors"
+        className="flex items-center gap-1 text-[11px] text-white/30 hover:text-editor-ring transition-colors"
       >
-        <ImageIcon className="h-3 w-3" />
+        <ImageIcon className="h-3 w-3 text-white" />
         Media Library
       </button>
       <MediaLibrary

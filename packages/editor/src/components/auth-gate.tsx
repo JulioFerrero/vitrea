@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "@hi/auth/client";
 import { LoginPage } from "./login-page";
 import { SetupPage } from "./setup-page";
+import { Spinner } from "@hi/editor-ui/spinner";
 
 interface AuthGateProps {
   children: React.ReactNode;
@@ -29,7 +30,7 @@ export function AuthGate({ children, api }: AuthGateProps) {
   if (isPending || hasUsers === null) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="h-8 w-8 border-2 border-white/10 border-t-white/30 rounded-full animate-spin" />
+        <Spinner />
       </div>
     );
   }

@@ -27,7 +27,7 @@ export function ToolbarButton({
         <Icon className="h-4 w-4" />
       </button>
       <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-2 opacity-0 group-hover/tip:opacity-100 transition-opacity duration-150 whitespace-nowrap z-[200]">
-        <div className="bg-black/80 backdrop-blur-sm text-white text-[10px] rounded-lg px-2.5 py-1.5 flex items-center gap-1.5 shadow-lg">
+        <div className="bg-black/80 backdrop-blur-sm text-white text-[11px] rounded-lg px-2.5 py-1.5 flex items-center gap-1.5 shadow-lg">
           <span>{label}</span>
           {shortcut && <kbd className="bg-white/15 rounded px-1.5 py-0.5 text-[9px] font-mono">{shortcut}</kbd>}
         </div>

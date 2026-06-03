@@ -4,8 +4,8 @@ import React from "react";
 import { useState } from "react";
 import { useEditorStore, type SaveStatus } from "../../stores";
 import { useEditorContext } from "../../lib/context";
-import { Separator } from "@hi/ui/separator";
-import { Badge } from "@hi/ui/badge";
+import { Separator } from "@hi/editor-ui/separator";
+import { Badge } from "@hi/editor-ui/form-primitives";
 import {
   Undo2,
   Redo2,
@@ -21,9 +21,9 @@ import { cn } from "@hi/utils";
 import { ReviewDialog } from "../review-dialog";
 import { HistoryPanel } from "../history-panel";
 import { ProfileDropdown } from "../profile-dropdown";
-import { IconButton } from "../shared/icon-button";
+import { IconButton } from "@hi/editor-ui/icon-button";
 import { navigate } from "../../lib/navigate";
-import { glassStyle } from "../../lib/glass";
+import { glassStyle } from "@hi/editor-ui/glass";
 
 function DraftStatusBadge() {
   const hasActiveDraft = useEditorStore((s) => s.hasActiveDraft);
@@ -32,8 +32,8 @@ function DraftStatusBadge() {
 
   if (saveStatus === "saving") {
     return (
-      <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-xs">
-        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+      <Badge variant="warning">
+        <Loader2 className="h-3 w-3 animate-spin" />
         Saving...
       </Badge>
     );
@@ -41,8 +41,8 @@ function DraftStatusBadge() {
 
   if (saveStatus === "saved" && !isDirty) {
     return (
-      <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs">
-        <Check className="h-3 w-3 mr-1" />
+      <Badge variant="success">
+        <Check className="h-3 w-3" />
         Draft saved
       </Badge>
     );
@@ -50,14 +50,14 @@ function DraftStatusBadge() {
 
   if (isDirty || hasActiveDraft) {
     return (
-      <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-xs">
+      <Badge variant="warning">
         Unsaved draft
       </Badge>
     );
   }
 
   return (
-    <Badge className="bg-white/5 text-white/40 border-white/10 text-xs">
+    <Badge variant="default">
       Published
     </Badge>
   );
@@ -77,11 +77,11 @@ function PublishButton() {
         type="button"
         onClick={() => setReviewOpen(true)}
         className={cn(
-          "py-1 px-3 rounded-md text-[10px] font-medium transition-colors flex items-center gap-1.5",
+          "py-1 px-3 rounded-md text-[11px] font-medium transition-colors flex items-center gap-1.5",
           showPublish ? "bg-white text-black hover:bg-white/90" : "text-white/50 hover:bg-white/10 hover:text-white border border-white/10",
         )}
       >
-        <Upload className="h-3.5 w-3.5" />
+        <Upload className="h-3.5 w-3.5 text-white" />
         Review & Publish
       </button>
 

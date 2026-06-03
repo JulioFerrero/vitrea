@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { cn } from "@hi/utils";
 import { ChevronRight } from "lucide-react";
@@ -29,12 +31,12 @@ export function CollapsibleSection({
     >
       <ChevronRight
         className={cn(
-          "h-3 w-3 text-white/70 transition-transform duration-150 flex-shrink-0",
+          "h-3 w-3 text-white transition-transform duration-150 flex-shrink-0",
           open && "rotate-90"
         )}
       />
-      {Icon && <Icon className="h-3 w-3 text-white/80 flex-shrink-0" />}
-      <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/90">{title}</span>
+      {Icon && <Icon className="h-3 w-3 text-white flex-shrink-0" />}
+      <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/90">{title}</span>
     </button>
   );
 

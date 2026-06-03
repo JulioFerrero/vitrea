@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@hi/ui/button";
-import { Input } from "@hi/ui/input";
+import { Button, Input } from "@hi/editor-ui/form-primitives";
+import { Modal } from "@hi/editor-ui/modal";
 import { Card, CardHeader, CardTitle, CardDescription } from "@hi/ui/card";
 import { Plus, Globe, Users, Feather, Square, Layout, PenLine, Palette, Check, Trash2, Image as ImageIcon, Settings } from "lucide-react";
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@hi/ui/dialog";
 import { ProfileDropdown } from "./profile-dropdown";
+import { ConfirmDialog } from "@hi/editor-ui/confirm-dialog";
 import { cn } from "@hi/utils";
 import { navigate } from "../lib/navigate";
 import type React from "react";
@@ -80,23 +80,24 @@ export function Dashboard({ api, onSelectSite }: DashboardProps) {
               <Users className="h-4 w-4" />
               Users
             </button>
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger render={<Button />}>
+            <button
+              type="button"
+              onClick={() => setDialogOpen(true)}
+              className="inline-flex items-center justify-center rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-editor-ring/30 disabled:opacity-40 disabled:cursor-not-allowed bg-white/10 text-white hover:bg-white/15"
+            >
               <Plus className="mr-2 h-4 w-4" />
               New Site
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-lg">
-              <DialogHeader>
-                <DialogTitle>Create New Site</DialogTitle>
-              </DialogHeader>
+            </button>
+            <Modal open={dialogOpen} onOpenChange={setDialogOpen} maxWidth="max-w-lg">
+              <h2 className="text-base font-semibold text-white tracking-tight">Create New Site</h2>
               <Input
                 placeholder="Site name"
                 value={newName}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewName(e.target.value)}
-                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && handleCreate()}
+                onChange={setNewName}
+                onKeyDown={(e) => e.key === "Enter" && handleCreate()}
               />
-              <div className="space-y-3">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+              <div className="space-y-3 mt-4">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/40">
                   Start with a template
                 </p>
                 <div className="grid grid-cols-3 gap-2">
@@ -119,8 +120,7 @@ export function Dashboard({ api, onSelectSite }: DashboardProps) {
                           t.thumb,
                         )}>
                           <t.Icon className={cn(
-                            "h-6 w-6 transition-colors",
-                            isSelected ? "text-white/60" : "text-white/20",
+                            "h-6 w-6 text-white transition-colors",
                           )} />
                         </div>
                         <div>
@@ -144,11 +144,10 @@ export function Dashboard({ api, onSelectSite }: DashboardProps) {
                   })}
                 </div>
               </div>
-              <DialogFooter>
+              <div className="flex justify-end mt-4">
                 <Button onClick={handleCreate}>Create</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </div>
+            </Modal>
             <ProfileDropdown />
           </div>
         </div>
@@ -182,16 +181,16 @@ export function Dashboard({ api, onSelectSite }: DashboardProps) {
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); navigate(`/${site.id}/settings`); }}
-                className="absolute top-3 right-12 h-8 w-8 flex items-center justify-center rounded-lg bg-black/40 text-white/30 hover:text-white/60 hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-all"
+                className="absolute top-3 right-12 h-8 w-8 flex items-center justify-center rounded-lg bg-black/40 text-white hover:text-white hover:bg-white/10 opacity-0 group-hover:opacity-100 transition-all"
               >
-                <Settings className="h-4 w-4" />
+                <Settings className="h-4 w-4 text-white" />
               </button>
               <button
                 type="button"
                 onClick={(e) => handleDeleteSite(site.id, site.data.name, e)}
-                className="absolute top-3 right-3 h-8 w-8 flex items-center justify-center rounded-lg bg-black/40 text-white/30 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all"
+                className="absolute top-3 right-3 h-8 w-8 flex items-center justify-center rounded-lg bg-black/40 text-white hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-4 w-4 text-white" />
               </button>
             </div>
           ))}
@@ -205,21 +204,15 @@ export function Dashboard({ api, onSelectSite }: DashboardProps) {
         </div>
       </main>
 
-      <Dialog open={confirmDelete !== null} onOpenChange={(o) => { if (!o) setConfirmDelete(null); }}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Delete Site</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            Are you sure you want to delete <span className="font-medium text-foreground">"{confirmDelete?.name}"</span>?
-            All pages and content will be permanently removed. This cannot be undone.
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmDelete(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={confirmDeleteSite}>Delete</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={confirmDelete !== null}
+        onOpenChange={(o) => { if (!o) setConfirmDelete(null); }}
+        title="Delete Site"
+        description={`Are you sure you want to delete "${confirmDelete?.name}"? All pages and content will be permanently removed. This cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={confirmDeleteSite}
+      />
     </div>
   );
 }

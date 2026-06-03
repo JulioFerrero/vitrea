@@ -68,7 +68,7 @@ export function CtxMenu({
               item.destructive ? "text-destructive hover:bg-destructive/10" : "text-white hover:bg-white/10"
             )}
           >
-            <Icon className="h-3 w-3 opacity-60" />
+            <Icon className="h-3 w-3 text-white" />
             <span>{item.label}</span>
           </button>
         );

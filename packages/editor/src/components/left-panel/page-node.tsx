@@ -35,20 +35,20 @@ export function PageNode({ node, style, dragHandle, onContextMenu }: NodeRendere
           onClick={(e) => { e.stopPropagation(); node.toggle(); }}
           className="flex items-center justify-center w-4 h-4 flex-shrink-0 rounded hover:bg-white/[0.06] transition-colors"
         >
-          <ChevronRight className={cn("h-2.5 w-2.5 text-white/70 transition-transform duration-150", node.isOpen && "rotate-90")} />
+          <ChevronRight className={cn("h-2.5 w-2.5 text-white transition-transform duration-150", node.isOpen && "rotate-90")} />
         </button>
       ) : (
         <span className="w-4 flex-shrink-0" />
       )}
-      <File className="h-3 w-3 flex-shrink-0 text-white/60 mr-1" />
-      <div className="min-w-0 flex-1">
+      <File className="h-3 w-3 flex-shrink-0 text-white mr-1" />
+      <div className="min-w-0 flex-1 flex items-center">
         {node.state.isEditing ? (
           <input className="min-w-0 w-full rounded border border-white/10 px-1 py-0 text-[11px] outline-none bg-white/[0.06] text-white" defaultValue={node.data.name} autoFocus
             onBlur={(e) => node.submit(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") node.submit((e.target as HTMLInputElement).value); if (e.key === "Escape") node.reset(); }}
           />
         ) : (
-          <span className="truncate text-[11px] leading-none">{node.data.name}</span>
+          <span className="truncate text-[11px]">{node.data.name}</span>
         )}
       </div>
     </div>

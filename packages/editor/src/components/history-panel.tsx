@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import { useEditorStore } from "../stores";
 import { useEditorContext } from "../lib/context";
-import { Modal } from "./shared/modal";
-import { ScrollArea } from "@hi/ui/scroll-area";
-import { Badge } from "@hi/ui/badge";
-import { History, RotateCcw, Loader2, Clock } from "lucide-react";
+import { Modal } from "@hi/editor-ui/modal";
+import { Badge } from "@hi/editor-ui/form-primitives";
+import { Spinner } from "@hi/editor-ui/spinner";
+import { EmptyState } from "@hi/editor-ui/empty-state";
+import { ScrollArea } from "@hi/editor-ui/scroll-area";
+import { RotateCcw, Clock, Loader2 } from "lucide-react";
 
 interface RevisionItem {
   id: string;
@@ -53,13 +55,9 @@ export function HistoryPanel({
 
       <div className="mt-4 flex flex-col max-h-[60vh]">
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-white/40" />
-          </div>
+          <Spinner />
         ) : revisions.length === 0 ? (
-          <div className="text-center py-12 text-white/40">
-            No published revisions yet
-          </div>
+          <EmptyState title="No published revisions yet" />
         ) : (
           <ScrollArea className="flex-1 -mx-2 px-2">
             <div className="space-y-1">
@@ -69,7 +67,7 @@ export function HistoryPanel({
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/5 transition-colors group"
                 >
                   <div className="flex items-center justify-center w-8 h-8 rounded-full bg-white/5 flex-shrink-0">
-                    <Clock className="h-3.5 w-3.5 text-white/40" />
+                    <Clock className="h-3.5 w-3.5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm text-white/80">

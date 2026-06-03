@@ -2,8 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useSession, signOut } from "@hi/auth/client";
-import { Button } from "@hi/ui/button";
-import { Input } from "@hi/ui/input";
+import { Button, Input, Divider } from "@hi/editor-ui/form-primitives";
 import { createApiFetch } from "../lib/api";
 import { cn } from "@hi/utils";
 import { ArrowLeft, Lock, Trash2, Camera, Check, ShieldCheck, Loader2, Palette } from "lucide-react";
@@ -112,8 +111,8 @@ export function AccountPage({ onBack: _onBack }: { onBack: () => void }) {
   return (
     <div className="flex flex-col h-screen bg-[#08080A]">
       <header className="shrink-0 flex h-14 items-center px-4 border-b border-white/[0.06] bg-[#08080A]/80 backdrop-blur-xl">
-        <a href="/" className="flex items-center gap-1.5 text-sm text-white/30 hover:text-white/60 transition-colors">
-          <ArrowLeft className="h-4 w-4" /> Back
+        <a href="/" className="flex items-center gap-1.5 text-sm text-white hover:text-white/60 transition-colors">
+          <ArrowLeft className="h-4 w-4 text-white" /> Back
         </a>
         <span className="ml-3 h-4 w-px bg-white/[0.08]" />
         <h1 className="ml-3 text-sm font-medium tracking-wide text-white/60">Edit Profile</h1>
@@ -142,9 +141,9 @@ export function AccountPage({ onBack: _onBack }: { onBack: () => void }) {
                   uploading ? "opacity-100 bg-black/60" : "opacity-0 group-hover:opacity-100 bg-black/40",
                 )}>
                   {uploading ? (
-                    <Loader2 className="h-5 w-5 text-white/60 animate-spin" />
+                    <Loader2 className="h-5 w-5 text-white animate-spin" />
                   ) : (
-                    <Camera className="h-5 w-5 text-white/60" />
+                    <Camera className="h-5 w-5 text-white" />
                   )}
                 </div>
               </button>
@@ -164,19 +163,19 @@ export function AccountPage({ onBack: _onBack }: { onBack: () => void }) {
             </div>
           </div>
 
-          <div className="h-px bg-white/[0.04]" />
+          <Divider />
 
           <form onSubmit={handleSaveProfile} className="space-y-5">
             <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/25 mb-4">Profile</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-[11px] font-medium text-white/35 mb-1.5">Name</label>
-                <Input value={name} onChange={(e) => setName((e.target as HTMLInputElement).value)} placeholder="Your name"
+                <Input value={name} onChange={(v) => setName(v)} placeholder="Your name"
                   className="h-10 rounded-lg border-white/[0.06] bg-white/[0.02] text-sm text-white/75 placeholder:text-white/15 focus:border-white/[0.12] focus:bg-white/[0.03]" />
               </div>
               <div>
                 <label className="block text-[11px] font-medium text-white/35 mb-1.5">Email</label>
-                <Input type="email" value={email} onChange={(e) => setEmail((e.target as HTMLInputElement).value)} placeholder="you@example.com"
+                <Input type="email" value={email} onChange={(v) => setEmail(v)} placeholder="you@example.com"
                   className="h-10 rounded-lg border-white/[0.06] bg-white/[0.02] text-sm text-white/75 placeholder:text-white/15 focus:border-white/[0.12] focus:bg-white/[0.03]" />
               </div>
               <div>
@@ -204,50 +203,50 @@ export function AccountPage({ onBack: _onBack }: { onBack: () => void }) {
                       />
                     ))}
                   </div>
-                  <Palette className="h-4 w-4 text-white/20 ml-1" />
+                  <Palette className="h-4 w-4 text-white ml-1" />
                 </div>
               </div>
             </div>
             {profileMsg && (
               <p className={cn("text-xs rounded-lg px-3 py-2", profileMsg.includes("updated") || profileMsg.includes("uploaded") ? "bg-emerald-500/[0.05] text-emerald-400/70 border border-emerald-500/[0.06]" : "bg-red-500/[0.05] text-red-400/70 border border-red-500/[0.06]")}>{profileMsg}</p>
             )}
-            <Button type="submit" size="sm" disabled={saving}
+            <Button type="submit" disabled={saving}
               className="h-9 rounded-lg bg-white/[0.05] text-white/65 hover:bg-white/[0.08] hover:text-white/85 border border-white/[0.05]">
-              {saving ? <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> Saving</> : <><Check className="h-3.5 w-3.5 mr-1.5" /> Save</>}
+              {saving ? <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5 text-white" /> Saving</> : <><Check className="h-3.5 w-3.5 mr-1.5 text-white" /> Save</>}
             </Button>
           </form>
 
-          <div className="h-px bg-white/[0.04]" />
+          <Divider />
 
           <form onSubmit={handleChangePassword} className="space-y-5">
             <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/25 mb-4">Change Password</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-[11px] font-medium text-white/35 mb-1.5">Current Password</label>
-                <Input type="password" value={currentPassword} onChange={(e) => setCurrentPassword((e.target as HTMLInputElement).value)} placeholder="Current password" required
+                <Input type="password" value={currentPassword} onChange={(v) => setCurrentPassword(v)} placeholder="Current password" required
                   className="h-10 rounded-lg border-white/[0.06] bg-white/[0.02] text-sm text-white/75 placeholder:text-white/15 focus:border-white/[0.12] focus:bg-white/[0.03]" />
               </div>
               <div>
                 <label className="block text-[11px] font-medium text-white/35 mb-1.5">New Password</label>
-                <Input type="password" value={newPassword} onChange={(e) => setNewPassword((e.target as HTMLInputElement).value)} placeholder="Min 8 characters" required minLength={8}
+                <Input type="password" value={newPassword} onChange={(v) => setNewPassword(v)} placeholder="Min 8 characters" required minLength={8}
                   className="h-10 rounded-lg border-white/[0.06] bg-white/[0.02] text-sm text-white/75 placeholder:text-white/15 focus:border-white/[0.12] focus:bg-white/[0.03]" />
               </div>
             </div>
             {passwordMsg && (
               <p className={cn("text-xs rounded-lg px-3 py-2", passwordMsg.includes("changed") ? "bg-emerald-500/[0.05] text-emerald-400/70 border border-emerald-500/[0.06]" : "bg-red-500/[0.05] text-red-400/70 border border-red-500/[0.06]")}>{passwordMsg}</p>
             )}
-            <Button type="submit" size="sm" disabled={passwordSaving}
+            <Button type="submit" disabled={passwordSaving}
               className="h-9 rounded-lg bg-white/[0.05] text-white/65 hover:bg-white/[0.08] hover:text-white/85 border border-white/[0.05]">
               {passwordSaving ? <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" /> Updating</> : <><Lock className="h-3.5 w-3.5 mr-1.5" /> Update</>}
             </Button>
           </form>
 
-          <div className="h-px bg-white/[0.04]" />
+          <Divider />
 
           <div className="space-y-4">
             <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/25">Danger Zone</h3>
             <p className="text-[11px] text-white/20">Permanently delete your account and all data. Irreversible.</p>
-            <Button variant="destructive" size="sm" onClick={handleDeleteAccount}
+            <Button variant="danger" onClick={handleDeleteAccount}
               className="h-9 rounded-lg bg-red-500/[0.05] text-red-400/70 hover:bg-red-500/[0.08] border border-red-500/[0.06]">
               <Trash2 className="h-3.5 w-3.5 mr-1.5" /> Delete Account
             </Button>

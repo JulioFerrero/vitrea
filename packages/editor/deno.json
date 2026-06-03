@@ -43,7 +43,8 @@
     "@hi/ui/card": "jsr:@hi/ui@^0.1.0/card",
     "@hi/ui/scroll-area": "jsr:@hi/ui@^0.1.0/scroll-area",
     "@hi/ui/separator": "jsr:@hi/ui@^0.1.0/separator",
-    "@hi/utils": "jsr:@hi/utils@^0.1.0"
+    "@hi/utils": "jsr:@hi/utils@^0.1.0",
+    "@hi/editor-ui": "../../packages/editor-ui/src/index.ts"
   },
   "compilerOptions": {
     "jsx": "react-jsx",

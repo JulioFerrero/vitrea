@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Button } from "@hi/ui/button";
-import { Input } from "@hi/ui/input";
+import { Button, Input, Divider } from "@hi/editor-ui/form-primitives";
 import { createApiFetch } from "../lib/api";
 import { ArrowLeft, Globe, Check, Loader2 } from "lucide-react";
 import { cn } from "@hi/utils";
@@ -105,14 +104,14 @@ export function SiteSettingsPage({
     <div className="flex flex-col h-screen bg-[#08080A]">
       <header className="shrink-0 flex h-14 items-center px-4 border-b border-white/[0.06] bg-[#08080A]/80 backdrop-blur-xl">
         <a
-          href={`/${siteId}`}
-          className="flex items-center gap-1.5 text-sm text-white/30 hover:text-white/60 transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" /> Back
-        </a>
+            href={`/${siteId}`}
+            className="flex items-center gap-1.5 text-sm text-white hover:text-white/60 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4 text-white" /> Back
+          </a>
         <span className="ml-3 h-4 w-px bg-white/[0.08]" />
         <div className="ml-3 flex items-center gap-2">
-          <Globe className="h-4 w-4 text-white/30" />
+          <Globe className="h-4 w-4 text-white" />
           <h1 className="text-sm font-medium tracking-wide text-white/60">
             Site Settings
           </h1>
@@ -132,9 +131,7 @@ export function SiteSettingsPage({
                 </label>
                 <Input
                   value={name}
-                  onChange={(e) =>
-                    setName((e.target as HTMLInputElement).value)
-                  }
+                  onChange={(v) => setName(v)}
                   placeholder="Site name"
                   className="h-10 rounded-lg border-white/[0.06] bg-white/[0.02] text-sm text-white/75 placeholder:text-white/15 focus:border-white/[0.12] focus:bg-white/[0.03]"
                 />
@@ -145,9 +142,7 @@ export function SiteSettingsPage({
                 </label>
                 <Input
                   value={slug}
-                  onChange={(e) =>
-                    setSlug((e.target as HTMLInputElement).value)
-                  }
+                  onChange={(v) => setSlug(v)}
                   placeholder="site-slug"
                   className="h-10 rounded-lg border-white/[0.06] bg-white/[0.02] text-sm text-white/75 placeholder:text-white/15 focus:border-white/[0.12] focus:bg-white/[0.03]"
                 />
@@ -167,24 +162,23 @@ export function SiteSettingsPage({
             )}
             <Button
               type="submit"
-              size="sm"
               disabled={saving}
               className="h-9 rounded-lg bg-white/[0.05] text-white/65 hover:bg-white/[0.08] hover:text-white/85 border border-white/[0.05]"
             >
               {saving ? (
                 <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />{" "}
+                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5 text-white" />{" "}
                   Saving
                 </>
               ) : (
                 <>
-                  <Check className="h-3.5 w-3.5 mr-1.5" /> Save
+                  <Check className="h-3.5 w-3.5 mr-1.5 text-white" /> Save
                 </>
               )}
             </Button>
           </form>
 
-          <div className="h-px bg-white/[0.04]" />
+          <Divider />
 
           <div className="space-y-4">
             <h3 className="text-[11px] font-semibold uppercase tracking-[0.12em] text-white/25">
@@ -238,7 +232,6 @@ export function SiteSettingsPage({
                   ))}
                 </select>
                 <Button
-                  size="sm"
                   onClick={handleAddMember}
                   disabled={!addUserId}
                   className="h-9 rounded-lg bg-white/[0.05] text-white/65 hover:bg-white/[0.08] hover:text-white/85 border border-white/[0.05]"

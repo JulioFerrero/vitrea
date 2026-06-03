@@ -5,7 +5,7 @@ import { TopBar } from "./top-bar/top-bar";
 import { LeftPanel } from "./left-panel/left-panel";
 import { RightPanel } from "./right-panel/right-panel";
 import { Canvas } from "./canvas/canvas";
-import { glassStyle } from "../lib/glass";
+import { glassStyle } from "@hi/editor-ui/glass";
 
 const PanelContext = createContext({
   leftOpen: true,
@@ -60,7 +60,7 @@ export function EditorShell({ children: _children }: { children?: React.ReactNod
         <button
           type="button"
           onClick={ctx.toggleLeft}
-          className="absolute top-1/2 -translate-y-1/2 z-50 flex items-center justify-center w-5 h-20 rounded-r-xl backdrop-blur-[10px] text-white/50 hover:text-white hover:bg-white/10 transition-all duration-200"
+          className="absolute top-1/2 -translate-y-1/2 z-50 flex items-center justify-center w-5 h-20 rounded-r-xl backdrop-blur-[10px] text-white hover:text-white hover:bg-white/10 transition-all duration-200"
           style={{ left: leftOpen ? 252 : 12, ...glassStyle }}
         >
           <DotsIcon />
@@ -74,7 +74,7 @@ export function EditorShell({ children: _children }: { children?: React.ReactNod
         <button
           type="button"
           onClick={ctx.toggleRight}
-          className="absolute top-1/2 -translate-y-1/2 z-50 flex items-center justify-center w-5 h-20 rounded-l-xl backdrop-blur-[10px] text-white/50 hover:text-white hover:bg-white/10 transition-all duration-200"
+          className="absolute top-1/2 -translate-y-1/2 z-50 flex items-center justify-center w-5 h-20 rounded-l-xl backdrop-blur-[10px] text-white hover:text-white hover:bg-white/10 transition-all duration-200"
           style={{ right: rightOpen ? 252 : 12, ...glassStyle }}
         >
           <DotsIcon />

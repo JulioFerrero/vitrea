@@ -1,13 +1,16 @@
 "use client";
 
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Button } from "@hi/ui/button";
-import { Input } from "@hi/ui/input";
+import { Button, Input } from "@hi/editor-ui/form-primitives";
+import { Modal } from "@hi/editor-ui/modal";
+import { ConfirmDialog } from "@hi/editor-ui/confirm-dialog";
+import { SearchInput } from "@hi/editor-ui/search-input";
+import { Spinner } from "@hi/editor-ui/spinner";
+import { EmptyState } from "@hi/editor-ui/empty-state";
 import { createApiFetch } from "../lib/api";
 import { useEditorStore } from "../stores";
 import { cn } from "@hi/utils";
-import { ArrowLeft, Trash2, Pencil, Check, X, Upload, Search, Image as ImageIcon, Copy, Link } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@hi/ui/dialog";
+import { ArrowLeft, Trash2, Pencil, Check, X, Upload, Image as ImageIcon, Copy } from "lucide-react";
 
 const api = createApiFetch();
 
@@ -176,8 +179,8 @@ export function AssetsPage({ siteId: siteIdProp, onBack: _onBack }: { siteId: st
     <div className="flex flex-col h-screen bg-[#08080A]">
       <header className="shrink-0 flex h-14 items-center justify-between px-4 border-b border-white/[0.06] bg-[#08080A]/80 backdrop-blur-xl">
         <div className="flex items-center gap-3">
-          <a href={`/${siteId}`} className="flex items-center gap-1.5 text-sm text-white/30 hover:text-white/60 transition-colors">
-            <ArrowLeft className="h-4 w-4" /> Back
+          <a href={`/${siteId}`} className="flex items-center gap-1.5 text-sm text-white hover:text-white/60 transition-colors">
+            <ArrowLeft className="h-4 w-4 text-white" /> Back
           </a>
           <span className="h-4 w-px bg-white/[0.08]" />
           <h1 className="text-sm font-medium tracking-wide text-white/60">Assets</h1>
@@ -197,7 +200,7 @@ export function AssetsPage({ siteId: siteIdProp, onBack: _onBack }: { siteId: st
           )}
           <button onClick={() => fileInputRef.current?.click()}
             className="flex items-center gap-2 rounded-lg bg-white/[0.06] hover:bg-white/[0.10] border border-white/[0.06] px-3 py-1.5 text-xs text-white/60 hover:text-white/80 transition-all">
-            <Upload className="h-3.5 w-3.5" /> Upload
+            <Upload className="h-3.5 w-3.5 text-white" /> Upload
           </button>
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) handleUpload(f); e.target.value = ""; }} />
@@ -205,11 +208,7 @@ export function AssetsPage({ siteId: siteIdProp, onBack: _onBack }: { siteId: st
       </header>
 
       <div className="shrink-0 flex items-center gap-3 px-4 py-3 border-b border-white/[0.04]">
-        <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-white/20" />
-          <Input value={search} onChange={(e) => setSearch((e.target as HTMLInputElement).value)}
-            placeholder="Search files..." className="pl-9 h-9 rounded-lg border-white/[0.06] bg-white/[0.02] text-xs text-white/70 placeholder:text-white/20 focus:border-white/[0.12]" />
-        </div>
+        <SearchInput value={search} onChange={setSearch} placeholder="Search files..." />
         <div className="flex items-center gap-1">
           <button onClick={() => setTypeFilter(null)} className={cn("px-2.5 py-1 rounded-lg text-xs transition-all", !typeFilter ? "bg-white/[0.08] text-white/70" : "text-white/30 hover:text-white/50")}>All</button>
           {fileTypes.map((t) => (
@@ -221,15 +220,15 @@ export function AssetsPage({ siteId: siteIdProp, onBack: _onBack }: { siteId: st
       <main className="flex-1 overflow-y-auto editor-scroll p-5">
         {uploading && (
           <div className="mb-4 flex items-center gap-2 text-xs text-white/30">
-            <div className="h-4 w-4 border-2 border-white/10 border-t-white/30 rounded-full animate-spin" /> Uploading...
+            <Spinner size="sm" /> Uploading...
           </div>
         )}
         {loading ? (
-          <div className="flex items-center justify-center py-20"><div className="h-6 w-6 border-2 border-white/10 border-t-white/30 rounded-full animate-spin" /></div>
+          <Spinner />
         ) : !siteId ? (
-          <div className="flex flex-col items-center justify-center py-20 text-white/20 gap-2"><ImageIcon className="h-10 w-10" /><p className="text-sm">No site selected</p></div>
+          <EmptyState title="No site selected" icon={ImageIcon} />
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-white/20 gap-2"><ImageIcon className="h-10 w-10" /><p className="text-sm">{files.length === 0 ? "No files yet" : "No matches"}</p></div>
+          <EmptyState title={files.length === 0 ? "No files yet" : "No matches"} icon={ImageIcon} />
         ) : (
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3">
             {filtered.map((f) => {
@@ -241,7 +240,7 @@ export function AssetsPage({ siteId: siteIdProp, onBack: _onBack }: { siteId: st
                     {isImage(f.data.type) ? (
                       <img src={f.data.url} alt={f.data.name ?? ""} className="w-full h-full object-cover" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-white/[0.03]"><span className="text-[10px] text-white/20 font-mono">{formatSize(f.data.type)}</span></div>
+                      <div className="w-full h-full flex items-center justify-center bg-white/[0.03]"><span className="text-[11px] text-white/20 font-mono">{formatSize(f.data.type)}</span></div>
                     )}
                     {isSel && (
                       <div className="absolute top-2 right-2 h-5 w-5 rounded-md bg-editor-ring flex items-center justify-center"><Check className="h-3 w-3 text-white" /></div>
@@ -258,16 +257,16 @@ export function AssetsPage({ siteId: siteIdProp, onBack: _onBack }: { siteId: st
                           onKeyDown={(e) => { if (e.key === "Escape") setEditingId(null); }}
                           className="flex-1 min-w-0 bg-white/[0.04] border border-white/[0.08] rounded-md px-1 py-0.5 text-[11px] text-white/80 outline-none focus:border-editor-ring/50" />
                         <button type="submit" className="text-emerald-400/70 hover:text-emerald-400 shrink-0"><Check className="h-2.5 w-2.5" /></button>
-                        <button type="button" onClick={() => setEditingId(null)} className="text-white/30 hover:text-white/50 shrink-0"><X className="h-2.5 w-2.5" /></button>
+                        <button type="button" onClick={() => setEditingId(null)} className="text-white hover:text-white shrink-0"><X className="h-2.5 w-2.5" /></button>
                       </form>
                     ) : (
                       <p className="text-[11px] text-white/40 truncate leading-tight min-w-0 flex-1">{f.data.name ?? "Untitled"}</p>
                     )}
                     <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                       <button onClick={(e) => { e.stopPropagation(); setEditingId(f.id); setEditName(f.data.name ?? ""); }}
-                        className="h-4 w-4 flex items-center justify-center rounded text-white/30 hover:text-white/70"><Pencil className="h-2.5 w-2.5" /></button>
+                        className="h-4 w-4 flex items-center justify-center rounded text-white hover:text-white"><Pencil className="h-2.5 w-2.5 text-white" /></button>
                       <button onClick={(e) => handleDeleteClick([f.id], e)}
-                        className="h-4 w-4 flex items-center justify-center rounded text-white/30 hover:text-red-400"><Trash2 className="h-2.5 w-2.5" /></button>
+                        className="h-4 w-4 flex items-center justify-center rounded text-white hover:text-red-400"><Trash2 className="h-2.5 w-2.5 text-white" /></button>
                     </div>
                   </div>
                 </div>
@@ -278,86 +277,79 @@ export function AssetsPage({ siteId: siteIdProp, onBack: _onBack }: { siteId: st
       </main>
 
       {/* Detail Modal */}
-      <Dialog open={detailFile !== null} onOpenChange={(o) => { if (!o) setDetailFile(null); }}>
-        <DialogContent className="sm:max-w-2xl overflow-hidden p-0 gap-0">
-          <div className="grid grid-cols-[1fr_280px] h-[500px]">
-            <div className="bg-[#050508] flex items-center justify-center p-6 overflow-hidden">
-              {detailFile && isImage(detailFile.data.type) ? (
-                <img src={detailFile.data.url} alt={detailFile.data.name ?? ""} className="max-w-full max-h-full object-contain rounded-lg" />
-              ) : (
-                <div className="flex flex-col items-center gap-2 text-white/20">
-                  <ImageIcon className="h-16 w-16" />
-                  <p className="text-xs">No preview</p>
-                </div>
-              )}
-            </div>
-            <div className="bg-[#0d0d10] border-l border-white/[0.06] flex flex-col overflow-y-auto editor-scroll">
-              {detailFile && (
-                <div className="p-5 space-y-5">
-                  <div>
-                    <h2 className="text-sm font-semibold text-white/80 truncate">{detailFile.data.name ?? "Untitled"}</h2>
-                    <p className="text-[11px] text-white/30 font-mono mt-0.5">{detailFile.id}</p>
-                  </div>
-
-                  <div className="h-px bg-white/[0.04]" />
-
-                  <dl className="space-y-4">
-                    <InfoRow label="Type" value={detailFile.data.type ?? "—"} />
-                    <InfoRow label="Format" value={formatType(detailFile.data.type)} />
-                    {detailFile.data.width && detailFile.data.height ? (
-                      <InfoRow label="Dimensions" value={`${detailFile.data.width} × ${detailFile.data.height}px`} />
-                    ) : null}
-                    <InfoRow label="Uploaded" value={formatDate(detailFile.createdAt)} />
-                    <InfoRow label="Site ID" value={detailFile.siteId} mono />
-                  </dl>
-
-                  <div className="h-px bg-white/[0.04]" />
-
-                  <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/25 mb-2">URL</p>
-                    <div className="flex items-center gap-2">
-                      <code className="flex-1 text-[11px] text-white/40 bg-white/[0.03] rounded-lg px-3 py-2 truncate">{detailFile.data.url}</code>
-                      <button onClick={() => copyUrl(detailFile.data.url)}
-                        className={cn("h-8 w-8 flex items-center justify-center rounded-lg transition-colors", copied ? "bg-emerald-500/[0.10] text-emerald-400" : "text-white/30 hover:text-white/60 hover:bg-white/[0.04]")}>
-                        {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="h-px bg-white/[0.04]" />
-
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => { setEditingId(detailFile.id); setEditName(detailFile.data.name ?? ""); }}
-                      className="flex items-center gap-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] px-3 py-1.5 text-xs text-white/50 hover:text-white/80 transition-all">
-                      <Pencil className="h-3 w-3" /> Rename
-                    </button>
-                    <button onClick={() => handleDeleteClick([detailFile.id])}
-                      className="flex items-center gap-1.5 rounded-lg bg-red-500/[0.05] hover:bg-red-500/[0.10] border border-red-500/[0.08] px-3 py-1.5 text-xs text-red-400/70 transition-all">
-                      <Trash2 className="h-3 w-3" /> Delete
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
+      <Modal open={detailFile !== null} onOpenChange={(o) => { if (!o) setDetailFile(null); }} variant="flat" maxWidth="max-w-2xl" className="p-0 overflow-hidden">
+        <div className="grid grid-cols-[1fr_280px] h-[500px]">
+          <div className="bg-[#050508] flex items-center justify-center p-6 overflow-hidden">
+            {detailFile && isImage(detailFile.data.type) ? (
+              <img src={detailFile.data.url} alt={detailFile.data.name ?? ""} className="max-w-full max-h-full object-contain rounded-lg" />
+            ) : (
+              <div className="flex flex-col items-center gap-2 text-white/20">
+                <ImageIcon className="h-16 w-16" />
+                <p className="text-xs">No preview</p>
+              </div>
+            )}
           </div>
-        </DialogContent>
-      </Dialog>
+          <div className="bg-[#0d0d10] border-l border-white/[0.06] flex flex-col overflow-y-auto editor-scroll">
+            {detailFile && (
+              <div className="p-5 space-y-5">
+                <div>
+                  <h2 className="text-sm font-semibold text-white/80 truncate">{detailFile.data.name ?? "Untitled"}</h2>
+                  <p className="text-[11px] text-white/30 font-mono mt-0.5">{detailFile.id}</p>
+                </div>
+
+                <div className="h-px bg-white/[0.04]" />
+
+                <dl className="space-y-4">
+                  <InfoRow label="Type" value={detailFile.data.type ?? "—"} />
+                  <InfoRow label="Format" value={formatType(detailFile.data.type)} />
+                  {detailFile.data.width && detailFile.data.height ? (
+                    <InfoRow label="Dimensions" value={`${detailFile.data.width} × ${detailFile.data.height}px`} />
+                  ) : null}
+                  <InfoRow label="Uploaded" value={formatDate(detailFile.createdAt)} />
+                  <InfoRow label="Site ID" value={detailFile.siteId} mono />
+                </dl>
+
+                <div className="h-px bg-white/[0.04]" />
+
+                <div>
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/25 mb-2">URL</p>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 text-[11px] text-white/40 bg-white/[0.03] rounded-lg px-3 py-2 truncate">{detailFile.data.url}</code>
+                    <button onClick={() => copyUrl(detailFile.data.url)}
+                      className={cn("h-8 w-8 flex items-center justify-center rounded-lg transition-colors", copied ? "bg-emerald-500/[0.10] text-emerald-400" : "text-white hover:text-white hover:bg-white/[0.04]")}>
+                      {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5 text-white" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="h-px bg-white/[0.04]" />
+
+                <div className="flex items-center gap-2">
+                  <button onClick={() => { setEditingId(detailFile.id); setEditName(detailFile.data.name ?? ""); }}
+                    className="flex items-center gap-1.5 rounded-lg bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] px-3 py-1.5 text-xs text-white/50 hover:text-white/80 transition-all">
+                    <Pencil className="h-3 w-3 text-white" /> Rename
+                  </button>
+                  <button onClick={() => handleDeleteClick([detailFile.id])}
+                    className="flex items-center gap-1.5 rounded-lg bg-red-500/[0.05] hover:bg-red-500/[0.10] border border-red-500/[0.08] px-3 py-1.5 text-xs text-red-400/70 transition-all">
+                    <Trash2 className="h-3 w-3" /> Delete
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </Modal>
 
       {/* Delete Confirmation Modal */}
-      <Dialog open={deleteModal !== null} onOpenChange={(o) => { if (!o) setDeleteModal(null); }}>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Delete {deleteModal?.length ?? 0} file{deleteModal?.length !== 1 ? "s" : ""}?</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            Permanently delete from storage. This cannot be undone.
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteModal(null)}>Cancel</Button>
-            <Button variant="destructive" onClick={confirmDelete}>Delete</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={deleteModal !== null}
+        onOpenChange={(o) => { if (!o) setDeleteModal(null); }}
+        title={`Delete ${deleteModal?.length ?? 0} file${deleteModal?.length !== 1 ? "s" : ""}?`}
+        description="Permanently delete from storage. This cannot be undone."
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }
@@ -365,7 +357,7 @@ export function AssetsPage({ siteId: siteIdProp, onBack: _onBack }: { siteId: st
 function InfoRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <dt className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/25 mb-1">{label}</dt>
+      <dt className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/25 mb-1">{label}</dt>
       <dd className={cn("text-xs text-white/50", mono && "font-mono")}>{value}</dd>
     </div>
   );

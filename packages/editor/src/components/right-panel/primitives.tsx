@@ -1,38 +1,17 @@
 import React from "react";
 import { cn } from "@hi/utils";
-import { inputBase, GlassLabel, GlassSectionLabel, GlassButton, GlassInput } from "../shared/form-primitives";
-export { inputBase, GlassLabel, GlassSectionLabel, GlassButton, GlassInput } from "../shared/form-primitives";
+import { inputBase, Button as SharedButton, Input as SharedInput } from "@hi/editor-ui/form-primitives";
+export { inputBase } from "@hi/editor-ui/form-primitives";
+export { Button, Input } from "@hi/editor-ui/form-primitives";
 
-export { CollapsibleSection } from "../shared/collapsible-section";
+export { CollapsibleSection } from "@hi/editor-ui/collapsible-section";
 
 export function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <div className="flex items-center gap-2 px-3 py-1.5"><span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/90">{children}</span></div>;
+  return <div className="flex items-center gap-2 px-3 py-1.5"><span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/90">{children}</span></div>;
 }
 
 export function Label({ children }: { children: React.ReactNode }) {
-  return <label className="block text-[10px] font-medium text-white/90 mb-0.5">{children}</label>;
-}
-
-export function IconBtn({ children, onClick, title, hoverColor }: {
-  children: React.ReactNode; onClick: () => void; title: string; hoverColor?: string;
-}) {
-  return (
-    <div className="relative group/tip">
-      <button type="button" onClick={onClick}
-        className={cn("size-8 flex items-center justify-center rounded-full text-white/70 transition-all duration-200 active:scale-95",
-          hoverColor === "destructive"
-            ? "hover:text-destructive hover:bg-destructive/10"
-            : "hover:text-white/80 hover:bg-white/10"
-        )}>
-        {children}
-      </button>
-      <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 opacity-0 group-hover/tip:opacity-100 transition-opacity duration-150 whitespace-nowrap z-[200]">
-        <div className="bg-black/80 backdrop-blur-sm text-white text-[10px] rounded-lg px-2.5 py-1.5 flex items-center gap-1.5 shadow-lg">
-          <span>{title}</span>
-        </div>
-      </div>
-    </div>
-  );
+  return <label className="block text-[11px] font-medium text-white/90 mb-0.5">{children}</label>;
 }
 
 export function CompactInput({ label, value, onChange, placeholder, type = "text" }: {
@@ -56,7 +35,7 @@ export function Btn({ children, active, onClick, className }: {
   return (
     <button type="button" onClick={onClick}
       className={cn(
-        "flex-1 py-1 text-[10px] font-medium rounded-md transition-colors text-center",
+        "flex-1 py-1 text-[11px] font-medium rounded-md transition-colors text-center",
         active ? "bg-white text-black" : "text-white/80 hover:bg-white/10 hover:text-white",
         className
       )}>
@@ -81,7 +60,7 @@ export function IconBtnGroup({ icons, value, onChange, label }: {
                 ? "bg-white text-black"
                 : "text-white/80 hover:bg-white/10 hover:text-white"
             )}>
-            <item.icon className="h-4 w-4" />
+            <item.icon className="h-4 w-4 text-white" />
           </button>
         ))}
       </div>

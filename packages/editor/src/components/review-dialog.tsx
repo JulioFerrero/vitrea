@@ -4,17 +4,11 @@ import { useState, useEffect, useMemo } from "react";
 import { useEditorStore } from "../stores";
 import { useEditorContext } from "../lib/context";
 import { useCmsStore } from "../stores/cms-store";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@hi/ui/dialog";
-import { Button } from "@hi/ui/button";
-import { ScrollArea } from "@hi/ui/scroll-area";
-import { Badge } from "@hi/ui/badge";
+import { Modal } from "@hi/editor-ui/modal";
+import { Button, Badge } from "@hi/editor-ui/form-primitives";
+import { Spinner } from "@hi/editor-ui/spinner";
+import { EmptyState } from "@hi/editor-ui/empty-state";
+import { ScrollArea } from "@hi/editor-ui/scroll-area";
 import { Plus, Pencil, Upload, Loader2 } from "lucide-react";
 import type { RenderElement } from "../types";
 
@@ -163,148 +157,137 @@ export function ReviewDialog({
   const totalChanges = added + modified;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[720px] max-h-[85vh] bg-black border-white/10 text-white flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="text-white">Review Changes</DialogTitle>
-          <DialogDescription className="text-white/50">
-            Review pending changes before publishing
-          </DialogDescription>
-        </DialogHeader>
+    <Modal open={open} onOpenChange={onOpenChange} variant="flat" maxWidth="max-w-[720px]" className="max-h-[85vh] flex flex-col border border-white/10">
+      <h2 className="text-base font-semibold text-white tracking-tight">Review Changes</h2>
+      <p className="text-sm text-white/50 mt-1">Review pending changes before publishing</p>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-white/40" />
+      {loading ? (
+        <Spinner />
+      ) : !diff ? (
+        <EmptyState title="No changes to review" />
+      ) : (
+        <>
+          <div className="flex items-center gap-4 mb-4 mt-4">
+            <button
+              className={`text-sm px-3 py-1.5 rounded-lg transition-colors ${
+                tab === "summary" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"
+              }`}
+              onClick={() => setTab("summary")}
+            >
+              Summary
+            </button>
+            <button
+              className={`text-sm px-3 py-1.5 rounded-lg transition-colors ${
+                tab === "side-by-side" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"
+              }`}
+              onClick={() => setTab("side-by-side")}
+            >
+              Side by Side
+            </button>
           </div>
-        ) : !diff ? (
-          <div className="text-center py-12 text-white/40">No changes to review</div>
-        ) : (
-          <>
-            <div className="flex items-center gap-4 mb-4">
-              <button
-                className={`text-sm px-3 py-1.5 rounded-lg transition-colors ${
-                  tab === "summary" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"
-                }`}
-                onClick={() => setTab("summary")}
-              >
-                Summary
-              </button>
-              <button
-                className={`text-sm px-3 py-1.5 rounded-lg transition-colors ${
-                  tab === "side-by-side" ? "bg-white/10 text-white" : "text-white/50 hover:text-white/80"
-                }`}
-                onClick={() => setTab("side-by-side")}
-              >
-                Side by Side
-              </button>
-            </div>
 
-            {tab === "summary" ? (
-              <ScrollArea className="flex-1 -mx-6 px-6">
-                <div className="space-y-4">
-                  {added > 0 && (
-                    <div>
-                      <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 mb-2">
-                        <Plus className="h-3 w-3 mr-1" /> {added} Added
-                      </Badge>
-                      {diff.changes.addedElements.map((el) => (
-                        <div key={el.id} className="pl-6 text-sm text-white/60 flex items-center gap-2 py-0.5">
-                          <Plus className="h-3 w-3 text-emerald-400 flex-shrink-0" />
-                          <span className="text-white/40 font-mono text-xs">{el.type}</span>
-                          <span>{previewData(el.data)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+          {tab === "summary" ? (
+            <ScrollArea className="flex-1 -mx-6 px-6">
+              <div className="space-y-4">
+                {added > 0 && (
+                  <div>
+                    <Badge variant="success" className="mb-2">
+                      <Plus className="h-3 w-3" /> {added} Added
+                    </Badge>
+                    {diff.changes.addedElements.map((el) => (
+                      <div key={el.id} className="pl-6 text-sm text-white/60 flex items-center gap-2 py-0.5">
+                        <Plus className="h-3 w-3 text-emerald-400 flex-shrink-0" />
+                        <span className="text-white/40 font-mono text-xs">{el.type}</span>
+                        <span>{previewData(el.data)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
-                  {modified > 0 && (
-                    <div>
-                      <Badge className="bg-amber-500/20 text-amber-400 border-amber-500/30 mb-2">
-                        <Pencil className="h-3 w-3 mr-1" /> {modified} Modified
-                      </Badge>
-                      {diff.changes.modifiedElements.map((el) => {
-                        const changes = fieldChanges.get(el.id);
-                        if (!changes || changes.length === 0) return null;
-                        return (
-                          <div key={el.id} className="pl-6 mb-3">
-                            <div className="flex items-center gap-2 text-sm text-white/40 font-mono text-xs mb-1">
-                              {el.type}
-                              <span className="text-white/25">({changes.map((c) => c.key).join(", ")})</span>
-                            </div>
-                            <div className="ml-4 space-y-2 text-xs">
-                              {changes.map((c) => {
-                                if (c.type === "array") {
-                                  return (
-                                    <div key={c.key}>
-                                      <div className="text-white/30 mb-0.5">{c.key}</div>
-                                      {c.removed.length > 0 && c.removed.map((r, i) => (
-                                        <div key={`rm-${i}`} className="text-red-400/60 line-through ml-2">- {r}</div>
-                                      ))}
-                                      {c.added.length > 0 && c.added.map((a, i) => (
-                                        <div key={`add-${i}`} className="text-emerald-400/80 ml-2">+ {a}</div>
-                                      ))}
-                                    </div>
-                                  );
-                                }
+                {modified > 0 && (
+                  <div>
+                    <Badge variant="warning" className="mb-2">
+                      <Pencil className="h-3 w-3" /> {modified} Modified
+                    </Badge>
+                    {diff.changes.modifiedElements.map((el) => {
+                      const changes = fieldChanges.get(el.id);
+                      if (!changes || changes.length === 0) return null;
+                      return (
+                        <div key={el.id} className="pl-6 mb-3">
+                          <div className="flex items-center gap-2 text-sm text-white/40 font-mono text-xs mb-1">
+                            {el.type}
+                            <span className="text-white/25">({changes.map((c) => c.key).join(", ")})</span>
+                          </div>
+                          <div className="ml-4 space-y-2 text-xs">
+                            {changes.map((c) => {
+                              if (c.type === "array") {
                                 return (
                                   <div key={c.key}>
                                     <div className="text-white/30 mb-0.5">{c.key}</div>
-                                    {c.oldVal && <div className="text-red-400/60 line-through ml-2">{c.oldVal}</div>}
-                                    <div className="text-emerald-400/80 ml-2">{c.newVal}</div>
+                                    {c.removed.length > 0 && c.removed.map((r, i) => (
+                                      <div key={`rm-${i}`} className="text-red-400/60 line-through ml-2">- {r}</div>
+                                    ))}
+                                    {c.added.length > 0 && c.added.map((a, i) => (
+                                      <div key={`add-${i}`} className="text-emerald-400/80 ml-2">+ {a}</div>
+                                    ))}
                                   </div>
                                 );
-                              })}
-                            </div>
+                              }
+                              return (
+                                <div key={c.key}>
+                                  <div className="text-white/30 mb-0.5">{c.key}</div>
+                                  {c.oldVal && <div className="text-red-400/60 line-through ml-2">{c.oldVal}</div>}
+                                  <div className="text-emerald-400/80 ml-2">{c.newVal}</div>
+                                </div>
+                              );
+                            })}
                           </div>
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {totalChanges === 0 && (
-                    <div className="text-center py-8 text-white/40">No changes detected</div>
-                  )}
-                </div>
-              </ScrollArea>
-            ) : (
-              diff && (
-                <div className="flex gap-4 flex-1 min-h-0">
-                  <div className="flex-1 border border-white/10 rounded-lg p-4 overflow-auto">
-                    <div className="text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Published</div>
-                    <ElementTree elements={diff.published} />
+                        </div>
+                      );
+                    })}
                   </div>
-                  <div className="flex-1 border border-white/10 rounded-lg p-4 overflow-auto">
-                    <div className="text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Draft</div>
-                    <ElementTree elements={diff.draft} />
-                  </div>
-                </div>
-              )
-            )}
-          </>
-        )}
+                )}
 
-        <DialogFooter className="mt-6 gap-3">
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-white/10 text-white/70 hover:bg-white/5">
-            Cancel
-          </Button>
-          <Button
-            onClick={handlePublish}
-            disabled={publishing || totalChanges === 0 || loading}
-            className="bg-white text-black hover:bg-white/90"
-          >
-            {publishing ? (
-              <>
-                <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Publishing...
-              </>
-            ) : (
-              <>
-                <Upload className="mr-1.5 h-4 w-4" /> Publish
-              </>
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+                {totalChanges === 0 && (
+                  <EmptyState title="No changes detected" />
+                )}
+              </div>
+            </ScrollArea>
+          ) : (
+            diff && (
+              <div className="flex gap-4 flex-1 min-h-0">
+                <div className="flex-1 border border-white/10 rounded-lg p-4 overflow-auto">
+                  <div className="text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Published</div>
+                  <ElementTree elements={diff.published} />
+                </div>
+                <div className="flex-1 border border-white/10 rounded-lg p-4 overflow-auto">
+                  <div className="text-xs font-medium text-white/40 mb-2 uppercase tracking-wider">Draft</div>
+                  <ElementTree elements={diff.draft} />
+                </div>
+              </div>
+            )
+          )}
+        </>
+      )}
+
+      <div className="flex justify-end gap-2 mt-6">
+        <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+        <Button
+          onClick={handlePublish}
+          disabled={publishing || totalChanges === 0 || loading}
+        >
+          {publishing ? (
+            <>
+              <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> Publishing...
+            </>
+          ) : (
+            <>
+              <Upload className="mr-1.5 h-4 w-4" /> Publish
+            </>
+          )}
+        </Button>
+      </div>
+    </Modal>
   );
 }
 
