@@ -1,6 +1,6 @@
-import React from "react";
 import { useEditorStore } from "../../stores";
 import { useEditorContext } from "../../lib/context";
+import { glassStyle } from "../../lib/glass";
 import { Copy, Trash2, Upload, RotateCcw } from "lucide-react";
 import { IconBtn, CompactInput, Label, Btn, BtnGroup, SectionLabel } from "./primitives";
 import { ContentField } from "./content-field";
@@ -22,7 +22,7 @@ export function RightPanel() {
 
   if (!selected) {
     return (
-      <div className="w-[240px] h-full flex flex-col bg-black/80 backdrop-blur-xl relative">
+      <div className="w-[240px] h-full flex flex-col backdrop-blur-[10px] relative rounded-2xl" style={glassStyle}>
         {activePage ? (
           <>
             <SectionLabel>Page</SectionLabel>
@@ -68,7 +68,7 @@ export function RightPanel() {
             </div>
           </>
         ) : (
-          <div className="px-3 py-8 text-[10px] text-white/20 text-center">Select a page</div>
+          <div className="px-3 py-8 text-[10px] text-white/60 text-center">Select a page</div>
         )}
       </div>
     );
@@ -79,9 +79,9 @@ export function RightPanel() {
   const updateStyle = (key: string, value: string) => actions.updateNodeStyles(selected.id, { ...(selected.styles as Record<string, string> ?? {}), [key]: value || undefined });
 
   return (
-    <div className="w-[240px] h-full flex flex-col bg-black/80 backdrop-blur-xl relative">
+    <div className="w-[240px] h-full flex flex-col backdrop-blur-[10px] relative rounded-2xl" style={glassStyle}>
       <div className="flex items-center justify-between px-3 py-2 border-b border-white/[0.06]">
-        <span className="text-[11px] font-semibold capitalize text-white/80">{typeConfig?.label ?? selected.type}</span>
+        <span className="text-[11px] font-semibold capitalize text-white">{typeConfig?.label ?? selected.type}</span>
         <div className="flex items-center gap-0.5">
           <IconBtn onClick={() => actions.duplicateNode(selected.id)} title="Duplicate" hoverColor="editor-ring">
             <Copy className="h-3 w-3" />

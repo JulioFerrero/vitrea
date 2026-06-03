@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useSession, signOut } from "@hi/auth/client";
 import { cn } from "@hi/utils";
 import { ChevronDown, User, LogOut } from "lucide-react";
-import { navigate } from "../lib/navigate";
+import { EditProfileModal } from "./edit-profile-modal";
+import { glassDarkStyle } from "../lib/glass";
 
 export function ProfileDropdown() {
   const { data: session } = useSession();
@@ -12,16 +14,20 @@ export function ProfileDropdown() {
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [animIn, setAnimIn] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
   const close = useCallback(() => {
     setOpen(false);
+    setAnimIn(false);
     setLeaving(true);
     timerRef.current = setTimeout(() => {
       setVisible(false);
       setLeaving(false);
-    }, 120);
+    }, 150);
   }, []);
 
   useEffect(() => {
@@ -44,7 +50,13 @@ export function ProfileDropdown() {
     } else {
       setOpen(true);
       setVisible(true);
+      requestAnimationFrame(() => requestAnimationFrame(() => setAnimIn(true)));
     }
+  }
+
+  function openProfileModal() {
+    close();
+    setProfileModalOpen(true);
   }
 
   if (!user) return null;
@@ -56,9 +68,45 @@ export function ProfileDropdown() {
     .toUpperCase()
     .slice(0, 2);
 
+  const triggerRect = triggerRef.current?.getBoundingClientRect();
+  const dropdownPos: React.CSSProperties = triggerRect
+    ? { position: "fixed", top: triggerRect.bottom + 8, right: window.innerWidth - triggerRect.right, width: 224 }
+    : {};
+
+  const menu = visible ? (
+    <div className={cn(
+      "rounded-2xl z-[999] transition-all duration-150 ease-out",
+      animIn && !leaving ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 -translate-y-1",
+    )} style={{ ...glassDarkStyle, ...dropdownPos }}>
+      <div className="px-4 py-3 border-b border-white/[0.08] rounded-t-2xl">
+        <p className="text-sm font-semibold text-white truncate">{user.name}</p>
+        <p className="text-xs text-white/70 truncate mt-0.5">{user.email}</p>
+      </div>
+
+      <button
+        type="button"
+        onClick={openProfileModal}
+        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition-colors"
+      >
+        <User className="h-4 w-4" />
+        Edit Profile
+      </button>
+
+      <button
+        type="button"
+        onClick={() => { signOut(); window.location.href = "/"; }}
+        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-red-500/10 hover:text-red-400 transition-colors rounded-b-2xl"
+      >
+        <LogOut className="h-4 w-4" />
+        Sign Out
+      </button>
+    </div>
+  ) : null;
+
   return (
     <div ref={ref} className="relative">
       <button
+        ref={triggerRef}
         type="button"
         onClick={toggle}
         className={cn(
@@ -71,44 +119,18 @@ export function ProfileDropdown() {
           {user.image ? (
             <img src={user.image} alt="" className="h-full w-full object-cover" />
           ) : (
-            <span className="text-[11px] font-medium text-white/30">{initials}</span>
+            <span className="text-[11px] font-medium text-white/80">{initials}</span>
           )}
         </div>
         <ChevronDown className={cn(
-          "h-3 w-3 text-white/30 transition-transform duration-150",
+          "h-3 w-3 text-white/80 transition-transform duration-150",
           open && "rotate-180",
         )} />
       </button>
 
-      {visible && (
-        <div className={cn(
-          "absolute right-0 top-full mt-2 w-56 origin-top-right rounded-xl border border-white/[0.08] bg-[#141416] shadow-2xl shadow-black/50 overflow-hidden z-50",
-          leaving ? "animate-out" : "animate-in",
-        )}>
-          <div className="px-4 py-3 border-b border-white/[0.04]">
-            <p className="text-sm font-medium text-white/80 truncate">{user.name}</p>
-            <p className="text-xs text-white/30 truncate mt-0.5">{user.email}</p>
-          </div>
+      {menu && createPortal(menu, document.body)}
 
-          <button
-            type="button"
-            onClick={() => { close(); navigate("/account"); }}
-            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white/50 hover:bg-white/[0.04] hover:text-white/80 transition-colors"
-          >
-            <User className="h-4 w-4" />
-            Edit Profile
-          </button>
-
-          <button
-            type="button"
-            onClick={() => { signOut(); navigate("/"); }}
-            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-white/40 hover:bg-red-500/[0.06] hover:text-red-400 transition-colors"
-          >
-            <LogOut className="h-4 w-4" />
-            Sign Out
-          </button>
-        </div>
-      )}
+      <EditProfileModal open={profileModalOpen} onOpenChange={setProfileModalOpen} />
     </div>
   );
 }

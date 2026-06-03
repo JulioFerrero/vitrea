@@ -29,12 +29,12 @@ export function CollapsibleSection({
     >
       <ChevronRight
         className={cn(
-          "h-3 w-3 text-white/30 transition-transform duration-150 flex-shrink-0",
+          "h-3 w-3 text-white/70 transition-transform duration-150 flex-shrink-0",
           open && "rotate-90"
         )}
       />
-      {Icon && <Icon className="h-3 w-3 text-white/40 flex-shrink-0" />}
-      <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/50">{title}</span>
+      {Icon && <Icon className="h-3 w-3 text-white/80 flex-shrink-0" />}
+      <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/90">{title}</span>
     </button>
   );
 

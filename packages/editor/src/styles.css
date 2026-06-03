@@ -26,10 +26,10 @@
   --color-sidebar-border: #27272a;
   --color-sidebar-accent: #1e1e1e;
   --color-sidebar-accent-foreground: #e4e4e7;
-  --color-editor-canvas: #0a0a0a;
+  --color-editor-canvas: #ffffff;
   --color-editor-surface: #161616;
-  --color-editor-selected: rgba(99, 102, 241, 0.12);
-  --color-editor-ring: #818cf8;
+  --color-editor-selected: rgba(255, 255, 255, 0.14);
+  --color-editor-ring: #ffffff;
   --color-editor-hover: #c7d2fe;
   --radius-sm: 0.375rem;
   --radius-md: 0.5rem;

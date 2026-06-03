@@ -3,14 +3,7 @@
 import { useState, useEffect } from "react";
 import { useEditorStore } from "../stores";
 import { useEditorContext } from "../lib/context";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@hi/ui/dialog";
-import { Button } from "@hi/ui/button";
+import { Modal } from "./shared/modal";
 import { ScrollArea } from "@hi/ui/scroll-area";
 import { Badge } from "@hi/ui/badge";
 import { History, RotateCcw, Loader2, Clock } from "lucide-react";
@@ -54,15 +47,11 @@ export function HistoryPanel({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[520px] max-h-[80vh] bg-black border-white/10 text-white flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="text-white">Revision History</DialogTitle>
-          <DialogDescription className="text-white/50">
-            Published versions of this page
-          </DialogDescription>
-        </DialogHeader>
+    <Modal open={open} onOpenChange={onOpenChange} maxWidth="max-w-[520px]">
+      <h2 className="text-base font-semibold text-white tracking-tight">Revision History</h2>
+      <p className="text-sm text-white/50 mt-1">Published versions of this page</p>
 
+      <div className="mt-4 flex flex-col max-h-[60vh]">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-6 w-6 animate-spin text-white/40" />
@@ -72,7 +61,7 @@ export function HistoryPanel({
             No published revisions yet
           </div>
         ) : (
-          <ScrollArea className="flex-1 -mx-6 px-6">
+          <ScrollArea className="flex-1 -mx-2 px-2">
             <div className="space-y-1">
               {revisions.map((rev, i) => (
                 <div
@@ -95,10 +84,9 @@ export function HistoryPanel({
                   >
                     {i === 0 ? "Current" : `v${revisions.length - i}`}
                   </Badge>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 px-2 opacity-0 group-hover:opacity-100 text-white/50 hover:text-white hover:bg-white/10"
+                  <button
+                    type="button"
+                    className="h-7 px-2 rounded-md opacity-0 group-hover:opacity-100 text-white/50 hover:text-white hover:bg-white/10 transition-all"
                     onClick={() => handleRestore(rev.id)}
                     disabled={restoringId === rev.id}
                   >
@@ -107,13 +95,13 @@ export function HistoryPanel({
                     ) : (
                       <RotateCcw className="h-3.5 w-3.5" />
                     )}
-                  </Button>
+                  </button>
                 </div>
               ))}
             </div>
           </ScrollArea>
         )}
-      </DialogContent>
-    </Dialog>
+      </div>
+    </Modal>
   );
 }

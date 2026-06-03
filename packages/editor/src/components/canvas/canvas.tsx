@@ -112,7 +112,7 @@ export function Canvas({ leftPanelOpen, rightPanelOpen }: { leftPanelOpen: boole
         </div>
         <CanvasCursor containerRef={containerRef} mode={cursorMode} name={userName} color={userColor} visible={cursorVisible} dragLabel={dragLabel} />
         <RemoteCursors cursors={remoteCursors} containerRef={containerRef} transformRef={transformRef} />
-        <div ref={toolbarRef} className="absolute bottom-0 z-20 pointer-events-auto transition-all duration-200 ease-in-out" style={{ cursor: "default", left: leftPanelOpen ? 240 : 0, right: rightPanelOpen ? 240 : 0 }} onMouseEnter={() => setCursorVisible(false)} onMouseLeave={() => setCursorVisible(true)}>
+        <div ref={toolbarRef} className="absolute bottom-4 z-20 pointer-events-auto transition-all duration-200 ease-in-out" style={{ cursor: "default", left: leftPanelOpen ? 264 : 12, right: rightPanelOpen ? 264 : 12 }} onMouseEnter={() => setCursorVisible(false)} onMouseLeave={() => setCursorVisible(true)}>
           <CanvasToolbar
             pageId={activePageId}
             containerSet={containerSet}

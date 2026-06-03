@@ -65,7 +65,7 @@ export function CtxMenu({
             onClick={(e) => { e.stopPropagation(); onAction(item.action); onClose(); }}
             className={cn(
               "flex w-full items-center gap-2 rounded px-2 py-1 text-[11px] transition-colors",
-              item.destructive ? "text-destructive hover:bg-destructive/10" : "text-white/80 hover:bg-white/10"
+              item.destructive ? "text-destructive hover:bg-destructive/10" : "text-white hover:bg-white/10"
             )}
           >
             <Icon className="h-3 w-3 opacity-60" />

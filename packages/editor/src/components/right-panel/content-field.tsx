@@ -74,7 +74,7 @@ export function ContentField({ field, data, updateData, api, siteId }: {
           <button
             type="button"
             onClick={() => setMediaOpen(true)}
-            className="flex items-center gap-1 text-[10px] text-white/30 hover:text-editor-ring transition-colors"
+            className="flex items-center gap-1 text-[10px] text-white/70 hover:text-editor-ring transition-colors"
           >
             <ImageIcon className="h-3 w-3" />
             Media Library

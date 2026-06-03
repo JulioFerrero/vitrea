@@ -98,7 +98,7 @@ export function ElementToolbar({
             <button
               type="button"
               onClick={() => setExpanded((v) => !v)}
-              className="flex items-center justify-center rounded-xl h-8 w-8 flex-shrink-0 text-white/70 hover:bg-white/10 hover:text-white transition-colors duration-150"
+              className="flex items-center justify-center size-8 flex-shrink-0 text-white hover:bg-white/10 hover:text-white transition-colors duration-150 rounded-full active:scale-95"
             >
               <ChevronUp
                 className={`h-4 w-4 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
