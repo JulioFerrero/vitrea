@@ -1,6 +1,6 @@
 import type { PromptAnswers } from "../prompts";
 
-export function rootPackageJson(_answers: PromptAnswers): string {
+export function rootPackageJson(answers: PromptAnswers): string {
   return JSON.stringify({
     name: "vitrea-project",
     private: true,
@@ -9,7 +9,7 @@ export function rootPackageJson(_answers: PromptAnswers): string {
       node: ">=20.11.0",
     },
     scripts: {
-      setup: "tsx ./scripts/setup.ts",
+      setup: `vitrea setup --site-name "${answers.projectName}"`,
       "dev:web": "pnpm --filter @app/web dev",
       "dev:editor": "pnpm --filter @app/editor dev",
       dev: "concurrently -n web,editor -c blue,magenta \"pnpm dev:web\" \"pnpm dev:editor\"",
@@ -17,21 +17,19 @@ export function rootPackageJson(_answers: PromptAnswers): string {
       "build:editor": "pnpm --filter @app/editor build",
       build: "pnpm build:web && pnpm build:editor",
       "db:push": "drizzle-kit push --config=./drizzle.config.ts",
-      "db:seed": "tsx ./scripts/seed.ts",
+      "db:seed": `vitrea seed --site-name "${answers.projectName}"`,
     },
     dependencies: {
       "@vitrea/database": "^0.1.1",
       "drizzle-orm": "^0.43.0",
-      nanoid: "^5.1.0",
       postgres: "^3.4.5",
-      prompts: "^2.4.2",
     },
     devDependencies: {
+      "@vitrea/create": "^0.4.0",
       "@types/node": "^22.10.2",
       concurrently: "^9.1.0",
       dotenv: "^16.4.7",
       "drizzle-kit": "^0.31.0",
-      tsx: "^4.19.2",
       typescript: "^5.7.2",
     },
   }, null, 2) + "\n";

@@ -7,7 +7,7 @@ import {
   rootPackageJson, pnpmWorkspaceYaml, rootTsconfigBase, envFile, gitignore,
   webPackageJson, webNextConfig, webTsconfig, webNextEnvDts, webPostcssConfig, webAppLayout, webGlobalsCss, webCatchAllRoute,
   editorPackageJson, editorTsconfig, editorViteConfig, editorIndexHtml, editorMainTsx, editorAppTsx, editorStylesCss,
-  drizzleConfigTs, drizzleSchemaTs, setupScriptTs, seedScriptTs,
+  drizzleConfigTs, drizzleSchemaTs,
   internalWebPackageJson, internalEditorPackageJson, internalPkgTsconfig, internalWebIndex, internalWebRenderer, internalWebStylesCss, internalWebComponentsIndex,
   internalEditorIndex, internalEditorElementsIndex, internalEditorContent, internalEditorStructure,
   internalEditorElementHero, internalEditorElementFeatures, internalEditorElementFooter,
@@ -20,7 +20,7 @@ const execFileAsync = promisify(execFile);
 export function listFiles(answers: PromptAnswers): string[] {
   const f = [
     "package.json", "pnpm-workspace.yaml", "tsconfig.base.json", ".env", ".gitignore", "drizzle.config.ts",
-    "drizzle/schema.ts", "scripts/setup.ts", "scripts/seed.ts",
+    "drizzle/schema.ts",
     "apps/web/package.json", "apps/web/next.config.ts", "apps/web/tsconfig.json", "apps/web/next-env.d.ts",
     "apps/web/postcss.config.mjs", "apps/web/src/app/layout.tsx", "apps/web/src/app/globals.css", "apps/web/src/app/[[...slug]]/page.tsx",
     "apps/editor/package.json", "apps/editor/tsconfig.json", "apps/editor/vite.config.ts", "apps/editor/index.html",
@@ -65,8 +65,6 @@ export async function scaffold(dir: string, answers: PromptAnswers): Promise<voi
   await w(".gitignore", gitignore());
   await w("drizzle.config.ts", drizzleConfigTs());
   await w("drizzle/schema.ts", drizzleSchemaTs());
-  await w("scripts/setup.ts", setupScriptTs(answers));
-  await w("scripts/seed.ts", seedScriptTs(answers));
 
   await w("apps/web/package.json", webPackageJson());
   await w("apps/web/next.config.ts", webNextConfig());

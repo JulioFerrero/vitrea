@@ -39,4 +39,4 @@ export {
   internalWebComponentFooter,
 } from "./internal-pkgs";
 export { dockerComposeFull, dockerComposeLocal, seaweedfsConfig, vercelJson, flyToml, railwayJson } from "./deploy";
-export { drizzleConfigTs, drizzleSchemaTs, setupScriptTs, seedScriptTs } from "./setup";
+export { drizzleConfigTs, drizzleSchemaTs } from "./setup";
