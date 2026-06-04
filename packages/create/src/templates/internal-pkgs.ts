@@ -12,8 +12,8 @@ export function internalWebPackageJson(): string {
       "./styles.css": "./src/styles.css",
     },
     dependencies: {
-      "@vitrea/editor": "^0.1.2",
-      "@vitrea/render": "^0.1.1",
+      "@vitrea/editor": "^1.0.0",
+      "@vitrea/render": "^1.0.0",
       "@vitrea/website": "^0.1.1",
       react: "^19.1.0",
     },
@@ -34,8 +34,8 @@ export function internalEditorPackageJson(): string {
       ".": "./src/index.ts",
     },
     dependencies: {
-      "@vitrea/cms": "^0.1.0",
-      "@vitrea/editor": "^0.1.2",
+      "@vitrea/cms": "^1.0.0",
+      "@vitrea/editor": "^1.0.0",
     },
     devDependencies: {
       typescript: "^5.7.2",

@@ -12,7 +12,7 @@ export function editorPackageJson(): string {
       start: "vite preview --port 3001",
     },
     dependencies: {
-      "@vitrea/editor": "^0.1.2",
+      "@vitrea/editor": "^1.0.0",
       "@internal/editor": "workspace:*",
       "@internal/web": "workspace:*",
       react: "^19.1.0",

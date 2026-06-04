@@ -20,12 +20,12 @@ export function rootPackageJson(answers: PromptAnswers): string {
       "db:seed": `vitrea seed --site-name "${answers.projectName}"`,
     },
     dependencies: {
-      "@vitrea/database": "^0.1.1",
+      "@vitrea/database": "^1.0.0",
       "drizzle-orm": "^0.43.0",
       postgres: "^3.4.5",
     },
     devDependencies: {
-      "@vitrea/create": "^0.4.0",
+      "@vitrea/create": "^1.0.0",
       "@types/node": "^22.10.2",
       concurrently: "^9.1.0",
       dotenv: "^16.4.7",

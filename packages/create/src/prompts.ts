@@ -31,7 +31,7 @@ export function parseFlags(args: string[]): PromptAnswers | null {
       git: { type: "boolean", default: true },
       start: { type: "boolean", default: false },
     },
-    allowPositionals: false,
+    allowPositionals: true,
   });
 
   if (!values.name) return null;
