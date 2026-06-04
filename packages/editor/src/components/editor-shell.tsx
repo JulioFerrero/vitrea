@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, createContext, useContext, useRef } from "react";
+import { useState, createContext, useContext } from "react";
 import { TopBar } from "./top-bar/top-bar";
 import { LeftPanel } from "./left-panel/left-panel";
 import { RightPanel } from "./right-panel/right-panel";
@@ -32,8 +32,6 @@ const DotsIcon = () => (
 export function EditorShell({ children: _children }: { children?: React.ReactNode }) {
   const [leftOpen, setLeftOpen] = useState(true);
   const [rightOpen, setRightOpen] = useState(true);
-  const [leftHover, setLeftHover] = useState(false);
-  const [rightHover, setRightHover] = useState(false);
 
   const ctx = {
     leftOpen,

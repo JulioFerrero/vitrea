@@ -1,6 +1,3 @@
-import { useRef, useCallback } from "react";
-import type { EditorActions } from "../../lib/actions";
-
 export function applyOutline(el: HTMLElement | null, type: "hover" | "selected" | "none") {
   if (!el) return;
   if (type === "none") { el.style.outline = ""; el.style.outlineOffset = ""; }

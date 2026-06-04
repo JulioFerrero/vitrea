@@ -11,15 +11,21 @@
     "dev:web": "pnpm --filter @app/web dev",
     "dev:editor": "pnpm --filter @app/editor dev",
     "dev": "concurrently -n web,editor -c blue,magenta \"pnpm dev:web\" \"pnpm dev:editor\"",
+    "lint:packages": "pnpm -r --filter \"./packages/*\" run lint",
     "build:web": "pnpm --filter @app/web build",
     "build:editor": "pnpm --filter @app/editor build",
     "build": "pnpm build:web && pnpm build:editor",
     "db:push": "drizzle-kit push --config=./packages/database/drizzle.config.ts"
   },
   "devDependencies": {
+    "@eslint/js": "^9.29.0",
     "concurrently": "^9.1.0",
     "dotenv": "^16.4.7",
     "drizzle-kit": "^0.31.0",
-    "typescript": "^5.7.2"
+    "eslint": "^9.29.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^15.15.0",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.34.0"
   }
 }

@@ -36,9 +36,9 @@ export function CmsProvider({
 }
 
 export function useCmsContext() {
+  const editor = useContext(EditorContext);
   const ctx = useContext(CmsContext);
   if (ctx) return ctx;
-  const editor = useContext(EditorContext);
   if (editor) return { api: editor.api, siteId: "", schema: editor.schema };
   throw new Error("useCmsContext must be used within CmsProvider or EditorProvider");
 }

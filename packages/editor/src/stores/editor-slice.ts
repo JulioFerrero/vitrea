@@ -1,8 +1,8 @@
 import type { StateCreator } from "zustand";
-import type { RenderElement, PageItem, Viewport, PageElement } from "../types";
+import type { PageItem, Viewport, PageElement } from "../types";
 import type { HistoryEntry } from "./history";
 import { computeUndo, computeRedo, canUndo, canRedo } from "./history";
-import { findElementById, insertChild, removeById, updateById, moveNode, duplicateNode, cloneTree, findById } from "@vitrea/render";
+import { insertChild, removeById, updateById, moveNode, duplicateNode, cloneTree, findById } from "@vitrea/render";
 
 export type SaveStatus = "idle" | "saving" | "saved";
 

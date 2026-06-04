@@ -132,7 +132,7 @@ export function ReviewDialog({
         }
       })();
     }
-  }, [open, activePageId, actions]);
+  }, [open, activePageId, actions, documentCache]);
 
   const fieldChanges = useMemo(() => {
     if (!diff) return new Map<string, ReturnType<typeof getFieldChanges>>();

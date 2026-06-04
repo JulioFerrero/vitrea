@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useSession, signOut } from "@vitrea/auth/client";
+import { useSession } from "@vitrea/auth/client";
 import { cn } from "@vitrea/utils";
 import { Camera, Loader2, ShieldCheck } from "lucide-react";
 import { createApiFetch } from "../lib/api";
 import { Modal } from "@vitrea/editor-ui/modal";
-import { Label, SectionLabel, Button, Alert, Divider, ColorInput, Field, Input } from "@vitrea/editor-ui/form-primitives";
+import { SectionLabel, Button, Alert, Divider, ColorInput, Field, Input } from "@vitrea/editor-ui/form-primitives";
 
 const api = createApiFetch();
 type SessionUser = {

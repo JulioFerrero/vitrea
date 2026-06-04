@@ -61,7 +61,7 @@ export interface PageItem {
   pubContent?: Record<string, unknown>;
 }
 
-export interface RenderElement extends BaseRenderElement {}
+export type RenderElement = BaseRenderElement;
 
 export type Viewport = "desktop" | "tablet" | "mobile";
 

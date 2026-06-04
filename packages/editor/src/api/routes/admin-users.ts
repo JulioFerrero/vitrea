@@ -1,11 +1,9 @@
 import { Hono } from "hono";
 import { db, user, account, session } from "@vitrea/database";
 import { eq } from "drizzle-orm";
-import { auth } from "@vitrea/auth";
 import { hashPassword } from "@vitrea/auth/crypto";
 import {
   authMiddleware,
-  requireAuth,
   requireAdmin,
   type AuthVariables,
 } from "@vitrea/auth/middleware";
@@ -89,7 +87,7 @@ adminUsersRoute.post("/", requireAdmin, async (c) => {
     role: role ?? "user",
   });
 
-  const [acc] = await db.insert(account).values({
+  await db.insert(account).values({
     id: crypto.randomUUID(),
     userId: id,
     accountId: email,

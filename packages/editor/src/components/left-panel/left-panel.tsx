@@ -16,7 +16,7 @@ import { ElementNode } from "./element-node";
 import { AddElementDialog } from "./add-element-dialog";
 import { derivePath } from "../../lib/paths";
 import { countNodes } from "./utils";
-import { glassStyle, glassPanelClass } from "@vitrea/editor-ui/glass";
+import { glassStyle } from "@vitrea/editor-ui/glass";
 
 interface PageTreeData {
   id: string;
@@ -117,7 +117,7 @@ export function LeftPanel() {
     const dragId = dragIds[0]; if (!dragId) return; actions.moveNodeTo(dragId, parentId, index);
   }, [actions]);
 
-  const handleElementSelect = useCallback((nodes: any[]) => {
+  const handleElementSelect = useCallback((nodes: NodeApi<ElementTreeData>[]) => {
     const id = nodes.length > 0 ? nodes[0].id : null;
     selectElement(id);
   }, [selectElement]);
@@ -126,7 +126,7 @@ export function LeftPanel() {
     if (!activePageId) return;
     await actions.addChild(addElementParentId, type);
     setAddElementParentId(null);
-  }, [addElementParentId, actions]);
+  }, [activePageId, addElementParentId, actions]);
 
   const handleContextMenu = useCallback((e: React.MouseEvent<HTMLElement>, state: CtxMenuState) => {
     e.preventDefault(); e.stopPropagation();

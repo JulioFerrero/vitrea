@@ -4,7 +4,6 @@ import { useState } from "react";
 import { signIn } from "@vitrea/auth/client";
 import { Button } from "@vitrea/ui/button";
 import { Input } from "@vitrea/ui/input";
-import { cn } from "@vitrea/utils";
 
 interface LoginPageProps {
   onSuccess: () => void;

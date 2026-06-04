@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
-import { Button, Input } from "@vitrea/editor-ui/form-primitives";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Modal } from "@vitrea/editor-ui/modal";
 import { ConfirmDialog } from "@vitrea/editor-ui/confirm-dialog";
 import { SearchInput } from "@vitrea/editor-ui/search-input";
@@ -44,17 +43,19 @@ export function AssetsPage({ siteId: siteIdProp, onBack: _onBack }: { siteId: st
   const [copied, setCopied] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  async function fetchFiles() {
+  const fetchFiles = useCallback(async () => {
     if (!siteId) { setLoading(false); return; }
     setLoading(true);
     try {
       const res = await api.fetch(`/files?siteId=${encodeURIComponent(siteId)}`);
       setFiles((res as FileEntry[]).reverse());
-    } catch {}
+    } catch (error) {
+      console.error("Failed to load files", error);
+    }
     setLoading(false);
-  }
+  }, [siteId]);
 
-  useEffect(() => { fetchFiles(); }, [siteId]);
+  useEffect(() => { fetchFiles(); }, [fetchFiles]);
 
   const fileTypes = useMemo(() => {
     const types = new Set<string>();
@@ -111,7 +112,9 @@ export function AssetsPage({ siteId: siteIdProp, onBack: _onBack }: { siteId: st
       formData.append("file", file);
       await api.fetch("/files/upload", { method: "POST", body: formData as unknown as BodyInit });
       fetchFiles();
-    } catch {}
+    } catch (error) {
+      console.error("Failed to upload file", error);
+    }
     setUploading(false);
   }
 
@@ -128,7 +131,11 @@ export function AssetsPage({ siteId: siteIdProp, onBack: _onBack }: { siteId: st
   async function confirmDelete() {
     if (!deleteModal) return;
     for (const id of deleteModal) {
-      try { await api.fetch(`/files/${id}`, { method: "DELETE" }); } catch {}
+      try {
+        await api.fetch(`/files/${id}`, { method: "DELETE" });
+      } catch (error) {
+        console.error("Failed to delete file", error);
+      }
     }
     setFiles((prev) => prev.filter((f) => !deleteModal.includes(f.id)));
     setSelected((prev) => {
@@ -147,7 +154,9 @@ export function AssetsPage({ siteId: siteIdProp, onBack: _onBack }: { siteId: st
       setFiles((prev) => prev.map((f) => f.id === id ? { ...f, data: { ...f.data, name: editName.trim() } } : f));
       if (detailFile?.id === id) setDetailFile((d) => d ? { ...d, data: { ...d.data, name: editName.trim() } } : null);
       setEditingId(null);
-    } catch {}
+    } catch (error) {
+      console.error("Failed to rename file", error);
+    }
   }
 
   function copyUrl(url: string) {

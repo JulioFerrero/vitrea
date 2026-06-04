@@ -57,7 +57,7 @@ function EditorInner({ siteId }: { siteId: string }) {
     if (isDirty) {
       actions.scheduleAutoSave();
     }
-  }, [isDirty]);
+  }, [isDirty, actions]);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {

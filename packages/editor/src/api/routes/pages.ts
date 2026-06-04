@@ -6,7 +6,7 @@ import { eq, desc } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { getById, updateById, deleteById } from "./helpers";
 import { cloneTree } from "@vitrea/render";
-import type { PageContent, PageData } from "@vitrea/database";
+import type { PageContent, PageData, RevisionSnapshot } from "@vitrea/database";
 import type { PageElement } from "@vitrea/render";
 
 export const pagesRoute = new Hono()
@@ -36,7 +36,7 @@ export const pagesRoute = new Hono()
         id: nanoid(),
         siteId: body.siteId,
         slug: body.slug,
-        data: (body.data ?? { title: body.slug, path: "/" + body.slug, status: "draft" }) as any,
+        data: (body.data ?? { title: body.slug, path: "/" + body.slug, status: "draft" }) as PageData,
       }).returning();
       return c.json(row, 201);
     }
@@ -52,9 +52,9 @@ export const pagesRoute = new Hono()
       const body = c.req.valid("json");
       const updates: Record<string, unknown> = { updatedAt: new Date() };
       if (body.slug !== undefined) updates.slug = body.slug;
-      if (body.data !== undefined) updates.data = body.data as any;
+      if (body.data !== undefined) updates.data = body.data as PageData;
       if (body.content !== undefined) updates.content = body.content as PageContent[];
-      const row = await updateById(pages, c.req.param("id"), updates as any);
+      const row = await updateById(pages, c.req.param("id"), updates);
       if (!row) return c.json({ error: "Not found" }, 404);
       return c.json(row);
     }
@@ -70,7 +70,7 @@ export const pagesRoute = new Hono()
     if (!page) return c.json({ error: "Page not found" }, 404);
 
     const content = page.content as PageElement[] | undefined;
-    const snapshot: { content: PageElement[]; page: PageData } = {
+    const snapshot: RevisionSnapshot = {
       content: cloneTree(content ?? []),
       page: page.data as PageData,
     };
@@ -78,12 +78,12 @@ export const pagesRoute = new Hono()
     await db.insert(revisions).values({
       id: nanoid(),
       pageId,
-      snapshot: snapshot as any,
+      snapshot,
     });
 
     await db.update(pages).set({
-      pubContent: content as any,
-      data: { ...(page.data as Record<string, unknown>), status: "published" } as any,
+      pubContent: content as PageContent[],
+      data: { ...(page.data as PageData), status: "published" } as PageData,
       updatedAt: new Date(),
     }).where(eq(pages.id, pageId));
 
@@ -95,8 +95,8 @@ export const pagesRoute = new Hono()
     if (!page) return c.json({ error: "Page not found" }, 404);
 
     await db.update(pages).set({
-      content: page.pubContent as any,
-      data: { ...(page.data as Record<string, unknown>), status: "published" } as any,
+      content: page.pubContent as PageContent[],
+      data: { ...(page.data as PageData), status: "published" } as PageData,
       updatedAt: new Date(),
     }).where(eq(pages.id, pageId));
 
@@ -109,7 +109,6 @@ export const pagesRoute = new Hono()
     const draft = (page.content ?? []) as PageElement[];
     const published = (page.pubContent ?? []) as PageElement[];
 
-    const draftMap = new Map(draft.map((el) => [el.id, el]));
     const pubMap = new Map(published.map((el) => [el.id, el]));
 
     const addedElements = draft.filter((el) => !pubMap.has(el.id));
@@ -148,8 +147,8 @@ export const pagesRoute = new Hono()
     if (!snapshot?.content) return c.json({ error: "Invalid snapshot" }, 400);
 
     await db.update(pages).set({
-      content: snapshot.content as any,
-      pubContent: snapshot.content as any,
+      content: snapshot.content,
+      pubContent: snapshot.content,
       updatedAt: new Date(),
     }).where(eq(pages.id, pageId));
 

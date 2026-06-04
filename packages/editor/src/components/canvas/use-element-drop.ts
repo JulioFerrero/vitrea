@@ -1,13 +1,15 @@
 import { useRef, useEffect, useCallback, useState } from "react";
 import { useEditorStore } from "../../stores";
 import { findElementById, findById } from "@vitrea/render";
+import type { PageElement } from "../../types";
+import type { EditorActions } from "../../lib/actions";
 
 export function useElementDrop(
   queryElementAtPoint: (x: number, y: number) => { el: HTMLElement } | null,
   isNativeDrag: React.RefObject<boolean>,
   containerSet: Set<string>,
   activePageId: string | null,
-  actions: any,
+  actions: EditorActions,
 ) {
   const dragTypeRef = useRef<string | null>(null);
   const dropIndicatorElRef = useRef<HTMLElement | null>(null);
@@ -99,7 +101,7 @@ export function useElementDrop(
       }
     };
 
-    const onUp = (e: MouseEvent) => {
+    const onUp = () => {
       if (!dragTypeRef.current) return;
       const type = dragTypeRef.current;
       dragTypeRef.current = null;
@@ -112,9 +114,8 @@ export function useElementDrop(
 
       if (!activePageId) return;
 
-      actions.addChild(parentId, type, index).then((el: any) => {
-        actions.moveNodeTo(el.id, parentId, index);
-      });
+      const el: PageElement = actions.addChild(parentId, type, index);
+      actions.moveNodeTo(el.id, parentId, index);
     };
 
     window.addEventListener("mousemove", onMove);

@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { auth } from "@vitrea/auth";
-import { authMiddleware, requireAuth } from "@vitrea/auth/middleware";
+import { authMiddleware } from "@vitrea/auth/middleware";
 import { db, user } from "@vitrea/database";
 import { sql } from "drizzle-orm";
 import { sitesRoute } from "./routes/sites";

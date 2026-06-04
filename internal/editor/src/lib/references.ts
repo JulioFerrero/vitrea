@@ -3,10 +3,6 @@ import { schema } from "../elements/index.ts";
 import { db, documents } from "@vitrea/database";
 import { inArray } from "drizzle-orm";
 
-// #region debug-point D:references-module
-fetch("http://127.0.0.1:7777/event", { method: "POST", body: JSON.stringify({ sessionId: "editor-tailwind-client", runId: "pre-fix", hypothesisId: "D", location: "internal/editor/src/lib/references.ts:6", msg: "[DEBUG] resolvePageReferences module evaluated", data: { importsDatabase: true }, ts: Date.now() }) }).catch(() => {});
-// #endregion
-
 function buildReferenceMap(): Record<string, string> {
   const refs: Record<string, string> = {};
   for (const et of schema.elementTypes) {

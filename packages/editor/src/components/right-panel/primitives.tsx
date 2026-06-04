@@ -1,6 +1,6 @@
 import React from "react";
 import { cn } from "@vitrea/utils";
-import { inputBase, Button as SharedButton, Input as SharedInput } from "@vitrea/editor-ui/form-primitives";
+import { inputBase } from "@vitrea/editor-ui/form-primitives";
 export { inputBase } from "@vitrea/editor-ui/form-primitives";
 export { Button, Input } from "@vitrea/editor-ui/form-primitives";
 

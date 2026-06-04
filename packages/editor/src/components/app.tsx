@@ -42,11 +42,6 @@ function getSnapshot() {
   }
 
   const snapshot = parsePath(pathname);
-  // #region debug-point A:editor-app-snapshot
-  (((globalThis as typeof globalThis & { __editorAppSnapshotDebugCount?: number }).__editorAppSnapshotDebugCount ??= 0) < 3 &&
-    (((globalThis as typeof globalThis & { __editorAppSnapshotDebugCount?: number }).__editorAppSnapshotDebugCount as number) += 1,
-    fetch("http://127.0.0.1:7777/event", { method: "POST", body: JSON.stringify({ sessionId: "editor-tailwind-client", runId: "post-buffer-fix", hypothesisId: "A", location: "packages/editor/src/components/app.tsx:34", msg: "[DEBUG] getSnapshot computed route", data: snapshot, ts: Date.now() }) }).catch(() => {})));
-  // #endregion
   cachedPathname = pathname;
   cachedSnapshot = snapshot;
   return snapshot;

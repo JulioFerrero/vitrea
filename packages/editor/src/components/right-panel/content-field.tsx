@@ -3,7 +3,6 @@ import type { FieldConfig } from "../../types";
 import { Label, Btn, BtnGroup, CompactInput, inputBase } from "./primitives";
 import { ReferencePicker } from "../cms/reference-picker";
 import { MediaLibrary } from "../media-library";
-import { useCmsStore } from "../../stores/cms-store";
 import { useEditorStore } from "../../stores";
 import { cn } from "@vitrea/utils";
 import { Image as ImageIcon } from "lucide-react";
@@ -13,12 +12,13 @@ export function ContentField({ field, data, updateData, api, siteId }: {
   field: FieldConfig; data: Record<string, unknown>; updateData: (key: string, value: unknown) => void; api?: EditorApi; siteId?: string;
 }) {
   const val = data[field.name];
+  const activeSiteId = useEditorStore((s) => s.activeSiteId);
   const [mediaOpen, setMediaOpen] = useState(false);
-  const showMediaPicker = field.type === "url" && api && siteId;
+  const resolvedSiteId = siteId ?? activeSiteId ?? "";
+  const showMediaPicker = field.type === "url" && api && resolvedSiteId;
 
   if (field.type === "reference") {
     const ids: string[] = Array.isArray(val) ? val.map(String) : val ? [String(val)] : [];
-    const siteId = useEditorStore((s) => s.activeSiteId) ?? "";
 
     return (
       <div>
@@ -27,7 +27,7 @@ export function ContentField({ field, data, updateData, api, siteId }: {
           collection={field.collection ?? ""}
           selectedIds={ids}
           multiple={field.multiple ?? false}
-          siteId={siteId}
+          siteId={resolvedSiteId}
           onChange={(newIds) => {
             if (field.multiple) {
               updateData(field.name, newIds);
@@ -83,7 +83,7 @@ export function ContentField({ field, data, updateData, api, siteId }: {
             open={mediaOpen}
             onClose={() => setMediaOpen(false)}
             onSelect={(url) => { updateData(field.name, url); setMediaOpen(false); }}
-            siteId={siteId!}
+            siteId={resolvedSiteId}
             api={api!}
           />
         </div>

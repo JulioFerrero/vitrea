@@ -1,6 +1,6 @@
 import React from "react";
 import { RenderPage } from "@vitrea/render";
-import { COMPONENT_REGISTRY } from "./components/index.ts";
+import { COMPONENT_REGISTRY } from "./components";
 
 function PageRendererWrapper(props: { content: import("@vitrea/render").RenderElement[] }) {
   return React.createElement(RenderPage, { content: props.content, renderer: COMPONENT_REGISTRY });

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Button, Input } from "@vitrea/editor-ui/form-primitives";
 import { Modal } from "@vitrea/editor-ui/modal";
 import { Card, CardHeader, CardTitle, CardDescription } from "@vitrea/ui/card";
-import { Plus, Globe, Users, Feather, Square, Layout, PenLine, Palette, Check, Trash2, Image as ImageIcon, Settings } from "lucide-react";
+import { Plus, Globe, Users, Feather, Square, Layout, PenLine, Palette, Check, Trash2, Settings } from "lucide-react";
 import { ProfileDropdown } from "./profile-dropdown";
 import { ConfirmDialog } from "@vitrea/editor-ui/confirm-dialog";
 import { cn } from "@vitrea/utils";

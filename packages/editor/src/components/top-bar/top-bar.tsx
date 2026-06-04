@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useState } from "react";
-import { useEditorStore, type SaveStatus } from "../../stores";
+import { useEditorStore } from "../../stores";
 import { useEditorContext } from "../../lib/context";
 import { Separator } from "@vitrea/editor-ui/separator";
 import { Badge } from "@vitrea/editor-ui/form-primitives";

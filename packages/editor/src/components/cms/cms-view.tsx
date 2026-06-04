@@ -13,6 +13,14 @@ interface CmsViewProps {
   onBack: () => void;
 }
 
+type StructureNode = {
+  type: string;
+  title: string;
+  collection?: string;
+  filter?: Record<string, string>;
+  items?: StructureNode[];
+};
+
 function getUrlParams(): { collection?: string; filter?: Record<string, string> } | null {
   const q = globalThis.location.search;
   if (!q) return null;
@@ -95,7 +103,7 @@ export function CmsView({ siteId, onBack: _onBack }: CmsViewProps) {
       }
     }
     init();
-  }, [siteId]);
+  }, [siteId, actions, schema]);
 
   useEffect(() => {
     if (!selectedCollection) {
@@ -124,13 +132,13 @@ export function CmsView({ siteId, onBack: _onBack }: CmsViewProps) {
     if (subtitleField) selectFields.add(subtitleField.name);
 
     actions.loadDocuments(selectedCollection.id, selectedCollection.name, structureFilter ?? undefined, [...selectFields]).catch(() => {});
-  }, [selectedCollection?.id, structureFilter, actions]);
+  }, [selectedCollection, structureFilter, actions]);
 
   const breadcrumb = useMemo(() => {
     if (!selectedCollection) return null;
     if (!schema?.structure) return selectedCollection.label;
     const parts: string[] = [];
-    function walk(items: any[]): boolean {
+    function walk(items: StructureNode[]): boolean {
       for (const item of items) {
         if (item.type === "collection" && item.collection === selectedCollection?.name) {
           const filterMatch = !item.filter ||

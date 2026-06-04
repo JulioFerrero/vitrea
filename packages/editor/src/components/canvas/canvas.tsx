@@ -29,7 +29,6 @@ export function Canvas({ leftPanelOpen, rightPanelOpen }: { leftPanelOpen: boole
   const [cursorVisible, setCursorVisible] = useState(true);
 
   const content = useEditorStore((s) => s.content);
-  const selectedElementId = useEditorStore((s) => s.selectedElementId);
   const selectElement = useEditorStore((s) => s.selectElement);
   const activePageId = useEditorStore((s) => s.activePageId);
   const activeSiteId = useEditorStore((s) => s.activeSiteId);

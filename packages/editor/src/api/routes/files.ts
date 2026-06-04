@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { db, files } from "@vitrea/database";
+import type { FileData } from "@vitrea/database";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { uploadFile, deleteFile, extractKeyFromUrl } from "../../lib/storage";
@@ -24,7 +25,7 @@ export const filesRoute = new Hono()
       const [row] = await db.insert(files).values({
         id: nanoid(),
         siteId: body.siteId,
-        data: body.data as any,
+        data: body.data as FileData,
       }).returning();
       return c.json(row, 201);
     }
@@ -85,7 +86,7 @@ export const filesRoute = new Hono()
       (currentData as Record<string, unknown>)[k] = v;
     }
 
-    await db.update(files).set({ data: currentData as any }).where(eq(files.id, id));
+    await db.update(files).set({ data: currentData as FileData }).where(eq(files.id, id));
     const [row] = await db.select().from(files).where(eq(files.id, id)).limit(1);
     return c.json(row);
   });

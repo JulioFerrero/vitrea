@@ -1,7 +1,7 @@
-import React, { useRef, useEffect, useState, useCallback } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { Monitor, Tablet, Smartphone } from "lucide-react";
-import type { Viewport } from "../../types";
+import type { RenderElement, RendererAdapter, Viewport } from "../../types";
 
 const VIEWPORT_WIDTHS: Record<Viewport, number> = { desktop: 1440, tablet: 768, mobile: 375 };
 const VIEWPORT_HEIGHTS: Record<Viewport, number> = { desktop: 900, tablet: 1024, mobile: 812 };
@@ -28,8 +28,8 @@ export function ViewportFrame({
   renderer,
 }: {
   viewport: Viewport;
-  content: any[];
-  renderer: { PageRenderer: React.ComponentType<{ content: any[]; editor?: boolean }> };
+  content: RenderElement[];
+  renderer: RendererAdapter;
 }) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [iframeH, setIframeH] = useState(800);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useCmsStore } from "../../stores/cms-store";
+import { useCmsStore, type CmsCollectionItem } from "../../stores/cms-store";
 
 type SI = { type: string; title?: string; collection?: string; filter?: Record<string, string>; items?: SI[] };
 
@@ -24,7 +24,7 @@ export function CollectionListSidebar() {
     useCmsStore.getState().navigate(path);
   }
 
-  function select(col: any, filter: Record<string, string> | null) {
+  function select(col: CmsCollectionItem, filter: Record<string, string> | null) {
     useCmsStore.getState().selectCollection(col);
     useCmsStore.getState().setStructureFilter(filter);
   }
@@ -70,7 +70,7 @@ export function CollectionListSidebar() {
           <h2 className="text-[11px] font-semibold uppercase tracking-wider text-white/40">Content</h2>
         </div>
         <div className="flex-1 overflow-y-auto editor-scroll py-1">
-          {collections.map((col: any) => (
+          {collections.map((col: CmsCollectionItem) => (
             <button
               key={col.id}
               type="button"
@@ -130,7 +130,7 @@ export function CollectionListSidebar() {
                 }
 
                 if (item.type === "collection") {
-                  const colObj = collections.find((c: any) => c.name === item.collection);
+                  const colObj = collections.find((c: CmsCollectionItem) => c.name === item.collection);
                   if (!colObj) return null;
                   const filter = item.filter ?? null;
                   const isSelected = selectedCollection?.id === colObj.id &&

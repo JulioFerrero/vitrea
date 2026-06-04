@@ -15,7 +15,6 @@ export function createElementActions(api: EditorApi, schema: EditorSchema) {
       store.getState().setLoading(true);
       const page = await api.fetch(`/pages/${pageId}`) as { content?: PageElement[]; data?: Record<string, unknown> };
       const content = (page.content ?? []) as PageElement[];
-      const isPublished = (page.data as Record<string, unknown> | undefined)?.status !== "published";
       store.getState().setContent(content);
       store.getState().setHasActiveDraft(false);
       store.getState().setLoading(false);

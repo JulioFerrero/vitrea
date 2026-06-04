@@ -8,6 +8,7 @@ import { getById, updateById, deleteById } from "./helpers";
 import { createElement } from "@vitrea/render";
 import type { PageElement } from "@vitrea/render";
 import type { AuthVariables } from "@vitrea/auth/middleware";
+import type { PageContent, SiteData } from "@vitrea/database";
 
 function el(type: string, data: Record<string, unknown> = {}, styles: Record<string, string> = {}, children: PageElement[] = []): PageElement {
   return createElement(type, data, styles, children);
@@ -212,7 +213,7 @@ export const sitesRoute = new Hono<{ Variables: AuthVariables }>()
       const [row] = await db.insert(sites).values({
         id: siteId,
         slug: body.slug,
-        data: (body.data ?? { name: body.slug }) as any,
+        data: (body.data ?? { name: body.slug }) as SiteData,
       }).returning();
 
       if (template && template !== "blank") {
@@ -223,9 +224,9 @@ export const sitesRoute = new Hono<{ Variables: AuthVariables }>()
           siteId,
           slug: "home",
           data: { title: "Home", path: "/", status: "published" },
-          content: content as any,
-          pubContent: content as any,
-        } as any);
+          content: content as PageContent[],
+          pubContent: content as PageContent[],
+        });
       }
 
       const sessionUser = c.get("user");
@@ -248,7 +249,10 @@ export const sitesRoute = new Hono<{ Variables: AuthVariables }>()
     })),
     async (c) => {
       const body = c.req.valid("json");
-      const row = await updateById(sites, c.req.param("id"), { slug: body.slug, data: body.data as any });
+      const row = await updateById(sites, c.req.param("id"), {
+        slug: body.slug,
+        data: body.data as SiteData | undefined,
+      });
       if (!row) return c.json({ error: "Not found" }, 404);
       return c.json(row);
     }

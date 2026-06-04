@@ -2,7 +2,6 @@ import {
   pgTable,
   jsonb,
   timestamp,
-  integer,
   varchar,
   boolean,
   text,

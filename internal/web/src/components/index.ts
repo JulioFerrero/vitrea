@@ -1,25 +1,25 @@
 import type { ComponentType } from "react";
 import type { ElementProps } from "@vitrea/render";
-import { Section } from "./section.tsx";
-import { Row } from "./row.tsx";
-import { Column } from "./column.tsx";
-import { Grid } from "./grid.tsx";
-import { Heading } from "./heading.tsx";
-import { Text } from "./text.tsx";
-import { Image } from "./image.tsx";
-import { Button } from "./button.tsx";
-import { Link } from "./link.tsx";
-import { Spacer } from "./spacer.tsx";
-import { Divider } from "./divider.tsx";
-import { Video } from "./video.tsx";
-import { Html } from "./html.tsx";
-import { NavBar } from "./nav-bar.tsx";
-import { HeroSection } from "./hero-section.tsx";
-import { FeaturesSection } from "./features-section.tsx";
-import { ShowcaseSection } from "./showcase-section.tsx";
-import { CTASection } from "./cta-section.tsx";
-import { FooterSection } from "./footer-section.tsx";
-import { ProductList } from "./product-list.tsx";
+import { Section } from "./section";
+import { Row } from "./row";
+import { Column } from "./column";
+import { Grid } from "./grid";
+import { Heading } from "./heading";
+import { Text } from "./text";
+import { Image } from "./image";
+import { Button } from "./button";
+import { Link } from "./link";
+import { Spacer } from "./spacer";
+import { Divider } from "./divider";
+import { Video } from "./video";
+import { Html } from "./html";
+import { NavBar } from "./nav-bar";
+import { HeroSection } from "./hero-section";
+import { FeaturesSection } from "./features-section";
+import { ShowcaseSection } from "./showcase-section";
+import { CTASection } from "./cta-section";
+import { FooterSection } from "./footer-section";
+import { ProductList } from "./product-list";
 
 export const COMPONENT_REGISTRY: Record<string, ComponentType<ElementProps>> = {
   section: Section,
