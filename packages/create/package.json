@@ -1,10 +1,9 @@
 {
   "name": "@vitrea/create",
-  "version": "0.4.0",
-  "private": true,
+  "version": "1.0.0",
   "type": "module",
   "bin": {
-    "vitrea": "./bin/vitrea.mjs"
+    "vitrea": "bin/vitrea.js"
   },
   "scripts": {
     "dev": "tsx src/main.ts",
@@ -16,7 +15,7 @@
     "src"
   ],
   "dependencies": {
-    "@vitrea/database": "workspace:*",
+    "@vitrea/database": "^1.0.0",
     "drizzle-orm": "^0.43.0",
     "dotenv": "^16.4.7",
     "nanoid": "^5.1.11",
@@ -28,5 +27,9 @@
     "@types/prompts": "^2.4.9",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
-  }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT"
 }

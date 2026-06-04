@@ -1,6 +1,6 @@
 {
   "name": "@vitrea/database",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "license": "MIT",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -36,5 +36,8 @@
     "@types/node": "^22.10.2",
     "drizzle-kit": "^0.31.0",
     "typescript": "^5.7.2"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

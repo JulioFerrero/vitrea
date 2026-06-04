@@ -1,6 +1,6 @@
 {
   "name": "@vitrea/auth",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "license": "MIT",
   "type": "module",
   "types": "./dist/auth.d.ts",
@@ -41,5 +41,8 @@
   "devDependencies": {
     "@types/node": "^22.10.2",
     "typescript": "^5.7.2"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

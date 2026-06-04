@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useRef } from "react";
+import type { StructureItem } from "@vitrea/cms";
 import { useCmsContext } from "../../lib/context";
 import { useCmsStore } from "../../stores/cms-store";
 import { createCmsActions } from "../../lib/cms-actions";
@@ -12,14 +13,6 @@ interface CmsViewProps {
   siteId: string;
   onBack: () => void;
 }
-
-type StructureNode = {
-  type: string;
-  title: string;
-  collection?: string;
-  filter?: Record<string, string>;
-  items?: StructureNode[];
-};
 
 function getUrlParams(): { collection?: string; filter?: Record<string, string> } | null {
   const q = globalThis.location.search;
@@ -138,7 +131,7 @@ export function CmsView({ siteId, onBack: _onBack }: CmsViewProps) {
     if (!selectedCollection) return null;
     if (!schema?.structure) return selectedCollection.label;
     const parts: string[] = [];
-    function walk(items: StructureNode[]): boolean {
+    function walk(items: StructureItem[]): boolean {
       for (const item of items) {
         if (item.type === "collection" && item.collection === selectedCollection?.name) {
           const filterMatch = !item.filter ||

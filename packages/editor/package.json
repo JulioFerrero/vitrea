@@ -1,6 +1,6 @@
 {
   "name": "@vitrea/editor",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "license": "MIT",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -18,8 +18,8 @@
       "import": "./dist/server.js"
     },
     "./vite": {
-      "types": "./src/vite.ts",
-      "import": "./src/vite.ts"
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.js"
     },
     "./styles.css": "./src/styles.css"
   },
@@ -30,7 +30,6 @@
   },
   "files": [
     "dist",
-    "src/vite.ts",
     "src/styles.css",
     "src/ws.d.ts"
   ],
@@ -64,5 +63,8 @@
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "typescript": "^5.7.2"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
