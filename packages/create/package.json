@@ -1,6 +1,6 @@
 {
   "name": "@vitrea/create",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "type": "module",
   "bin": {
     "vitrea": "dist/main.js"

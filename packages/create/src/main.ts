@@ -353,7 +353,7 @@ async function runScaffold(args: string[]) {
       console.log(`\n  ${pc.bold("Installing dependencies...")}\n`);
       await run("pnpm", ["install"], targetDir);
       console.log(`\n  ${pc.bold("Running setup...")}\n`);
-      await run("pnpm", ["setup"], targetDir);
+      await run("pnpm", ["run", "vitrea:setup"], targetDir);
     }
   }
 
@@ -366,7 +366,7 @@ async function runScaffold(args: string[]) {
     if (answers.environment === "local") {
       console.log(step(1, `cd ${cdTarget}`, ""));
       console.log(step(2, "pnpm install", "install dependencies"));
-      console.log(step(3, "pnpm setup", "choose database and storage"));
+      console.log(step(3, "pnpm run vitrea:setup", "choose database and storage"));
       console.log(step(4, "pnpm dev", "start editor and website"));
     } else if (answers.environment === "vps") {
       console.log(step(1, "pnpm install", "install dependencies"));

@@ -24,6 +24,6 @@ pnpm dlx @vitrea/create --preview
 
 ```bash
 pnpm install
-pnpm setup
+pnpm run vitrea:setup
 pnpm dev
 ```

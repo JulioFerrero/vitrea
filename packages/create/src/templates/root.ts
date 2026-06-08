@@ -9,7 +9,7 @@ export function rootPackageJson(answers: PromptAnswers): string {
       node: ">=20.11.0",
     },
     scripts: {
-      setup: `vitrea setup --site-name "${answers.projectName}"`,
+      "vitrea:setup": `vitrea setup --site-name "${answers.projectName}"`,
       "dev:web": "pnpm --filter @app/web dev",
       "dev:editor": "pnpm --filter @app/editor dev",
       dev: "concurrently -n web,editor -c blue,magenta \"pnpm dev:web\" \"pnpm dev:editor\"",

@@ -8,10 +8,10 @@ import {
   webPackageJson, webNextConfig, webTsconfig, webNextEnvDts, webPostcssConfig, webAppLayout, webGlobalsCss, webCatchAllRoute,
   editorPackageJson, editorTsconfig, editorViteConfig, editorIndexHtml, editorMainTsx, editorAppTsx, editorStylesCss,
   drizzleConfigTs, drizzleSchemaTs,
-  internalWebPackageJson, internalEditorPackageJson, internalPkgTsconfig, internalWebIndex, internalWebRenderer, internalWebStylesCss, internalWebComponentsIndex,
+  internalWebPackageJson, internalEditorPackageJson, internalPkgTsconfig, internalWebIndex, internalWebRenderer, internalWebThemeCss, internalWebStylesCss, internalWebTailwind, internalWebComponentsIndex,
   internalEditorIndex, internalEditorElementsIndex, internalEditorContent, internalEditorStructure,
   internalEditorElementHero, internalEditorElementFeatures, internalEditorElementFooter,
-  internalWebComponentHero, internalWebComponentFeatures, internalWebComponentFooter,
+  internalWebComponentSection, internalWebComponentRow, internalWebComponentColumn, internalWebComponentGrid, internalWebComponentHeading, internalWebComponentText, internalWebComponentImage, internalWebComponentButton, internalWebComponentLink, internalWebComponentSpacer, internalWebComponentDivider, internalWebComponentVideo, internalWebComponentHtml, internalWebComponentHero, internalWebComponentFeatures, internalWebComponentFooter,
   dockerComposeFull, dockerComposeLocal, seaweedfsConfig, vercelJson, flyToml, railwayJson,
 } from "./templates/index";
 
@@ -26,7 +26,12 @@ export function listFiles(answers: PromptAnswers): string[] {
     "apps/editor/package.json", "apps/editor/tsconfig.json", "apps/editor/vite.config.ts", "apps/editor/index.html",
     "apps/editor/src/main.tsx", "apps/editor/src/app.tsx", "apps/editor/assets/styles.css",
     "internal/web/package.json", "internal/web/tsconfig.json", "internal/web/src/index.ts",
-    "internal/web/src/renderer.tsx", "internal/web/src/styles.css", "internal/web/src/components/index.ts",
+    "internal/web/src/renderer.tsx", "internal/web/src/theme.css", "internal/web/src/styles.css", "internal/web/src/lib/tailwind.ts", "internal/web/src/components/index.ts",
+    "internal/web/src/components/section.tsx", "internal/web/src/components/row.tsx", "internal/web/src/components/column.tsx",
+    "internal/web/src/components/grid.tsx", "internal/web/src/components/heading.tsx", "internal/web/src/components/text.tsx",
+    "internal/web/src/components/image.tsx", "internal/web/src/components/button.tsx", "internal/web/src/components/link.tsx",
+    "internal/web/src/components/spacer.tsx", "internal/web/src/components/divider.tsx", "internal/web/src/components/video.tsx",
+    "internal/web/src/components/html.tsx",
     "internal/editor/package.json", "internal/editor/tsconfig.json", "internal/editor/src/index.ts",
     "internal/editor/src/elements/index.ts", "internal/editor/src/elements/content.ts", "internal/editor/src/elements/structure.ts",
   ];
@@ -87,8 +92,23 @@ export async function scaffold(dir: string, answers: PromptAnswers): Promise<voi
   await w("internal/web/tsconfig.json", internalPkgTsconfig());
   await w("internal/web/src/index.ts", internalWebIndex());
   await w("internal/web/src/renderer.tsx", internalWebRenderer());
+  await w("internal/web/src/theme.css", internalWebThemeCss());
   await w("internal/web/src/styles.css", internalWebStylesCss());
+  await w("internal/web/src/lib/tailwind.ts", internalWebTailwind());
   await w("internal/web/src/components/index.ts", internalWebComponentsIndex(answers));
+  await w("internal/web/src/components/section.tsx", internalWebComponentSection());
+  await w("internal/web/src/components/row.tsx", internalWebComponentRow());
+  await w("internal/web/src/components/column.tsx", internalWebComponentColumn());
+  await w("internal/web/src/components/grid.tsx", internalWebComponentGrid());
+  await w("internal/web/src/components/heading.tsx", internalWebComponentHeading());
+  await w("internal/web/src/components/text.tsx", internalWebComponentText());
+  await w("internal/web/src/components/image.tsx", internalWebComponentImage());
+  await w("internal/web/src/components/button.tsx", internalWebComponentButton());
+  await w("internal/web/src/components/link.tsx", internalWebComponentLink());
+  await w("internal/web/src/components/spacer.tsx", internalWebComponentSpacer());
+  await w("internal/web/src/components/divider.tsx", internalWebComponentDivider());
+  await w("internal/web/src/components/video.tsx", internalWebComponentVideo());
+  await w("internal/web/src/components/html.tsx", internalWebComponentHtml());
   await w("internal/editor/package.json", internalEditorPackageJson());
   await w("internal/editor/tsconfig.json", internalPkgTsconfig());
   await w("internal/editor/src/index.ts", internalEditorIndex());
