@@ -11,9 +11,14 @@ interface AuthGateProps {
   api: { fetch: (path: string, init?: RequestInit) => Promise<unknown> };
 }
 
-export function AuthGate({ children, api }: AuthGateProps) {
+export function AuthGate({ children, api }: Readonly<AuthGateProps>) {
   const { data: session, isPending, refetch } = useSession();
   const [hasUsers, setHasUsers] = useState<boolean | null>(null);
+
+  async function handleSetupDone() {
+    setHasUsers(true);
+    await refetch();
+  }
 
   useEffect(() => {
     async function check() {
@@ -36,7 +41,7 @@ export function AuthGate({ children, api }: AuthGateProps) {
   }
 
   if (!hasUsers) {
-    return <SetupPage onDone={refetch} />;
+    return <SetupPage onDone={handleSetupDone} />;
   }
 
   if (!session) {

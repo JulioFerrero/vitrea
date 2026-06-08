@@ -7,13 +7,13 @@ import { setTimeout as delay } from "node:timers/promises";
 import { cac } from "cac";
 import { config as loadDotenv } from "dotenv";
 import { eq } from "drizzle-orm";
-import { Listr } from "listr2";
 import {
   normalizeCreateOptions,
   promptConfirm,
   promptInteractive,
   promptSelect,
   promptText,
+  runPromptTasks,
   showIntro,
   showNote,
   showOutro,
@@ -52,7 +52,7 @@ type CreateCommandOptions = CreateFlagOptions & {
 
 type TaskDefinition = {
   title: string;
-  task: () => Promise<void>;
+  task: () => Promise<string | void>;
 };
 
 type SetupDatabaseChoice = "local" | "existing" | "skip";
@@ -68,6 +68,111 @@ type StoragePlan = {
   choice: SetupStorageChoice;
   tasks: TaskDefinition[];
 };
+
+function createStarterPageContent(): Array<Record<string, unknown>> {
+  return [
+    {
+      id: createId(),
+      type: "section",
+      data: {},
+      styles: {
+        padding: "96px 24px",
+        backgroundColor: "#0a0a0a",
+      },
+      children: [
+        {
+          id: createId(),
+          type: "column",
+          data: {},
+          styles: {
+            maxWidth: "720px",
+            marginLeft: "auto",
+            marginRight: "auto",
+            display: "flex",
+            flexDirection: "column",
+            gap: "20px",
+            alignItems: "flex-start",
+          },
+          children: [
+            {
+              id: createId(),
+              type: "heading",
+              data: {
+                content: "Your Vitrea site is ready.",
+                tagName: "h1",
+              },
+              styles: {
+                fontSize: "clamp(36px, 7vw, 64px)",
+                lineHeight: "1.05",
+                color: "#ffffff",
+                fontWeight: "700",
+              },
+              children: [],
+            },
+            {
+              id: createId(),
+              type: "text",
+              data: {
+                content: "Edit this page in the visual builder, publish your changes, and use it as the starting point for your project.",
+                tagName: "p",
+              },
+              styles: {
+                fontSize: "18px",
+                lineHeight: "1.7",
+                color: "rgba(255,255,255,0.75)",
+                maxWidth: "620px",
+              },
+              children: [],
+            },
+            {
+              id: createId(),
+              type: "row",
+              data: {},
+              styles: {
+                display: "flex",
+                gap: "12px",
+                flexWrap: "wrap",
+                paddingTop: "8px",
+              },
+              children: [
+                {
+                  id: createId(),
+                  type: "button",
+                  data: {
+                    content: "Open the editor",
+                    href: "/",
+                  },
+                  styles: {
+                    backgroundColor: "#ffffff",
+                    color: "#111111",
+                    padding: "12px 18px",
+                    borderRadius: "999px",
+                    fontWeight: "600",
+                  },
+                  children: [],
+                },
+                {
+                  id: createId(),
+                  type: "link",
+                  data: {
+                    content: "Preview the website",
+                    href: "/",
+                  },
+                  styles: {
+                    color: "#ffffff",
+                    padding: "12px 2px",
+                    fontWeight: "500",
+                  },
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  ];
+}
 
 async function startLocalDatabase({
   cwd,
@@ -126,18 +231,23 @@ async function collectDatabasePlan({
   ]);
 
   const tasks: TaskDefinition[] = [];
-  let selectedPort = dbPort;
+  const plan: DatabasePlan = {
+    choice,
+    tasks,
+    selectedPort: dbPort,
+  };
 
   if (choice === "local") {
     tasks.push({
       title: "Start local PostgreSQL",
       task: async () => {
-        selectedPort = await startLocalDatabase({
+        plan.selectedPort = await startLocalDatabase({
           cwd,
           envPath,
           databaseName,
           requestedPort: dbPort,
         });
+        return `Ready on localhost:${plan.selectedPort}`;
       },
     });
 
@@ -146,6 +256,7 @@ async function collectDatabasePlan({
         title: "Push database schema",
         task: async () => {
           await runCommand("pnpm", ["db:push"], cwd);
+          return "Schema applied";
         },
       });
     }
@@ -154,7 +265,8 @@ async function collectDatabasePlan({
       tasks.push({
         title: "Seed starter content",
         task: async () => {
-          await runCommand("pnpm", ["db:seed"], cwd);
+          await runCommand("pnpm", ["exec", "vitrea", "seed", "--site-name", siteName], cwd);
+          return "Starter site created";
         },
       });
     }
@@ -171,6 +283,7 @@ async function collectDatabasePlan({
       title: "Save database connection",
       task: async () => {
         writeEnvValues(envPath, { DATABASE_URL: databaseUrl.trim() });
+        return "Connection string saved";
       },
     });
 
@@ -179,6 +292,7 @@ async function collectDatabasePlan({
         title: "Push database schema",
         task: async () => {
           await runCommand("pnpm", ["db:push"], cwd);
+          return "Schema applied";
         },
       });
     }
@@ -187,13 +301,14 @@ async function collectDatabasePlan({
       tasks.push({
         title: "Seed starter content",
         task: async () => {
-          await runCommand("pnpm", ["db:seed"], cwd);
+          await runCommand("pnpm", ["exec", "vitrea", "seed", "--site-name", siteName], cwd);
+          return "Starter site created";
         },
       });
     }
   }
 
-  return { choice, tasks, selectedPort };
+  return plan;
 }
 
 async function collectStoragePlan({
@@ -223,6 +338,7 @@ async function collectStoragePlan({
             S3_SECRET_KEY: "",
             S3_FORCE_PATH_STYLE: "false",
           });
+          return "Storage cleared";
         },
       }],
     };
@@ -243,12 +359,14 @@ async function collectStoragePlan({
               S3_SECRET_KEY: "secret",
               S3_FORCE_PATH_STYLE: "true",
             });
+            return "Local S3 env saved";
           },
         },
         {
           title: "Start SeaweedFS",
           task: async () => {
             await runCommand("docker", ["compose", "up", "-d", "seaweedfs"], cwd);
+            return "Ready on localhost:8333";
           },
         },
       ],
@@ -291,20 +409,14 @@ async function collectStoragePlan({
           S3_SECRET_KEY: secretKey.trim(),
           S3_FORCE_PATH_STYLE: forcePathStyle ? "true" : "false",
         });
+        return "Storage credentials saved";
       },
     }],
   };
 }
 
 async function runTaskList(tasks: TaskDefinition[]): Promise<void> {
-  if (tasks.length === 0) {
-    return;
-  }
-
-  await new Listr(tasks, {
-    concurrent: false,
-    exitOnError: true,
-  }).run();
+  await runPromptTasks(tasks);
 }
 
 function showSetupCompletion(siteName: string, envPath: string, databaseChoice: SetupDatabaseChoice, storageChoice: SetupStorageChoice, selectedPort?: string): void {
@@ -328,7 +440,6 @@ async function runSetup({ cwd, siteName, dbPort }: { cwd: string; siteName: stri
   showSummary("Setup summary", [
     ["Project", siteName],
     ["Database", databasePlan.choice],
-    ["DB port", databasePlan.selectedPort],
     ["Storage", storagePlan.choice],
   ]);
 
@@ -376,13 +487,14 @@ async function runSeed({ cwd, siteName }: { cwd: string; siteName: string }): Pr
       .limit(1);
 
     if (!existingHomePage) {
+      const starterContent = createStarterPageContent();
       await db.insert(pages).values({
         id: createId(),
         siteId: site.id as string,
         slug: "home",
         data: { title: "Home", path: "/", status: "published" },
-        content: [],
-        pubContent: [],
+        content: starterContent,
+        pubContent: starterContent,
       });
     }
 
@@ -437,30 +549,25 @@ async function runScaffold(options: CreateCommandOptions, positionalDir?: string
       task: async () => {
         await mkdir(targetDir, { recursive: true });
         await scaffold(targetDir, answers);
+        return "Workspace created";
       },
     },
   ];
 
   if (shouldRunLocalSetup) {
-    tasks.push(
-      {
-        title: "Install dependencies",
-        task: async () => {
-          await runCommand("pnpm", ["install"], targetDir);
-        },
+    tasks.push({
+      title: "Install dependencies",
+      task: async () => {
+        await runCommand("pnpm", ["install", "--reporter", "append-only"], targetDir);
+        return "Dependencies installed";
       },
-      {
-        title: "Run project setup",
-        task: async () => {
-          await runCommand("pnpm", ["run", "vitrea:setup"], targetDir);
-        },
-      },
-    );
+    });
   }
 
   await runTaskList(tasks);
 
   if (shouldRunLocalSetup) {
+    await runCommand("pnpm", ["exec", "vitrea", "setup", "--site-name", answers.projectName], targetDir, { interactive: true });
     showNote("Next step", `cd ${basename(targetDir) || answers.projectName} && pnpm dev`);
   } else {
     showNote("Next steps", formatNextSteps(targetDir, answers));

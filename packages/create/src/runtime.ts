@@ -156,24 +156,39 @@ export function formatNextSteps(targetDir: string, answers: PromptAnswers): stri
   ]);
 }
 
-export async function runCommand(command: string, args: string[], cwd: string): Promise<void> {
+export async function runCommand(
+  command: string,
+  args: string[],
+  cwd: string,
+  options?: { interactive?: boolean; streamOutput?: boolean },
+): Promise<void> {
   await new Promise<void>((resolvePromise, rejectPromise) => {
     const child = spawn(command, args, {
       cwd,
-      stdio: ["inherit", "pipe", "pipe"],
+      stdio: options?.interactive ? "inherit" : ["inherit", "pipe", "pipe"],
       shell: process.platform === "win32",
     });
     let output = "";
 
-    child.stdout?.on("data", (chunk) => {
-      output += chunk.toString();
-      process.stdout.write(chunk);
-    });
+    if (!options?.interactive && options?.streamOutput) {
+      child.stdout?.on("data", (chunk) => {
+        output += chunk.toString();
+        process.stdout.write(chunk);
+      });
 
-    child.stderr?.on("data", (chunk) => {
-      output += chunk.toString();
-      process.stderr.write(chunk);
-    });
+      child.stderr?.on("data", (chunk) => {
+        output += chunk.toString();
+        process.stderr.write(chunk);
+      });
+    } else if (!options?.interactive) {
+      child.stdout?.on("data", (chunk) => {
+        output += chunk.toString();
+      });
+
+      child.stderr?.on("data", (chunk) => {
+        output += chunk.toString();
+      });
+    }
 
     child.on("exit", (code) => {
       if (code === 0) {

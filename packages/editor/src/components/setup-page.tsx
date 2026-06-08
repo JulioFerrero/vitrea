@@ -1,22 +1,48 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { signUp } from "@vitrea/auth/client";
 import { Button } from "@vitrea/ui/button";
 import { Input } from "@vitrea/ui/input";
 import { Check } from "lucide-react";
 
 interface SetupPageProps {
-  onDone: () => void;
+  onDone: () => void | Promise<void>;
 }
 
-export function SetupPage({ onDone }: SetupPageProps) {
+export function SetupPage({ onDone }: Readonly<SetupPageProps>) {
   const [step, setStep] = useState<"form" | "done">("form");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [finishing, setFinishing] = useState(false);
+
+  const finishSetup = useCallback(async () => {
+    if (finishing) {
+      return;
+    }
+
+    setFinishing(true);
+    try {
+      await onDone();
+    } catch {
+      setFinishing(false);
+    }
+  }, [finishing, onDone]);
+
+  useEffect(() => {
+    if (step !== "done") {
+      return;
+    }
+
+    const timeout = globalThis.setTimeout(() => {
+      void finishSetup();
+    }, 500);
+
+    return () => globalThis.clearTimeout(timeout);
+  }, [finishSetup, step]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -50,8 +76,8 @@ export function SetupPage({ onDone }: SetupPageProps) {
           <p className="mt-2 text-sm text-muted-foreground">
             Your admin account has been created. Redirecting...
           </p>
-          <Button className="mt-6" onClick={onDone}>
-            Go to Dashboard
+          <Button className="mt-6" onClick={() => void finishSetup()} disabled={finishing}>
+            {finishing ? "Opening Dashboard..." : "Go to Dashboard"}
           </Button>
         </div>
       </div>

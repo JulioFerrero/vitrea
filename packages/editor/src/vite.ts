@@ -5,7 +5,6 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { Duplex } from "node:stream";
 import { WebSocketServer } from "ws";
 import { createTailwindGenerator } from "@vitrea/render/tailwind";
-import { app as apiApp } from "./api/index";
 
 type ClientInfo = { userId: string; name: string; color: string; siteId: string; pageId: string };
 type WsConnection = WebSocket & {
@@ -33,6 +32,10 @@ type BackendServer = {
       ) => void | Promise<void>,
     ): void;
   };
+};
+
+type ApiApp = {
+  fetch: (request: Request) => Response | Promise<Response>;
 };
 
 export interface EditorVitePluginOptions {
@@ -192,6 +195,16 @@ export function createEditorVitePlugin(options: EditorVitePluginOptions) {
   let resolvedFontDirs = new Map<string, string>();
   let resolvedFontCSS = "";
   let wss: InstanceType<typeof WebSocketServer> | undefined;
+  let apiAppPromise: Promise<ApiApp> | undefined;
+
+  async function getApiApp(): Promise<ApiApp> {
+    if (apiAppPromise) {
+      return apiAppPromise;
+    }
+
+    apiAppPromise = import("./api/index").then((module) => ({ fetch: module.app.fetch.bind(module.app) }));
+    return apiAppPromise;
+  }
 
   async function attachBackend(server: BackendServer) {
     const fontAssets = await createFontCssWithAbsoluteUrls(options.stylesPath);
@@ -308,6 +321,7 @@ export function createEditorVitePlugin(options: EditorVitePluginOptions) {
           body: typeof body === "string" ? body : body ? new Uint8Array(body) : undefined,
         });
 
+        const apiApp = await getApiApp();
         const response = await apiApp.fetch(request);
         const responseHeaders: Record<string, string> = {};
         response.headers.forEach((value, key) => {

@@ -7,6 +7,7 @@ import {
   note,
   outro,
   select,
+  tasks,
   text,
 } from "@clack/prompts";
 
@@ -103,6 +104,22 @@ export function showNote(title: string, body: string): void {
 
 export function showOutro(message: string): void {
   outro(message);
+}
+
+export async function runPromptTasks(taskEntries: Array<{ title: string; task: () => Promise<string | void> }>): Promise<void> {
+  if (taskEntries.length === 0) {
+    return;
+  }
+
+  await tasks(taskEntries.map((entry) => ({
+    title: entry.title,
+    task: () => entry.task().then((result) => {
+      if (typeof result === "string") {
+        return result;
+      }
+      return undefined;
+    }) as Promise<string> | Promise<void>,
+  })));
 }
 
 export async function promptText(message: string, options: PromptTextOptions = {}): Promise<string> {
