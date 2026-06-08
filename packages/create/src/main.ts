@@ -15,6 +15,17 @@ import { eq } from "drizzle-orm";
 import { parseFlags, promptInteractive } from "./prompts";
 import { listFiles, scaffold } from "./scaffold";
 
+class CommandError extends Error {
+  output: string;
+
+  constructor(command: string, args: string[], output: string, exitCode: number | null) {
+    const exitCodeSuffix = exitCode === null ? "" : ` with exit code ${exitCode}`;
+    super(`${command} ${args.join(" ")} failed${exitCodeSuffix}`);
+    this.name = "CommandError";
+    this.output = output;
+  }
+}
+
 function onCancel(): never {
   throw new Error("Prompt cancelled");
 }
@@ -50,6 +61,56 @@ function normalizeName(value: string): string {
   return normalized || "vitrea-site";
 }
 
+function isValidPort(value: string): boolean {
+  const port = Number.parseInt(value, 10);
+  return Number.isInteger(port) && port >= 1 && port <= 65535;
+}
+
+function parseDatabasePort(envContent: string): string | undefined {
+  const explicitPort = /^POSTGRES_PORT=(.*)$/m.exec(envContent)?.[1]?.trim();
+  if (explicitPort && isValidPort(explicitPort)) {
+    return explicitPort;
+  }
+
+  const databaseUrl = /^DATABASE_URL=(.*)$/m.exec(envContent)?.[1]?.trim();
+  const databasePort = databaseUrl ? /^[a-z]+:\/\/[^@]+@[^:/]+:(\d+)\//i.exec(databaseUrl)?.[1] : undefined;
+  if (databasePort && isValidPort(databasePort)) {
+    return databasePort;
+  }
+
+  return undefined;
+}
+
+function getLocalDatabaseUrl(databaseName: string, port: string): string {
+  return `postgresql://hi:hi@localhost:${port}/${databaseName}`;
+}
+
+function isDockerPortConflict(error: unknown, port: string): boolean {
+  if (!(error instanceof CommandError)) {
+    return false;
+  }
+
+  const lowerCaseOutput = error.output.toLowerCase();
+  const hasPortReference = error.output.includes(`:${port}`);
+  const isBindFailure = lowerCaseOutput.includes("port is already allocated")
+    || lowerCaseOutput.includes("address already in use")
+    || lowerCaseOutput.includes("ports are not available");
+
+  return hasPortReference && isBindFailure;
+}
+
+async function promptForDatabasePort(initialPort: string): Promise<string> {
+  const response = await prompts({
+    type: "text",
+    name: "databasePort",
+    message: "Host port for local Postgres",
+    initial: initialPort,
+    validate: (value: string) => isValidPort(value.trim()) || "Enter a port between 1 and 65535",
+  }, { onCancel });
+
+  return response.databasePort.trim();
+}
+
 function createId(): string {
   return randomBytes(16).toString("base64url").slice(0, 21);
 }
@@ -58,21 +119,69 @@ async function run(command: string, args: string[], cwd: string): Promise<void> 
   await new Promise<void>((resolvePromise, rejectPromise) => {
     const child = spawn(command, args, {
       cwd,
-      stdio: "inherit",
+      stdio: ["inherit", "pipe", "pipe"],
       shell: process.platform === "win32",
     });
+    let output = "";
+
+    child.stdout?.on("data", (chunk) => {
+      output += chunk.toString();
+      process.stdout.write(chunk);
+    });
+
+    child.stderr?.on("data", (chunk) => {
+      output += chunk.toString();
+      process.stderr.write(chunk);
+    });
+
     child.on("exit", (code) => {
       if (code === 0) {
         resolvePromise();
         return;
       }
-      rejectPromise(new Error(`${command} ${args.join(" ")} failed`));
+      rejectPromise(new CommandError(command, args, output, code));
     });
     child.on("error", rejectPromise);
   });
 }
 
-async function runSetup({ cwd, siteName }: { cwd: string; siteName: string }) {
+async function startLocalDatabase({
+  cwd,
+  envPath,
+  databaseName,
+  requestedPort,
+}: {
+  cwd: string;
+  envPath: string;
+  databaseName: string;
+  requestedPort?: string;
+}): Promise<string> {
+  const currentPort = parseDatabasePort(readEnvFile(envPath));
+  let databasePort = requestedPort ?? currentPort ?? "5432";
+
+  while (true) {
+    writeEnvValues(envPath, {
+      POSTGRES_PORT: databasePort,
+      DATABASE_URL: getLocalDatabaseUrl(databaseName, databasePort),
+    });
+
+    try {
+      await run("docker", ["compose", "up", "-d", "postgres"], cwd);
+      await delay(5000);
+      return databasePort;
+    } catch (error) {
+      if (!isDockerPortConflict(error, databasePort)) {
+        throw error;
+      }
+
+      const portMessage = `Port ${databasePort} is already in use.`;
+      console.log(`\n  ${pc.yellow(portMessage)}`);
+      databasePort = await promptForDatabasePort(databasePort === "5432" ? "5433" : databasePort);
+    }
+  }
+}
+
+async function runSetup({ cwd, siteName, dbPort }: { cwd: string; siteName: string; dbPort?: string }) {
   const envPath = resolve(cwd, ".env");
   const databaseName = normalizeName(siteName);
 
@@ -92,11 +201,12 @@ async function runSetup({ cwd, siteName }: { cwd: string; siteName: string }) {
 
   if (databaseChoice !== "skip") {
     if (databaseChoice === "local") {
-      writeEnvValues(envPath, {
-        DATABASE_URL: `postgresql://hi:hi@localhost:5432/${databaseName}`,
+      await startLocalDatabase({
+        cwd,
+        envPath,
+        databaseName,
+        requestedPort: dbPort,
       });
-      await run("docker", ["compose", "up", "-d", "postgres"], cwd);
-      await delay(5000);
     } else {
       const current = readEnvFile(envPath).match(/^DATABASE_URL=(.*)$/m)?.[1] ?? "";
       const response = await prompts({
@@ -406,15 +516,21 @@ if (command === "setup" || command === "seed") {
     options: {
       cwd: { type: "string" },
       "site-name": { type: "string" },
+      "db-port": { type: "string" },
     },
     allowPositionals: false,
   });
 
   const cwd = resolve(values.cwd ?? process.cwd());
   const siteName = values["site-name"] ?? basename(cwd);
+  const dbPort = values["db-port"];
+
+  if (dbPort && !isValidPort(dbPort)) {
+    throw new Error("--db-port must be a number between 1 and 65535");
+  }
 
   if (command === "setup") {
-    await runSetup({ cwd, siteName });
+    await runSetup({ cwd, siteName, dbPort });
   } else {
     await runSeed({ cwd, siteName });
   }

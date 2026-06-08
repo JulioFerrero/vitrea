@@ -97,7 +97,7 @@ export function dockerComposeLocal(answers: PromptAnswers): string {
     image: postgres:16-alpine
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "\${POSTGRES_PORT:-5432}:5432"
     environment:
       POSTGRES_USER: hi
       POSTGRES_PASSWORD: hi

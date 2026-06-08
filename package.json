@@ -10,6 +10,7 @@
     "version:packages": "changeset version",
     "build:packages": "pnpm -r --filter \"./packages/*\" run build",
     "release": "pnpm build:packages && changeset publish",
+    "release:versioned": "node ./scripts/publish-versioned-packages.mjs",
     "dev:create": "pnpm --filter @vitrea/create dev",
     "build:create": "pnpm --filter @vitrea/create build",
     "dev:web": "pnpm --filter @app/web dev",

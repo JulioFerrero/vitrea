@@ -3,6 +3,9 @@ import type { PromptAnswers } from "../prompts";
 export function envFile(answers: PromptAnswers): string {
   const dbHost = answers.environment === "vps" ? "postgres" : "localhost";
   let env = `DATABASE_URL=postgresql://hi:hi@${dbHost}:5432/${answers.projectName}\n`;
+  if (answers.environment === "local") {
+    env += "POSTGRES_PORT=5432\n";
+  }
   env += "BETTER_AUTH_SECRET=change-me\n";
   env += "BETTER_AUTH_URL=http://localhost:3001\n";
   if (answers.storage === "seaweedfs") {
