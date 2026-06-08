@@ -21,6 +21,10 @@ import {
   type CreateFlagOptions,
 } from "./prompts";
 import {
+  importComponentsFromRepository,
+  inspectImportSource,
+} from "./import-components";
+import {
   createId,
   formatLines,
   formatNextSteps,
@@ -50,6 +54,11 @@ type CreateCommandOptions = CreateFlagOptions & {
   preview?: boolean;
 };
 
+type ImportComponentsCommandOptions = {
+  cwd?: string;
+  branch?: string;
+};
+
 type TaskDefinition = {
   title: string;
   task: () => Promise<string | void>;
@@ -76,78 +85,111 @@ function createStarterPageContent(): Array<Record<string, unknown>> {
       type: "section",
       data: {},
       styles: {
-        padding: "96px 24px",
+        padding: "24px 24px 0 24px",
         backgroundColor: "#0a0a0a",
+        minHeight: "100vh",
       },
       children: [
         {
           id: createId(),
-          type: "column",
+          type: "row",
           data: {},
           styles: {
-            maxWidth: "720px",
+            maxWidth: "1120px",
             marginLeft: "auto",
             marginRight: "auto",
             display: "flex",
-            flexDirection: "column",
-            gap: "20px",
-            alignItems: "flex-start",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: "16px",
+            padding: "18px 22px",
+            borderRadius: "20px",
+            backgroundColor: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            backdropFilter: "blur(18px)",
           },
           children: [
             {
               id: createId(),
-              type: "heading",
-              data: {
-                content: "Your Vitrea site is ready.",
-                tagName: "h1",
-              },
-              styles: {
-                fontSize: "clamp(36px, 7vw, 64px)",
-                lineHeight: "1.05",
-                color: "#ffffff",
-                fontWeight: "700",
-              },
-              children: [],
-            },
-            {
-              id: createId(),
-              type: "text",
-              data: {
-                content: "Edit this page in the visual builder, publish your changes, and use it as the starting point for your project.",
-                tagName: "p",
-              },
-              styles: {
-                fontSize: "18px",
-                lineHeight: "1.7",
-                color: "rgba(255,255,255,0.75)",
-                maxWidth: "620px",
-              },
-              children: [],
-            },
-            {
-              id: createId(),
               type: "row",
-              data: {},
+              data: {
+                align: "center",
+              },
               styles: {
                 display: "flex",
+                alignItems: "center",
                 gap: "12px",
-                flexWrap: "wrap",
-                paddingTop: "8px",
               },
               children: [
                 {
                   id: createId(),
-                  type: "button",
+                  type: "text",
                   data: {
-                    content: "Open the editor",
+                    content: "●",
+                    tagName: "span",
+                  },
+                  styles: {
+                    color: "#34d399",
+                    fontSize: "12px",
+                    lineHeight: "1",
+                    textShadow: "0 0 20px rgba(52,211,153,0.6)",
+                  },
+                  children: [],
+                },
+                {
+                  id: createId(),
+                  type: "text",
+                  data: {
+                    content: "Vitrea",
+                    tagName: "span",
+                  },
+                  styles: {
+                    fontSize: "18px",
+                    fontWeight: "700",
+                    color: "#ffffff",
+                    letterSpacing: "-0.03em",
+                  },
+                  children: [],
+                },
+                {
+                  id: createId(),
+                  type: "text",
+                  data: {
+                    content: "Starter Site",
+                    tagName: "span",
+                  },
+                  styles: {
+                    fontSize: "14px",
+                    color: "rgba(255,255,255,0.5)",
+                  },
+                  children: [],
+                },
+              ],
+            },
+            {
+              id: createId(),
+              type: "row",
+              data: {
+                align: "center",
+              },
+              styles: {
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                flexWrap: "wrap",
+              },
+              children: [
+                {
+                  id: createId(),
+                  type: "link",
+                  data: {
+                    content: "Editor",
                     href: "/",
                   },
                   styles: {
-                    backgroundColor: "#ffffff",
-                    color: "#111111",
-                    padding: "12px 18px",
-                    borderRadius: "999px",
-                    fontWeight: "600",
+                    color: "#ffffff",
+                    fontSize: "14px",
+                    fontWeight: "500",
                   },
                   children: [],
                 },
@@ -155,15 +197,351 @@ function createStarterPageContent(): Array<Record<string, unknown>> {
                   id: createId(),
                   type: "link",
                   data: {
-                    content: "Preview the website",
+                    content: "Content",
                     href: "/",
                   },
                   styles: {
-                    color: "#ffffff",
-                    padding: "12px 2px",
-                    fontWeight: "500",
+                    color: "rgba(255,255,255,0.64)",
+                    fontSize: "14px",
                   },
                   children: [],
+                },
+                {
+                  id: createId(),
+                  type: "link",
+                  data: {
+                    content: "Assets",
+                    href: "/",
+                  },
+                  styles: {
+                    color: "rgba(255,255,255,0.64)",
+                    fontSize: "14px",
+                  },
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: createId(),
+          type: "section",
+          data: {},
+          styles: {
+            padding: "72px 0 56px 0",
+          },
+          children: [
+            {
+              id: createId(),
+              type: "column",
+              data: {},
+              styles: {
+                maxWidth: "1120px",
+                marginLeft: "auto",
+                marginRight: "auto",
+                alignItems: "center",
+                textAlign: "center",
+                gap: "28px",
+              },
+              children: [
+                {
+                  id: createId(),
+                  type: "text",
+                  data: {
+                    content: "Vitrea is running",
+                    tagName: "span",
+                  },
+                  styles: {
+                    color: "#d1fae5",
+                    backgroundColor: "rgba(16,185,129,0.12)",
+                    border: "1px solid rgba(52,211,153,0.25)",
+                    padding: "8px 14px",
+                    borderRadius: "999px",
+                    fontWeight: "600",
+                    fontSize: "13px",
+                    letterSpacing: "0.01em",
+                  },
+                  children: [],
+                },
+                {
+                  id: createId(),
+                  type: "heading",
+                  data: {
+                    content: "Your website, CMS, and editor are live.",
+                    tagName: "h1",
+                  },
+                  styles: {
+                    color: "#ffffff",
+                    fontSize: "clamp(40px, 8vw, 84px)",
+                    lineHeight: "0.95",
+                    fontWeight: "700",
+                    letterSpacing: "-0.05em",
+                    maxWidth: "940px",
+                  },
+                  children: [],
+                },
+                {
+                  id: createId(),
+                  type: "text",
+                  data: {
+                    content: "Use this starter as your launchpad. Open the editor, shape the first page, connect your content, and publish when it feels right.",
+                    tagName: "p",
+                  },
+                  styles: {
+                    color: "rgba(255,255,255,0.72)",
+                    fontSize: "18px",
+                    lineHeight: "1.75",
+                    maxWidth: "720px",
+                  },
+                  children: [],
+                },
+                {
+                  id: createId(),
+                  type: "row",
+                  data: {},
+                  styles: {
+                    display: "flex",
+                    gap: "14px",
+                    flexWrap: "wrap",
+                    justifyContent: "center",
+                  },
+                  children: [
+                    {
+                      id: createId(),
+                      type: "button",
+                      data: {
+                        content: "Open the editor",
+                        href: "/",
+                      },
+                      styles: {
+                        backgroundColor: "#ffffff",
+                        color: "#0b0b0b",
+                        padding: "14px 20px",
+                        borderRadius: "999px",
+                        fontWeight: "700",
+                        boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+                      },
+                      children: [],
+                    },
+                    {
+                      id: createId(),
+                      type: "link",
+                      data: {
+                        content: "Preview the site",
+                        href: "/",
+                      },
+                      styles: {
+                        color: "#ffffff",
+                        padding: "14px 8px",
+                        fontWeight: "500",
+                        fontSize: "15px",
+                      },
+                      children: [],
+                    },
+                  ],
+                },
+                {
+                  id: createId(),
+                  type: "grid",
+                  data: {},
+                  styles: {
+                    display: "grid",
+                    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+                    gap: "18px",
+                    width: "100%",
+                    maxWidth: "1120px",
+                    paddingTop: "18px",
+                  },
+                  children: [
+                    {
+                      id: createId(),
+                      type: "column",
+                      data: {},
+                      styles: {
+                        padding: "24px",
+                        backgroundColor: "rgba(255,255,255,0.04)",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        borderRadius: "24px",
+                        gap: "10px",
+                        alignItems: "flex-start",
+                        textAlign: "left",
+                      },
+                      children: [
+                        {
+                          id: createId(),
+                          type: "text",
+                          data: { content: "01", tagName: "span" },
+                          styles: { color: "rgba(255,255,255,0.36)", fontSize: "12px", fontWeight: "700", letterSpacing: "0.08em" },
+                          children: [],
+                        },
+                        {
+                          id: createId(),
+                          type: "heading",
+                          data: { content: "Visual editing", tagName: "h3" },
+                          styles: { color: "#ffffff", fontSize: "22px", fontWeight: "600", letterSpacing: "-0.03em" },
+                          children: [],
+                        },
+                        {
+                          id: createId(),
+                          type: "text",
+                          data: { content: "Compose pages with sections, rows, content blocks, and reusable components.", tagName: "p" },
+                          styles: { color: "rgba(255,255,255,0.68)", fontSize: "15px", lineHeight: "1.7" },
+                          children: [],
+                        },
+                      ],
+                    },
+                    {
+                      id: createId(),
+                      type: "column",
+                      data: {},
+                      styles: {
+                        padding: "24px",
+                        backgroundColor: "rgba(255,255,255,0.04)",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        borderRadius: "24px",
+                        gap: "10px",
+                        alignItems: "flex-start",
+                        textAlign: "left",
+                      },
+                      children: [
+                        {
+                          id: createId(),
+                          type: "text",
+                          data: { content: "02", tagName: "span" },
+                          styles: { color: "rgba(255,255,255,0.36)", fontSize: "12px", fontWeight: "700", letterSpacing: "0.08em" },
+                          children: [],
+                        },
+                        {
+                          id: createId(),
+                          type: "heading",
+                          data: { content: "Built-in CMS", tagName: "h3" },
+                          styles: { color: "#ffffff", fontSize: "22px", fontWeight: "600", letterSpacing: "-0.03em" },
+                          children: [],
+                        },
+                        {
+                          id: createId(),
+                          type: "text",
+                          data: { content: "Manage structured content, documents, assets, and page relationships from one place.", tagName: "p" },
+                          styles: { color: "rgba(255,255,255,0.68)", fontSize: "15px", lineHeight: "1.7" },
+                          children: [],
+                        },
+                      ],
+                    },
+                    {
+                      id: createId(),
+                      type: "column",
+                      data: {},
+                      styles: {
+                        padding: "24px",
+                        backgroundColor: "rgba(255,255,255,0.04)",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        borderRadius: "24px",
+                        gap: "10px",
+                        alignItems: "flex-start",
+                        textAlign: "left",
+                      },
+                      children: [
+                        {
+                          id: createId(),
+                          type: "text",
+                          data: { content: "03", tagName: "span" },
+                          styles: { color: "rgba(255,255,255,0.36)", fontSize: "12px", fontWeight: "700", letterSpacing: "0.08em" },
+                          children: [],
+                        },
+                        {
+                          id: createId(),
+                          type: "heading",
+                          data: { content: "Ready to customize", tagName: "h3" },
+                          styles: { color: "#ffffff", fontSize: "22px", fontWeight: "600", letterSpacing: "-0.03em" },
+                          children: [],
+                        },
+                        {
+                          id: createId(),
+                          type: "text",
+                          data: { content: "Swap styles, add sections, connect real data, and make this starter entirely your own.", tagName: "p" },
+                          styles: { color: "rgba(255,255,255,0.68)", fontSize: "15px", lineHeight: "1.7" },
+                          children: [],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: createId(),
+          type: "section",
+          data: {},
+          styles: {
+            padding: "0 24px 32px 24px",
+          },
+          children: [
+            {
+              id: createId(),
+              type: "row",
+              data: {},
+              styles: {
+                maxWidth: "1120px",
+                marginLeft: "auto",
+                marginRight: "auto",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: "16px",
+                paddingTop: "28px",
+                borderTop: "1px solid rgba(255,255,255,0.08)",
+                color: "rgba(255,255,255,0.5)",
+                flexWrap: "wrap",
+              },
+              children: [
+                {
+                  id: createId(),
+                  type: "text",
+                  data: {
+                    content: "Vitrea starter site",
+                    tagName: "span",
+                  },
+                  styles: {
+                    fontSize: "14px",
+                    color: "rgba(255,255,255,0.58)",
+                  },
+                  children: [],
+                },
+                {
+                  id: createId(),
+                  type: "row",
+                  data: {},
+                  styles: {
+                    display: "flex",
+                    gap: "14px",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                  },
+                  children: [
+                    {
+                      id: createId(),
+                      type: "link",
+                      data: { content: "Editor", href: "/" },
+                      styles: { color: "rgba(255,255,255,0.58)", fontSize: "14px" },
+                      children: [],
+                    },
+                    {
+                      id: createId(),
+                      type: "link",
+                      data: { content: "Content", href: "/" },
+                      styles: { color: "rgba(255,255,255,0.58)", fontSize: "14px" },
+                      children: [],
+                    },
+                    {
+                      id: createId(),
+                      type: "link",
+                      data: { content: "Assets", href: "/" },
+                      styles: { color: "rgba(255,255,255,0.58)", fontSize: "14px" },
+                      children: [],
+                    },
+                  ],
                 },
               ],
             },
@@ -576,6 +954,75 @@ async function runScaffold(options: CreateCommandOptions, positionalDir?: string
   showOutro(`Created ${answers.projectName} at ${targetDir}.`);
 }
 
+async function runImportComponentsCommand(sourceUrl: string, options: ImportComponentsCommandOptions): Promise<void> {
+  const cwd = resolve(options.cwd ?? process.cwd());
+  const source = inspectImportSource(sourceUrl, options.branch);
+
+  showIntro(CLI_VERSION, "Import components", "Import React components from a GitHub or git repository using the source repo manifest.");
+  showSummary("Import plan", [
+    ["Project", cwd],
+    ["Repo", source.repoName],
+    ["Branch", options.branch ?? source.branch],
+    ["Manifest", "required"],
+  ]);
+
+  if (!await promptConfirm("Import components into this project now?", true)) {
+    showOutro("Import cancelled.");
+    return;
+  }
+
+  let result: Awaited<ReturnType<typeof importComponentsFromRepository>> | undefined;
+  await runTaskList([
+    {
+      title: "Import components",
+      task: async () => {
+        result = await importComponentsFromRepository({
+          projectRoot: cwd,
+          source,
+          branch: options.branch,
+        });
+        return `${result.imported.length} components added`;
+      },
+    },
+  ]);
+
+  if (!result) {
+    throw new Error("The import did not produce any result.");
+  }
+
+  showNote("Imported components", formatLines(result.imported.map((component) => (
+    `${component.label}  ${component.type}`
+  ))));
+
+  if (result.manifest) {
+    showNote("Manifest", formatLines([
+      `Path: ${result.manifest.path}`,
+      `Name: ${result.manifest.name ?? source.repoName}`,
+      `Version: ${result.manifest.version ?? "n/a"}`,
+      `Directory: ${result.targetDirectory}`,
+      `Prefix: ${result.usedPrefix}`,
+    ]));
+  }
+
+  if (result.dependencyUpdates.length > 0) {
+    showNote("Updated internal/web dependencies", formatLines(result.dependencyUpdates));
+  }
+
+  if (result.unresolvedDependencies.length > 0) {
+    showNote("Manual dependency check", formatLines([
+      "These imports were detected but no version was found in the source package.json:",
+      "",
+      ...result.unresolvedDependencies,
+    ]));
+  }
+
+  showNote("Files", formatLines([
+    "Components copied to internal/web/src/components/imported",
+    "Editor elements generated in internal/editor/src/elements/imported",
+  ]));
+  showOutro(`Imported ${result.imported.length} component${result.imported.length === 1 ? "" : "s"} from ${source.repoName}.`);
+}
+
 const cli = cac("vitrea");
 cli.version(CLI_VERSION);
 cli.help();
@@ -621,6 +1068,14 @@ cli
     const cwd = resolve(options.cwd ?? process.cwd());
     const siteName = options.siteName ?? basename(cwd);
     await runSeed({ cwd, siteName });
+  });
+
+cli
+  .command("import-components <source>", "Import React components from a GitHub or git repository")
+  .option("--cwd <cwd>", "Vitrea project directory")
+  .option("--branch <branch>", "Git branch or tag to clone")
+  .action(async (sourceUrl: string, options: ImportComponentsCommandOptions) => {
+    await runImportComponentsCommand(sourceUrl, options);
   });
 
 try {

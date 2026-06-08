@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { useState } from "react";
 import { useEditorStore } from "../../stores";
 import { useEditorContext } from "../../lib/context";
@@ -16,6 +15,7 @@ import {
   Users,
   Image as ImageIcon,
   FileText,
+  Braces,
 } from "lucide-react";
 import { cn } from "@vitrea/utils";
 import { ReviewDialog } from "../review-dialog";
@@ -123,6 +123,7 @@ export function TopBar() {
         <Separator orientation="vertical" className="mx-1 h-6 bg-white/10" />
         <IconButton icon={FileText} label="Content" onClick={() => { const siteId = useEditorStore.getState().activeSiteId; if (siteId) navigate(`/${siteId}/content`); }} tooltipPosition="bottom" iconSize="h-4 w-4" />
         <IconButton icon={ImageIcon} label="Assets" onClick={() => { const siteId = useEditorStore.getState().activeSiteId; if (siteId) navigate(`/${siteId}/assets`); }} tooltipPosition="bottom" iconSize="h-4 w-4" />
+        <IconButton icon={Braces} label="Developer" onClick={() => { const siteId = useEditorStore.getState().activeSiteId; if (siteId) navigate(`/${siteId}/developer`); }} tooltipPosition="bottom" iconSize="h-4 w-4" />
         <Separator orientation="vertical" className="mx-1 h-6 bg-white/10" />
         <IconButton icon={Undo2} label="Undo" onClick={undo} disabled={!canUndo()} tooltipPosition="bottom" iconSize="h-4 w-4" />
         <IconButton icon={Redo2} label="Redo" onClick={redo} disabled={!canRedo()} tooltipPosition="bottom" iconSize="h-4 w-4" />

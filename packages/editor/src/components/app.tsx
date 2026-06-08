@@ -9,11 +9,12 @@ import { UsersPage } from "./users-page";
 import { AccountPage } from "./account-page";
 import { AssetsPage } from "./assets-page";
 import { SiteSettingsPage } from "./site-settings-page";
+import { DeveloperPage } from "./developer-page";
 import { createApiFetch } from "../lib/api";
 import { navigate } from "../lib/navigate";
 import type { EditorAppProps } from "../types";
 
-type View = "dashboard" | "editor" | "content" | "users" | "account" | "assets" | "settings";
+type View = "dashboard" | "editor" | "content" | "users" | "account" | "assets" | "settings" | "developer";
 
 type RouteSnapshot = { view: View; siteId: string | null };
 
@@ -27,6 +28,7 @@ function parsePath(pathname: string): RouteSnapshot {
   if (seg.length >= 2 && seg[1] === "assets") return { view: "assets", siteId: seg[0] ?? null };
   if (seg.length >= 2 && seg[1] === "content") return { view: "content", siteId: seg[0] ?? null };
   if (seg.length >= 2 && seg[1] === "settings") return { view: "settings", siteId: seg[0] ?? null };
+  if (seg.length >= 2 && seg[1] === "developer") return { view: "developer", siteId: seg[0] ?? null };
   return { view: seg[0] ? "editor" : "dashboard", siteId: seg[0] ?? null };
 }
 
@@ -61,6 +63,8 @@ export function EditorApp({ schema, renderer, api = createApiFetch() }: Readonly
     content = createElement(AssetsPage, { siteId, onBack: () => navigate(`/${siteId}`) });
   } else if (view === "settings" && siteId) {
     content = createElement(SiteSettingsPage, { siteId, onBack: () => navigate(`/${siteId}`) });
+  } else if (view === "developer" && siteId) {
+    content = createElement(DeveloperPage, { siteId });
   } else if (view === "editor" && siteId) {
     content = createElement(Editor, { siteId, schema, api, renderer });
   } else {

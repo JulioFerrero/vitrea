@@ -58,7 +58,7 @@ export interface PageItem {
   slug: string;
   data: { title: string; path: string; status: string; parentId?: string; order?: number; [key: string]: unknown };
   content?: RenderElement[];
-  pubContent?: Record<string, unknown>;
+  pubContent?: RenderElement[];
 }
 
 export type RenderElement = BaseRenderElement;

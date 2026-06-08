@@ -47,6 +47,7 @@ export const pagesRoute = new Hono()
       slug: z.string().min(1).optional(),
       data: z.record(z.string(), z.unknown()).optional(),
       content: z.any().optional(),
+      pubContent: z.any().optional(),
     })),
     async (c) => {
       const body = c.req.valid("json");
@@ -54,6 +55,7 @@ export const pagesRoute = new Hono()
       if (body.slug !== undefined) updates.slug = body.slug;
       if (body.data !== undefined) updates.data = body.data as PageData;
       if (body.content !== undefined) updates.content = body.content as PageContent[];
+      if (body.pubContent !== undefined) updates.pubContent = body.pubContent as PageContent[];
       const row = await updateById(pages, c.req.param("id"), updates);
       if (!row) return c.json({ error: "Not found" }, 404);
       return c.json(row);
