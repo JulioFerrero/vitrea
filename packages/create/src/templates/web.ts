@@ -12,7 +12,7 @@ export function webPackageJson(): string {
       start: "next start --port 3000",
     },
     dependencies: {
-      "@vitrea/database": "^1.0.1",
+      "@vitrea/database": "^1.0.2",
       "@internal/web": "workspace:*",
       "drizzle-orm": "^0.43.0",
       next: "^16.0.1",

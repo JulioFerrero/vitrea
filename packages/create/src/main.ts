@@ -1,149 +1,73 @@
 #!/usr/bin/env node
 
-import { randomBytes } from "node:crypto";
-import { readFileSync, writeFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
-import { parseArgs } from "node:util";
 import { basename, resolve } from "node:path";
-import { spawn } from "node:child_process";
 import process from "node:process";
 import { setTimeout as delay } from "node:timers/promises";
-import pc from "picocolors";
-import prompts from "prompts";
+import { cac } from "cac";
 import { config as loadDotenv } from "dotenv";
 import { eq } from "drizzle-orm";
-import { parseFlags, promptInteractive } from "./prompts";
+import { Listr } from "listr2";
+import {
+  normalizeCreateOptions,
+  promptConfirm,
+  promptInteractive,
+  promptSelect,
+  promptText,
+  showIntro,
+  showNote,
+  showOutro,
+  showSummary,
+  type CreateFlagOptions,
+} from "./prompts";
+import {
+  createId,
+  formatLines,
+  formatNextSteps,
+  getLocalDatabaseUrl,
+  isDockerPortConflict,
+  isValidPort,
+  normalizeName,
+  parseDatabasePort,
+  readCliVersion,
+  readEnvFile,
+  readEnvValue,
+  runCommand,
+  writeEnvValues,
+} from "./runtime";
 import { listFiles, scaffold } from "./scaffold";
 
-class CommandError extends Error {
-  output: string;
+const CLI_VERSION = readCliVersion();
 
-  constructor(command: string, args: string[], output: string, exitCode: number | null) {
-    const exitCodeSuffix = exitCode === null ? "" : ` with exit code ${exitCode}`;
-    super(`${command} ${args.join(" ")} failed${exitCodeSuffix}`);
-    this.name = "CommandError";
-    this.output = output;
-  }
-}
+type SetupCommandOptions = {
+  cwd?: string;
+  siteName?: string;
+  dbPort?: string;
+};
 
-function onCancel(): never {
-  throw new Error("Prompt cancelled");
-}
+type CreateCommandOptions = CreateFlagOptions & {
+  dir?: string;
+  preview?: boolean;
+};
 
-function readEnvFile(envPath: string): string {
-  try {
-    return readFileSync(envPath, "utf8");
-  } catch {
-    return "";
-  }
-}
+type TaskDefinition = {
+  title: string;
+  task: () => Promise<void>;
+};
 
-function upsertEnvValue(content: string, key: string, value: string): string {
-  const line = `${key}=${value}`;
-  const pattern = new RegExp(`^${key}=.*$`, "m");
-  if (pattern.test(content)) {
-    return content.replace(pattern, line);
-  }
-  const suffix = content.endsWith("\n") || content.length === 0 ? "" : "\n";
-  return content + suffix + line + "\n";
-}
+type SetupDatabaseChoice = "local" | "existing" | "skip";
+type SetupStorageChoice = "local" | "existing" | "skip";
 
-function writeEnvValues(envPath: string, values: Record<string, string>): void {
-  let content = readEnvFile(envPath);
-  for (const [key, value] of Object.entries(values)) {
-    content = upsertEnvValue(content, key, value);
-  }
-  writeFileSync(envPath, content, "utf8");
-}
+type DatabasePlan = {
+  choice: SetupDatabaseChoice;
+  tasks: TaskDefinition[];
+  selectedPort?: string;
+};
 
-function normalizeName(value: string): string {
-  const normalized = value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-  return normalized || "vitrea-site";
-}
-
-function isValidPort(value: string): boolean {
-  const port = Number.parseInt(value, 10);
-  return Number.isInteger(port) && port >= 1 && port <= 65535;
-}
-
-function parseDatabasePort(envContent: string): string | undefined {
-  const explicitPort = /^POSTGRES_PORT=(.*)$/m.exec(envContent)?.[1]?.trim();
-  if (explicitPort && isValidPort(explicitPort)) {
-    return explicitPort;
-  }
-
-  const databaseUrl = /^DATABASE_URL=(.*)$/m.exec(envContent)?.[1]?.trim();
-  const databasePort = databaseUrl ? /^[a-z]+:\/\/[^@]+@[^:/]+:(\d+)\//i.exec(databaseUrl)?.[1] : undefined;
-  if (databasePort && isValidPort(databasePort)) {
-    return databasePort;
-  }
-
-  return undefined;
-}
-
-function getLocalDatabaseUrl(databaseName: string, port: string): string {
-  return `postgresql://hi:hi@localhost:${port}/${databaseName}`;
-}
-
-function isDockerPortConflict(error: unknown, port: string): boolean {
-  if (!(error instanceof CommandError)) {
-    return false;
-  }
-
-  const lowerCaseOutput = error.output.toLowerCase();
-  const hasPortReference = error.output.includes(`:${port}`);
-  const isBindFailure = lowerCaseOutput.includes("port is already allocated")
-    || lowerCaseOutput.includes("address already in use")
-    || lowerCaseOutput.includes("ports are not available");
-
-  return hasPortReference && isBindFailure;
-}
-
-async function promptForDatabasePort(initialPort: string): Promise<string> {
-  const response = await prompts({
-    type: "text",
-    name: "databasePort",
-    message: "Host port for local Postgres",
-    initial: initialPort,
-    validate: (value: string) => isValidPort(value.trim()) || "Enter a port between 1 and 65535",
-  }, { onCancel });
-
-  return response.databasePort.trim();
-}
-
-function createId(): string {
-  return randomBytes(16).toString("base64url").slice(0, 21);
-}
-
-async function run(command: string, args: string[], cwd: string): Promise<void> {
-  await new Promise<void>((resolvePromise, rejectPromise) => {
-    const child = spawn(command, args, {
-      cwd,
-      stdio: ["inherit", "pipe", "pipe"],
-      shell: process.platform === "win32",
-    });
-    let output = "";
-
-    child.stdout?.on("data", (chunk) => {
-      output += chunk.toString();
-      process.stdout.write(chunk);
-    });
-
-    child.stderr?.on("data", (chunk) => {
-      output += chunk.toString();
-      process.stderr.write(chunk);
-    });
-
-    child.on("exit", (code) => {
-      if (code === 0) {
-        resolvePromise();
-        return;
-      }
-      rejectPromise(new CommandError(command, args, output, code));
-    });
-    child.on("error", rejectPromise);
-  });
-}
+type StoragePlan = {
+  choice: SetupStorageChoice;
+  tasks: TaskDefinition[];
+};
 
 async function startLocalDatabase({
   cwd,
@@ -166,7 +90,7 @@ async function startLocalDatabase({
     });
 
     try {
-      await run("docker", ["compose", "up", "-d", "postgres"], cwd);
+      await runCommand("docker", ["compose", "up", "-d", "postgres"], cwd);
       await delay(5000);
       return databasePort;
     } catch (error) {
@@ -174,165 +98,248 @@ async function startLocalDatabase({
         throw error;
       }
 
-      const portMessage = `Port ${databasePort} is already in use.`;
-      console.log(`\n  ${pc.yellow(portMessage)}`);
-      databasePort = await promptForDatabasePort(databasePort === "5432" ? "5433" : databasePort);
+      showNote("Port conflict", `Port ${databasePort} is already in use.`);
+      databasePort = await promptText("Host port for local Postgres", {
+        initialValue: databasePort === "5432" ? "5433" : databasePort,
+        validate: (value) => value && isValidPort(value.trim()) ? undefined : "Enter a port between 1 and 65535",
+      });
     }
   }
 }
 
-async function runSetup({ cwd, siteName, dbPort }: { cwd: string; siteName: string; dbPort?: string }) {
-  const envPath = resolve(cwd, ".env");
+async function collectDatabasePlan({
+  cwd,
+  envPath,
+  siteName,
+  dbPort,
+}: {
+  cwd: string;
+  envPath: string;
+  siteName: string;
+  dbPort?: string;
+}): Promise<DatabasePlan> {
   const databaseName = normalizeName(siteName);
+  const choice = await promptSelect<SetupDatabaseChoice>("Database setup", [
+    { value: "local", label: "Use local Docker Postgres", hint: "Runs PostgreSQL in Docker on this machine." },
+    { value: "existing", label: "Use an existing PostgreSQL database", hint: "Provide your own connection string." },
+    { value: "skip", label: "Skip for now", hint: "Configure the database later." },
+  ]);
 
-  console.log("\n  Project setup\n");
+  const tasks: TaskDefinition[] = [];
+  let selectedPort = dbPort;
 
-  const { choice: databaseChoice } = await prompts({
-    type: "select",
-    name: "choice",
-    message: "Database setup",
-    choices: [
-      { title: "Use local Docker Postgres", value: "local" },
-      { title: "Use an existing PostgreSQL database", value: "existing" },
-      { title: "Skip for now", value: "skip" },
-    ],
-    initial: 0,
-  }, { onCancel });
+  if (choice === "local") {
+    tasks.push({
+      title: "Start local PostgreSQL",
+      task: async () => {
+        selectedPort = await startLocalDatabase({
+          cwd,
+          envPath,
+          databaseName,
+          requestedPort: dbPort,
+        });
+      },
+    });
 
-  if (databaseChoice !== "skip") {
-    if (databaseChoice === "local") {
-      await startLocalDatabase({
-        cwd,
-        envPath,
-        databaseName,
-        requestedPort: dbPort,
+    if (await promptConfirm("Push the database schema now?", true)) {
+      tasks.push({
+        title: "Push database schema",
+        task: async () => {
+          await runCommand("pnpm", ["db:push"], cwd);
+        },
       });
-    } else {
-      const current = readEnvFile(envPath).match(/^DATABASE_URL=(.*)$/m)?.[1] ?? "";
-      const response = await prompts({
-        type: "text",
-        name: "databaseUrl",
-        message: "PostgreSQL connection string",
-        initial: current,
-        validate: (value: string) => value.trim().length > 0 || "DATABASE_URL is required",
-      }, { onCancel });
-      writeEnvValues(envPath, { DATABASE_URL: response.databaseUrl.trim() });
     }
 
-    const migrations = await prompts({
-      type: "confirm",
-      name: "runMigrations",
-      message: "Push the database schema now?",
-      initial: true,
-    }, { onCancel });
-
-    if (migrations.runMigrations) {
-      await run("pnpm", ["db:push"], cwd);
-    }
-
-    const seed = await prompts({
-      type: "confirm",
-      name: "seedStarterData",
-      message: "Create starter site data now?",
-      initial: true,
-    }, { onCancel });
-
-    if (seed.seedStarterData) {
-      await run("pnpm", ["db:seed"], cwd);
+    if (await promptConfirm("Create starter site data now?", true)) {
+      tasks.push({
+        title: "Seed starter content",
+        task: async () => {
+          await runCommand("pnpm", ["db:seed"], cwd);
+        },
+      });
     }
   }
 
-  const { choice: storageChoice } = await prompts({
-    type: "select",
-    name: "choice",
-    message: "Asset storage setup",
-    choices: [
-      { title: "Run local S3 with SeaweedFS", value: "local" },
-      { title: "Use an existing S3-compatible storage", value: "existing" },
-      { title: "Skip for now", value: "skip" },
-    ],
-    initial: 0,
-  }, { onCancel });
-
-  if (storageChoice === "skip") {
-    writeEnvValues(envPath, {
-      S3_ENDPOINT: "",
-      S3_REGION: "us-east-1",
-      S3_BUCKET: "",
-      S3_ACCESS_KEY: "",
-      S3_SECRET_KEY: "",
-      S3_FORCE_PATH_STYLE: "false",
+  if (choice === "existing") {
+    const currentDatabaseUrl = readEnvValue(readEnvFile(envPath), "DATABASE_URL");
+    const databaseUrl = await promptText("PostgreSQL connection string", {
+      initialValue: currentDatabaseUrl,
+      validate: (value) => value && value.trim().length > 0 ? undefined : "DATABASE_URL is required",
     });
-    return;
+
+    tasks.push({
+      title: "Save database connection",
+      task: async () => {
+        writeEnvValues(envPath, { DATABASE_URL: databaseUrl.trim() });
+      },
+    });
+
+    if (await promptConfirm("Push the database schema now?", true)) {
+      tasks.push({
+        title: "Push database schema",
+        task: async () => {
+          await runCommand("pnpm", ["db:push"], cwd);
+        },
+      });
+    }
+
+    if (await promptConfirm("Create starter site data now?", true)) {
+      tasks.push({
+        title: "Seed starter content",
+        task: async () => {
+          await runCommand("pnpm", ["db:seed"], cwd);
+        },
+      });
+    }
   }
 
-  if (storageChoice === "local") {
-    writeEnvValues(envPath, {
-      S3_ENDPOINT: "http://localhost:8333",
-      S3_REGION: "us-east-1",
-      S3_BUCKET: "images",
-      S3_ACCESS_KEY: "admin",
-      S3_SECRET_KEY: "secret",
-      S3_FORCE_PATH_STYLE: "true",
-    });
-    await run("docker", ["compose", "up", "-d", "seaweedfs"], cwd);
-    return;
+  return { choice, tasks, selectedPort };
+}
+
+async function collectStoragePlan({
+  cwd,
+  envPath,
+}: {
+  cwd: string;
+  envPath: string;
+}): Promise<StoragePlan> {
+  const choice = await promptSelect<SetupStorageChoice>("Asset storage setup", [
+    { value: "local", label: "Run local S3 with SeaweedFS", hint: "Good for local development." },
+    { value: "existing", label: "Use an existing S3-compatible storage", hint: "Use AWS S3 or another compatible provider." },
+    { value: "skip", label: "Skip for now", hint: "Configure storage later." },
+  ]);
+
+  if (choice === "skip") {
+    return {
+      choice,
+      tasks: [{
+        title: "Clear storage configuration",
+        task: async () => {
+          writeEnvValues(envPath, {
+            S3_ENDPOINT: "",
+            S3_REGION: "us-east-1",
+            S3_BUCKET: "",
+            S3_ACCESS_KEY: "",
+            S3_SECRET_KEY: "",
+            S3_FORCE_PATH_STYLE: "false",
+          });
+        },
+      }],
+    };
+  }
+
+  if (choice === "local") {
+    return {
+      choice,
+      tasks: [
+        {
+          title: "Configure local S3",
+          task: async () => {
+            writeEnvValues(envPath, {
+              S3_ENDPOINT: "http://localhost:8333",
+              S3_REGION: "us-east-1",
+              S3_BUCKET: "images",
+              S3_ACCESS_KEY: "admin",
+              S3_SECRET_KEY: "secret",
+              S3_FORCE_PATH_STYLE: "true",
+            });
+          },
+        },
+        {
+          title: "Start SeaweedFS",
+          task: async () => {
+            await runCommand("docker", ["compose", "up", "-d", "seaweedfs"], cwd);
+          },
+        },
+      ],
+    };
   }
 
   const currentEnv = readEnvFile(envPath);
-  const response = await prompts([
-    {
-      type: "text",
-      name: "endpoint",
-      message: "S3 endpoint (leave blank for AWS S3)",
-      initial: currentEnv.match(/^S3_ENDPOINT=(.*)$/m)?.[1] ?? "",
-    },
-    {
-      type: "text",
-      name: "region",
-      message: "S3 region",
-      initial: currentEnv.match(/^S3_REGION=(.*)$/m)?.[1] ?? "us-east-1",
-    },
-    {
-      type: "text",
-      name: "bucket",
-      message: "S3 bucket",
-      initial: currentEnv.match(/^S3_BUCKET=(.*)$/m)?.[1] ?? "",
-      validate: (value: string) => value.trim().length > 0 || "S3 bucket is required",
-    },
-    {
-      type: "text",
-      name: "accessKey",
-      message: "S3 access key",
-      initial: currentEnv.match(/^S3_ACCESS_KEY=(.*)$/m)?.[1] ?? "",
-    },
-    {
-      type: "text",
-      name: "secretKey",
-      message: "S3 secret key",
-      initial: currentEnv.match(/^S3_SECRET_KEY=(.*)$/m)?.[1] ?? "",
-    },
-    {
-      type: "confirm",
-      name: "forcePathStyle",
-      message: "Use path-style S3 URLs?",
-      initial: (currentEnv.match(/^S3_FORCE_PATH_STYLE=(.*)$/m)?.[1] ?? "false") === "true",
-    },
-  ], { onCancel });
-
-  writeEnvValues(envPath, {
-    S3_ENDPOINT: response.endpoint.trim(),
-    S3_REGION: response.region.trim(),
-    S3_BUCKET: response.bucket.trim(),
-    S3_ACCESS_KEY: response.accessKey.trim(),
-    S3_SECRET_KEY: response.secretKey.trim(),
-    S3_FORCE_PATH_STYLE: response.forcePathStyle ? "true" : "false",
+  const endpoint = await promptText("S3 endpoint (leave blank for AWS S3)", {
+    initialValue: readEnvValue(currentEnv, "S3_ENDPOINT"),
   });
+  const region = await promptText("S3 region", {
+    initialValue: readEnvValue(currentEnv, "S3_REGION") || "us-east-1",
+    defaultValue: "us-east-1",
+  });
+  const bucket = await promptText("S3 bucket", {
+    initialValue: readEnvValue(currentEnv, "S3_BUCKET"),
+    validate: (value) => value && value.trim().length > 0 ? undefined : "S3 bucket is required",
+  });
+  const accessKey = await promptText("S3 access key", {
+    initialValue: readEnvValue(currentEnv, "S3_ACCESS_KEY"),
+  });
+  const secretKey = await promptText("S3 secret key", {
+    initialValue: readEnvValue(currentEnv, "S3_SECRET_KEY"),
+  });
+  const forcePathStyle = await promptConfirm(
+    "Use path-style S3 URLs?",
+    readEnvValue(currentEnv, "S3_FORCE_PATH_STYLE") === "true",
+  );
+
+  return {
+    choice,
+    tasks: [{
+      title: "Save storage configuration",
+      task: async () => {
+        writeEnvValues(envPath, {
+          S3_ENDPOINT: endpoint.trim(),
+          S3_REGION: region.trim(),
+          S3_BUCKET: bucket.trim(),
+          S3_ACCESS_KEY: accessKey.trim(),
+          S3_SECRET_KEY: secretKey.trim(),
+          S3_FORCE_PATH_STYLE: forcePathStyle ? "true" : "false",
+        });
+      },
+    }],
+  };
 }
 
-async function runSeed({ cwd, siteName }: { cwd: string; siteName: string }) {
+async function runTaskList(tasks: TaskDefinition[]): Promise<void> {
+  if (tasks.length === 0) {
+    return;
+  }
+
+  await new Listr(tasks, {
+    concurrent: false,
+    exitOnError: true,
+  }).run();
+}
+
+function showSetupCompletion(siteName: string, envPath: string, databaseChoice: SetupDatabaseChoice, storageChoice: SetupStorageChoice, selectedPort?: string): void {
+  showNote("Saved configuration", formatLines([
+    `Project:  ${siteName}`,
+    `Env file: ${envPath}`,
+    `Database: ${databaseChoice}`,
+    `DB port:  ${selectedPort ?? "n/a"}`,
+    `Storage:  ${storageChoice}`,
+  ]));
+  showOutro(`Setup complete for ${siteName}.`);
+}
+
+async function runSetup({ cwd, siteName, dbPort }: { cwd: string; siteName: string; dbPort?: string }): Promise<void> {
+  const envPath = resolve(cwd, ".env");
+  showIntro(CLI_VERSION, "Project setup", `Configure database and storage for ${siteName}`);
+
+  const databasePlan = await collectDatabasePlan({ cwd, envPath, siteName, dbPort });
+  const storagePlan = await collectStoragePlan({ cwd, envPath });
+
+  showSummary("Setup summary", [
+    ["Project", siteName],
+    ["Database", databasePlan.choice],
+    ["DB port", databasePlan.selectedPort],
+    ["Storage", storagePlan.choice],
+  ]);
+
+  await runTaskList([...databasePlan.tasks, ...storagePlan.tasks]);
+  showSetupCompletion(siteName, envPath, databasePlan.choice, storagePlan.choice, databasePlan.selectedPort);
+}
+
+async function runSeed({ cwd, siteName }: { cwd: string; siteName: string }): Promise<void> {
   const envPath = resolve(cwd, ".env");
   loadDotenv({ path: envPath });
+  showIntro(CLI_VERSION, "Seed starter content", `Populate the initial site data for ${siteName}`);
 
   const databaseModuleName = "@vitrea/database";
   const { closeDatabase, db, pages, sites } = await import(databaseModuleName) as {
@@ -384,156 +391,139 @@ async function runSeed({ cwd, siteName }: { cwd: string; siteName: string }) {
       SITE_ID: site.id as string,
     });
 
-    console.log(`Starter data ready. WEBSITE_ID=${String(site.id)}`);
+    showOutro(`Starter data ready. WEBSITE_ID=${String(site.id)}`);
   } finally {
     await closeDatabase();
   }
 }
 
-async function runScaffold(args: string[]) {
-  const { values, positionals } = parseArgs({
-    args,
-    options: {
-      dir: { type: "string", short: "d" },
-      preview: { type: "boolean", short: "p", default: false },
-    },
-    allowPositionals: true,
-  });
+async function runScaffold(options: CreateCommandOptions, positionalDir?: string): Promise<void> {
+  showIntro(CLI_VERSION, "Create project", "Scaffold a Vitrea editor + website workspace");
 
-  const answers = parseFlags(args) ?? await promptInteractive();
+  const answers = normalizeCreateOptions(options) ?? await promptInteractive();
+  showSummary("Configuration", [
+    ["Project", answers.projectName],
+    ["Environment", answers.environment],
+    ["Framework", answers.framework],
+    ["Storage", answers.storage],
+    ["Cloud", answers.cloudProvider],
+    ["Examples", answers.includeExamples],
+    ["Git", answers.initGit],
+    ["Run setup", answers.startNow],
+  ]);
 
-  const hasName = args.some((arg) => arg === "--name" || arg === "-n");
-  if (!hasName) {
-    console.log(`\n  ${pc.bold("Vitrea")} Let's set up your Editor project.\n`);
-  }
-
-  const explicitTarget = values.dir ?? positionals[0];
+  const explicitTarget = options.dir ?? positionalDir;
   const targetDir = explicitTarget
     ? resolve(explicitTarget)
     : resolve(".", answers.projectName);
 
-  if (values.preview) {
-    console.log(`\n  ${pc.yellow(pc.bold("PREVIEW"))} - no files will be written\n`);
-    console.log(`  ${pc.bold("Would create:")} ${pc.cyan(`${targetDir}/`)}\n`);
-    console.log(`  ${pc.gray(`${answers.projectName}/`)}`);
-    console.log(`  ${pc.gray("  |- apps/")}`);
-    console.log(`  ${pc.gray(`  |  |- web/          ${answers.framework} website`)}`);
-    console.log(`  ${pc.gray("  |  |- editor/       visual editor")}`);
-    console.log(`  ${pc.gray("  |- package.json")}`);
-    console.log(`  ${pc.gray("  |- pnpm-workspace.yaml")}`);
-    console.log("");
-
-    console.log(`  ${pc.bold("Selected:")}`);
-    console.log(`    Environment: ${answers.environment}`);
-    console.log(`    Framework:   ${answers.framework}`);
-    console.log(`    Storage:     ${answers.storage}`);
-    if (answers.cloudProvider) console.log(`    Cloud:       ${answers.cloudProvider}`);
-    console.log(`    Examples:    ${answers.includeExamples}`);
-    console.log(`    Git:         ${answers.initGit}`);
-    console.log(`    Run setup:   ${answers.startNow}`);
-    console.log("");
-
-    const files = listFiles(answers);
-    console.log(`  ${pc.bold("Files:")}\n`);
-    for (const file of files) {
-      console.log(`    ${pc.cyan(file)}`);
-    }
-    console.log("");
-    process.exit(0);
+  if (options.preview) {
+    showNote("Preview", formatLines([
+      `Would create: ${targetDir}/`,
+      "",
+      ...listFiles(answers),
+    ]));
+    showOutro("Preview complete.");
+    return;
   }
 
-  await mkdir(targetDir, { recursive: true });
-  await scaffold(targetDir, answers);
+  const shouldRunLocalSetup = answers.environment === "local"
+    ? (answers.startNow || await promptConfirm("Install dependencies and run local setup now?", true))
+    : false;
 
-  console.log(`\n  ${pc.green(pc.bold("Ready!"))} Created at ${pc.cyan(`${targetDir}/`)}`);
+  const tasks: TaskDefinition[] = [
+    {
+      title: "Create project files",
+      task: async () => {
+        await mkdir(targetDir, { recursive: true });
+        await scaffold(targetDir, answers);
+      },
+    },
+  ];
 
-  let installed = false;
-  let ranLocalSetup = false;
-  if (answers.environment === "local") {
-    const runSetupNow = answers.startNow || (await prompts({
-      type: "confirm",
-      name: "runSetupNow",
-      message: "Install dependencies and run local setup now?",
-      initial: true,
-    }, { onCancel })).runSetupNow;
-
-    if (runSetupNow) {
-      installed = true;
-      ranLocalSetup = true;
-      console.log(`\n  ${pc.bold("Installing dependencies...")}\n`);
-      await run("pnpm", ["install"], targetDir);
-      console.log(`\n  ${pc.bold("Running setup...")}\n`);
-      await run("pnpm", ["run", "vitrea:setup"], targetDir);
-    }
+  if (shouldRunLocalSetup) {
+    tasks.push(
+      {
+        title: "Install dependencies",
+        task: async () => {
+          await runCommand("pnpm", ["install"], targetDir);
+        },
+      },
+      {
+        title: "Run project setup",
+        task: async () => {
+          await runCommand("pnpm", ["run", "vitrea:setup"], targetDir);
+        },
+      },
+    );
   }
 
-  if (!ranLocalSetup) {
-    console.log(`\n  ${pc.bold("Next steps:")}\n`);
-    const cdTarget = explicitTarget ? basename(targetDir) || "." : answers.projectName;
-    const step = (index: number, command: string, description: string) =>
-      `  ${pc.gray(`${index}.`)}  ${pc.cyan(command)}${description ? `  ${pc.gray(description)}` : ""}`;
+  await runTaskList(tasks);
 
-    if (answers.environment === "local") {
-      console.log(step(1, `cd ${cdTarget}`, ""));
-      console.log(step(2, "pnpm install", "install dependencies"));
-      console.log(step(3, "pnpm run vitrea:setup", "choose database and storage"));
-      console.log(step(4, "pnpm dev", "start editor and website"));
-    } else if (answers.environment === "vps") {
-      console.log(step(1, "pnpm install", "install dependencies"));
-      console.log(step(2, "Edit .env", "set passwords and domain"));
-      console.log(step(3, "docker compose up -d", "start services"));
-      console.log(step(4, "pnpm db:push", "push schema"));
-      console.log(step(5, "pnpm db:seed", "seed starter data"));
-    } else if (answers.cloudProvider === "vercel") {
-      console.log(step(1, "pnpm install", "install dependencies"));
-      console.log(step(2, "Create a Neon DB", "connect database"));
-      console.log(step(3, "vercel link", "connect to Vercel"));
-      console.log(step(4, "vercel deploy", "deploy"));
-    } else if (answers.cloudProvider === "railway") {
-      console.log(step(1, "pnpm install", "install dependencies"));
-      console.log(step(2, "Push to GitHub", "connect at railway.app"));
-      console.log(step(3, "Add PostgreSQL", "in Railway dashboard"));
-      console.log(step(4, "Set env vars", "BETTER_AUTH_SECRET and storage values"));
-    } else if (answers.cloudProvider === "fly") {
-      console.log(step(1, "pnpm install", "install dependencies"));
-      console.log(step(2, "fly launch", "create the app"));
-      console.log(step(3, "fly postgres create", "add database"));
-      console.log(step(4, "fly deploy", "deploy"));
-    }
-  } else if (installed) {
-    console.log(`\n  ${pc.bold("Next step:")}\n`);
-    console.log(`  ${pc.gray("1.")}  ${pc.cyan(`cd ${basename(targetDir)} && pnpm dev`)}  ${pc.gray("start editor and website")}`);
+  if (shouldRunLocalSetup) {
+    showNote("Next step", `cd ${basename(targetDir) || answers.projectName} && pnpm dev`);
+  } else {
+    showNote("Next steps", formatNextSteps(targetDir, answers));
   }
-  console.log("");
+
+  showOutro(`Created ${answers.projectName} at ${targetDir}.`);
 }
 
-const argv = process.argv.slice(2);
-const [command, ...rest] = argv;
+const cli = cac("vitrea");
+cli.version(CLI_VERSION);
+cli.help();
 
-if (command === "setup" || command === "seed") {
-  const { values } = parseArgs({
-    args: rest,
-    options: {
-      cwd: { type: "string" },
-      "site-name": { type: "string" },
-      "db-port": { type: "string" },
-    },
-    allowPositionals: false,
+cli
+  .command("[dir]", "Create a Vitrea project")
+  .option("-d, --dir [dir]", "Target directory")
+  .option("-n, --name <name>", "Project name")
+  .option("--env <env>", "Environment: local, vps, cloud")
+  .option("--framework <framework>", "Website framework")
+  .option("--storage <storage>", "Storage: seaweedfs, s3, skip")
+  .option("--cloud <cloud>", "Cloud provider: vercel, railway, fly")
+  .option("--no-examples", "Do not include example components")
+  .option("--no-git", "Do not initialize git")
+  .option("--start", "Install dependencies and run local setup")
+  .option("-p, --preview", "Preview the generated file tree")
+  .action(async (dir: string | undefined, options: CreateCommandOptions) => {
+    await runScaffold(options, dir);
   });
 
-  const cwd = resolve(values.cwd ?? process.cwd());
-  const siteName = values["site-name"] ?? basename(cwd);
-  const dbPort = values["db-port"];
+cli
+  .command("setup", "Configure database and storage for a project")
+  .option("--cwd <cwd>", "Project directory")
+  .option("--site-name <siteName>", "Site name")
+  .option("--db-port <dbPort>", "Host port for local Postgres")
+  .action(async (options: SetupCommandOptions) => {
+    const cwd = resolve(options.cwd ?? process.cwd());
+    const siteName = options.siteName ?? basename(cwd);
+    const dbPort = options.dbPort;
 
-  if (dbPort && !isValidPort(dbPort)) {
-    throw new Error("--db-port must be a number between 1 and 65535");
-  }
+    if (dbPort && !isValidPort(dbPort)) {
+      throw new Error("--db-port must be a number between 1 and 65535");
+    }
 
-  if (command === "setup") {
     await runSetup({ cwd, siteName, dbPort });
-  } else {
+  });
+
+cli
+  .command("seed", "Create starter content for a project")
+  .option("--cwd <cwd>", "Project directory")
+  .option("--site-name <siteName>", "Site name")
+  .action(async (options: SetupCommandOptions) => {
+    const cwd = resolve(options.cwd ?? process.cwd());
+    const siteName = options.siteName ?? basename(cwd);
     await runSeed({ cwd, siteName });
+  });
+
+try {
+  cli.parse(process.argv, { run: false });
+  await cli.runMatchedCommand();
+} catch (error) {
+  if (error instanceof Error) {
+    console.error(error.message);
+  } else {
+    console.error(error);
   }
-} else {
-  await runScaffold(argv);
+  process.exit(1);
 }
